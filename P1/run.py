@@ -2,11 +2,11 @@ import getopt
 import sys
 
 if __name__ == "__main__":
-    short_options = "hc:o"
+    short_options = "hc:o:"
     long_options = ["help", "config", "output"]
 
     full_cmd_arguments = sys.argv
-    argument_list = full_cmd_arguments[1:]
+    argument_list = full_cmd_arguments[1:]  # remove filename
 
     try:
         arguments, values = getopt.getopt(argument_list, short_options, long_options)
