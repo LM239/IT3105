@@ -2,8 +2,8 @@ import getopt
 import sys
 
 if __name__ == "__main__":
-    short_options = "hc:o:"
-    long_options = ["help", "config", "output"]
+    short_options = "hc:"
+    long_options = ["help", "config"]
 
     full_cmd_arguments = sys.argv
     argument_list = full_cmd_arguments[1:]  # remove filename
@@ -18,7 +18,7 @@ if __name__ == "__main__":
     for current_argument, current_value in arguments:
         if current_argument in ("-h", "--help"):
             print("Required args: \n Optional args:")
-        elif current_argument in ("-o", "--output"):
-            print("Outputing to (%s)" % current_value)
+        elif current_argument in ("-c", "--config"):
+            continue
 
     exit(0)
