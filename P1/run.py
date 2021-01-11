@@ -16,7 +16,9 @@ if __name__ == "__main__":
         sys.exit(2)
 
     for current_argument, current_value in arguments:
-        elif current_argument in ("-h", "--help"):
+        if current_argument in ("-h", "--help"):
             print("Required args: \n Optional args:")
         elif current_argument in ("-o", "--output"):
-            print(("Outputtin to (%s)") % (current_value))
+            print("Outputing to (%s)" % current_value)
+
+    exit(0)
