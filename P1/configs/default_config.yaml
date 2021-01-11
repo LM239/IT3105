@@ -4,7 +4,9 @@ sim_world:
   world: "peg_solitaire"
   type: "triangle"
   size: 4
-  open_cells: 2
+  open_cells: 
+    - [0, 0]
+    - [3, 2]
   episodes: 10
   
 #Critic args:
