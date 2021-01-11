@@ -18,13 +18,13 @@ critic:
     - 1
   lr: 0.001
   eligibility_decay: 0.05
-  discount_factor: 0.01
+  discount_factor: 0.9
   
 #Actor args:
 actor:
   lr: 0.01
   eligibility_decay: 0.05
-  discount_factor: 0.01
+  discount_factor: 0.9
   greedy_epsilon: 0.1
   epsilon_decay: 0.01 # set to 0 for no decay
   
