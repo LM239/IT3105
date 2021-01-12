@@ -1,3 +1,4 @@
+import networkx
 
 class PegSolitaire:
 
@@ -14,10 +15,11 @@ class PegSolitaire:
 
         if config["type"] == "triangle":
             self.state = [[1] * i for i in range(1, config["size"] + 1)]
+
         elif config["type"] == "diamond":
             self.state = [[1] * config["size"]] * config["size"]
         else:
-            print("Unknown board type {}. Exiting".format(config["type"]))
+            print("Unknown board type {}.\nExiting".format(config["type"]))
             exit(1)
 
         if "open_cells" in config:
@@ -29,23 +31,40 @@ class PegSolitaire:
                 try:
                     self.state[cell[0]][cell[1]] = 0
                 except IndexError:
-                    print("Cell at position ({}, {}) can not be opened; it does not exist".format(cell[0], cell[1]))
-                    print("Exiting...")
+                    print("Cell at position ({}, {}) can not be opened; it does not exist\nExiting".format(cell[0], cell[1]))
                     exit(1)
 
-    
+    def do_action(self, action):
+        return action
+
+    def is_end_state(self):
+        return self.is_end_state(self.state)
+
+    def is_end_state(self, state):
+        return state
+
     def __str__(self):
-        val = ""
-        return val.join(str(peg) for row in self.state for peg in row)
+        return "".join(str(peg) for row in self.state for peg in row)
+
+    def __int__(self):
+        return int(str(self), 2)
     
     def vector(self):
         return [peg for row in self.state for peg in row]
+
+    def visualize(self, states):
+        for state in states:
+            self.visualize(state)
+
+    def visualize(self):
+        return 0
+
 
 if __name__ == "__main__":
     tri_config = {
         "type": "triangle",
         "size": 4,
-        "open_cells": [[0,0], [3,0]],
+        "open_cells": [[0, 0], [3, 0]],
     }
 
     dim_config = {
@@ -57,4 +76,5 @@ if __name__ == "__main__":
     dim_world = PegSolitaire(dim_config)
 
     print(tri_world.vector())
-    print(dim_world)
+    print(tri_world)
+    print(int(tri_world))
