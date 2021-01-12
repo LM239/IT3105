@@ -59,7 +59,7 @@ class PegSolitaire:
             for cell in config["open_cells"]:
                 if not (len(cell) == 2 and self.valid_coords(cell[0], cell[1])):
                     print("Open cells must be specified as 2D coordinates (y,x) within the boards' bounds")
-                    print("Erroneous coordinate: " + str(cell) + "\nExiting")
+                    print("Erroneous coordinate: {}\nExiting".format(cell))
                     exit(0)
                 self.state[cell[0]][cell[1]] = 0
         self.episode = [str(self.state)]
@@ -73,16 +73,14 @@ class PegSolitaire:
             for x, peg in enumerate(row):
                 if peg == 0:
                     continue
-                else:
-                    for n_peg in self.adjacencies[y][x]:
-                        if state[n_peg[0]][n_peg[1]] == 0:
-                            continue
-                        else:
-                            action_y = - y + 2 * n_peg[0]
-                            action_x = - x + 2 * n_peg[1]
-                            if self.valid_coords(action_y, action_x) \
-                                    and state[action_y][action_x] == 0:
-                                actions.append(((y, x), (action_y, action_x)))
+                for n_peg in self.adjacencies[y][x]:
+                    if state[n_peg[0]][n_peg[1]] == 0:
+                        continue
+                    action_y = - y + 2 * n_peg[0]
+                    action_x = - x + 2 * n_peg[1]
+                    if self.valid_coords(action_y, action_x) \
+                            and state[action_y][action_x] == 0:
+                        actions.append(((y, x), (action_y, action_x)))
         return actions
 
     def do_action(self, action):
@@ -140,9 +138,7 @@ class PegSolitaire:
             pos = pydot_layout(G)
             nx.draw_networkx_nodes(G, pos, nodelist=open_nodes, node_color="g")
             nx.draw_networkx_nodes(G, pos, nodelist=closed_nodes, node_color="r")
-
             nx.draw_networkx_labels(G, pos, font_weight="bold")
-
             nx.draw_networkx_edges(G, pos)
             plt.show()
 
@@ -153,10 +149,7 @@ class PegSolitaire:
         return self.visualize(self.episode)
 
     def from2D(self, y, x):
-        if self.type == "triangle":
-            return int((y * (y + 1) / 2) + x)
-        else:
-            return (y * self.size) + x
+        return int((y * (y + 1) / 2)) + x if self.type == "triangle" else (y * self.size) + x
 
 
 if __name__ == "__main__":
