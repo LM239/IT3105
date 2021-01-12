@@ -113,7 +113,7 @@ class PegSolitaire:
             nx.draw_networkx_nodes(G, pos, nodelist=openNodes, node_color="g")
             nx.draw_networkx_nodes(G, pos, nodelist=closedNodes, node_color="r")
 
-            nx.draw_networkx_labels(G, pos)
+            nx.draw_networkx_labels(G, pos, font_weight="bold")
 
             nx.draw_networkx_edges(G, pos)
             plt.show()
