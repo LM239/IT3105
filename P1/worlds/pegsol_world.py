@@ -2,6 +2,7 @@ import networkx as nx
 import pylab as plt
 from networkx.drawing.nx_pydot import pydot_layout
 
+
 class PegSolitaire:
 
     def __init__(self, config):
@@ -63,29 +64,62 @@ class PegSolitaire:
                 try:
                     self.state[cell[0]][cell[1]] = 0
                 except IndexError:
-                    print("Cell at position ({}, {}) can not be open; it does not exist\nExiting".format(cell[0], cell[1]))
+                    print("Cell at position ({}, {}) can not be open; it does not exist\nExiting".format(cell[0],
+                                                                                                         cell[1]))
                     exit(1)
         self.episode = []
 
+    def get_actions_self(self):
+        return self.get_actions(self.state)
+
+    def get_actions(self, state):
+        actions = []
+        for y, row in enumerate(state):
+            for x, peg in enumerate(row):
+                if peg == 0:
+                    continue
+                else:
+                    for n_peg in self.adjacencies[y][x]:
+                        if state[n_peg[0]][n_peg[1]] == 0:
+                            continue
+                        else:
+                            action_y = - y + 2 * n_peg[0]
+                            action_x = - x + 2 * n_peg[1]
+                            if self.valid_coors(action_y, action_x) \
+                                    and state[action_y][action_x] == 0:
+                                actions.append(((y, x), (action_y, action_x)))
+        return actions
+
     def do_action(self, action):
         self.episode.append(str(self))
-        return action
+        to_pos = action[1]
+        from_pos = action[0]
+
+        self.state[from_pos[0]][from_pos[1]] = 0
+        self.state[to_pos[0]][to_pos[1]] = 1
+
+        dif_y = (to_pos[0] - from_pos[0]) / 2
+        dif_x = (to_pos[1] - from_pos[1]) / 2
+
+        self.state[from_pos[0] + int(dif_y)][from_pos[1] + int(dif_x)] = 0
+
+        return str(self)
 
     def valid_coors(self, y, x):
         return 0 <= x < self.size and 0 <= y < self.size and ((not self.type == "triangle") or x <= y)
 
-    def is_end_state(self):
+    def is_end_state_self(self):
         return self.is_end_state(self.state)
 
     def is_end_state(self, state):
-        return state
+        return len(self.get_actions(state)) == 0
 
     def __str__(self):
         return "".join(str(peg) for row in self.state for peg in row)
 
     def __int__(self):
         return int(str(self), 2)
-    
+
     def vector(self):
         return [peg for row in self.state for peg in row]
 
@@ -96,22 +130,22 @@ class PegSolitaire:
             for x in range(x_range):
                 G.add_node((y, x))
                 for node in self.adjacencies[y][x]:
-                    G.add_edge((y,x), node)
+                    G.add_edge((y, x), node)
         for state in states:
-            openNodes = []
-            closedNodes = []
+            open_nodes = []
+            closed_nodes = []
             state = list(state)
             for y in range(self.size):
                 x_range = y + 1 if self.type == "triangle" else self.size
                 for x in range(x_range):
-                    if state[self.from2D(y,x)] == "1":
-                        closedNodes.append((y, x))
+                    if state[self.from2D(y, x)] == "1":
+                        closed_nodes.append((y, x))
                     else:
-                        openNodes.append((y, x))
+                        open_nodes.append((y, x))
 
             pos = pydot_layout(G)
-            nx.draw_networkx_nodes(G, pos, nodelist=openNodes, node_color="g")
-            nx.draw_networkx_nodes(G, pos, nodelist=closedNodes, node_color="r")
+            nx.draw_networkx_nodes(G, pos, nodelist=open_nodes, node_color="g")
+            nx.draw_networkx_nodes(G, pos, nodelist=closed_nodes, node_color="r")
 
             nx.draw_networkx_labels(G, pos, font_weight="bold")
 
@@ -135,7 +169,7 @@ if __name__ == "__main__":
     tri_config = {
         "type": "triangle",
         "size": 4,
-        "open_cells": [[0, 0], [3, 0], [3, 2], [2, 0], [2, 2]],
+        "open_cells": [[0, 0], [3, 0], [3, 2]],
     }
 
     dim_config = {
@@ -149,6 +183,10 @@ if __name__ == "__main__":
 
     print(tri_world.vector())
     print(tri_world)
+    print(tri_world.get_actions_self())
+    print(dim_world.get_actions_self())
 
     tri_world.visualize_self()
+    dim_world.visualize_self()
+    dim_world.do_action(((1, 3), (3, 3)))
     dim_world.visualize_self()
