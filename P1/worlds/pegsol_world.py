@@ -1,4 +1,5 @@
 import networkx as nx
+import pylab as plt
 
 class PegSolitaire:
 
@@ -32,7 +33,7 @@ class PegSolitaire:
             self.adjacencies.append(row)
             for x in range(x_range):
                 col = []
-                self.adjacencies.append(col)
+                row.append(col)
                 if self.valid_coors(y + 1, x):
                     col.append((y + 1, x))
                 if self.valid_coors(y - 1, x):
@@ -95,9 +96,10 @@ class PegSolitaire:
                     G.add_node((y, x))
                     for node in self.adjacencies[y][x]:
                         G.add_edge((y,x), node)
+        nx.draw(G, font_weight='bold')
+        plt.show()
 
-
-    def visualize(self):
+    def visualize_self(self):
         return self.visualize([self.state])
 
     def from2D(self, y, x):
@@ -128,3 +130,5 @@ if __name__ == "__main__":
 
     print(tri_world.from2D(2, 2))
     print(dim_world.from2D(2, 2))
+    tri_world.visualize_self()
+    dim_world.visualize_self()
