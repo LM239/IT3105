@@ -8,6 +8,10 @@ sim_world:
     - [0, 0]
     - [3, 2]
   episodes: 10
+  #Display:
+  display:
+    train_display: false
+    display_rate: 1000 # in milliseconds
   
 #Critic args:
 critic:
@@ -29,9 +33,3 @@ actor:
   discount_factor: 0.9
   greedy_epsilon: 0.5
   epsilon_decay: 0.9 # set to 1 for no decay
-  
-#Display:
-display:
-  train_display: false
-  display_rate: 1000 # in milliseconds
-  
