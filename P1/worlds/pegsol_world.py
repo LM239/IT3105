@@ -36,38 +36,33 @@ class PegSolitaire:
             for x in range(x_range):
                 col = []
                 row.append(col)
-                if self.valid_coors(y + 1, x):
+                if self.valid_coords(y + 1, x):
                     col.append((y + 1, x))
-                if self.valid_coors(y - 1, x):
+                if self.valid_coords(y - 1, x):
                     col.append((y - 1, x))
-                if self.valid_coors(y, x + 1):
+                if self.valid_coords(y, x + 1):
                     col.append((y, x + 1))
-                if self.valid_coors(y, x - 1):
+                if self.valid_coords(y, x - 1):
                     col.append((y, x - 1))
                 if self.type == "triangle":
-                    if self.valid_coors(y + 1, x + 1):
+                    if self.valid_coords(y + 1, x + 1):
                         col.append((y + 1, x + 1))
-                    if self.valid_coors(y - 1, x - 1):
+                    if self.valid_coords(y - 1, x - 1):
                         col.append((y - 1, x - 1))
                 else:
-                    if self.valid_coors(y - 1, x + 1):
+                    if self.valid_coords(y - 1, x + 1):
                         col.append((y - 1, x + 1))
-                    if self.valid_coors(y + 1, x - 1):
+                    if self.valid_coords(y + 1, x - 1):
                         col.append((y + 1, x - 1))
 
         if "open_cells" in config:
             for cell in config["open_cells"]:
-                if not len(cell) == 2:
-                    print("Open cells must be specified as 2D coordinates (y,x)")
+                if not (len(cell) == 2 and self.valid_coords(cell[0], cell[1])):
+                    print("Open cells must be specified as 2D coordinates (y,x) within the boards' bounds")
                     print("Erroneous coordinate: " + str(cell) + "\nExiting")
                     exit(0)
-                try:
-                    self.state[cell[0]][cell[1]] = 0
-                except IndexError:
-                    print("Cell at position ({}, {}) can not be open; it does not exist\nExiting".format(cell[0],
-                                                                                                         cell[1]))
-                    exit(1)
-        self.episode = [self.state]
+                self.state[cell[0]][cell[1]] = 0
+        self.episode = [str(self.state)]
 
     def get_actions_self(self):
         return self.get_actions(self.state)
@@ -85,7 +80,7 @@ class PegSolitaire:
                         else:
                             action_y = - y + 2 * n_peg[0]
                             action_x = - x + 2 * n_peg[1]
-                            if self.valid_coors(action_y, action_x) \
+                            if self.valid_coords(action_y, action_x) \
                                     and state[action_y][action_x] == 0:
                                 actions.append(((y, x), (action_y, action_x)))
         return actions
@@ -104,7 +99,7 @@ class PegSolitaire:
         self.episode.append(str(self))
         return str(self)
 
-    def valid_coors(self, y, x):
+    def valid_coords(self, y, x):
         return 0 <= x < self.size and 0 <= y < self.size and ((not self.type == "triangle") or x <= y)
 
     def is_end_state_self(self):
