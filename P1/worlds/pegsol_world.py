@@ -67,7 +67,7 @@ class PegSolitaire:
                     print("Cell at position ({}, {}) can not be open; it does not exist\nExiting".format(cell[0],
                                                                                                          cell[1]))
                     exit(1)
-        self.episode = []
+        self.episode = [self.state]
 
     def get_actions_self(self):
         return self.get_actions(self.state)
@@ -91,7 +91,6 @@ class PegSolitaire:
         return actions
 
     def do_action(self, action):
-        self.episode.append(str(self))
         to_pos = action[1]
         from_pos = action[0]
 
@@ -102,7 +101,7 @@ class PegSolitaire:
         dif_x = (to_pos[1] - from_pos[1]) / 2
 
         self.state[from_pos[0] + int(dif_y)][from_pos[1] + int(dif_x)] = 0
-
+        self.episode.append(str(self))
         return str(self)
 
     def valid_coors(self, y, x):
