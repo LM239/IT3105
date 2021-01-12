@@ -1,7 +1,7 @@
 import getopt
 import sys
 import yaml
-from .worlds.pegsol_world import PegSolitaire
+from worlds.pegsol_world import PegSolitaire
 
 if __name__ == "__main__":
     short_options = "hc:"
