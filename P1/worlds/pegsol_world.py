@@ -121,6 +121,9 @@ class PegSolitaire:
     def visualize_self(self):
         return self.visualize([str(self)])
 
+    def visualize_episode(self):
+        return self.visualize(self.episode)
+
     def from2D(self, y, x):
         if self.type == "triangle":
             return int((y * (y + 1) / 2) + x)
