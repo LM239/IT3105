@@ -1,5 +1,6 @@
 import networkx as nx
 import pylab as plt
+from networkx.drawing.nx_pydot import pydot_layout
 
 class PegSolitaire:
 
@@ -21,7 +22,7 @@ class PegSolitaire:
         if self.type == "triangle":
             self.state = [[1] * i for i in range(1, self.size + 1)]
         elif self.type == "diamond":
-            self.state = [[1] * self.size] * self.size
+            self.state = [[1 for i in range(self.size)] for j in range(self.size)]
         else:
             print("Unknown board type {}.\nExiting".format(self.type))
             exit(1)
@@ -52,7 +53,6 @@ class PegSolitaire:
                         col.append((y - 1, x + 1))
                     if self.valid_coors(y + 1, x - 1):
                         col.append((y + 1, x - 1))
-                print("{}, {}: {}".format(y, x, col))
 
         if "open_cells" in config:
             for cell in config["open_cells"]:
@@ -65,8 +65,10 @@ class PegSolitaire:
                 except IndexError:
                     print("Cell at position ({}, {}) can not be open; it does not exist\nExiting".format(cell[0], cell[1]))
                     exit(1)
+        self.episode = []
 
     def do_action(self, action):
+        self.episode.append(str(self))
         return action
 
     def valid_coors(self, y, x):
@@ -88,19 +90,36 @@ class PegSolitaire:
         return [peg for row in self.state for peg in row]
 
     def visualize(self, states):
+        G = nx.Graph()
+        for y in range(self.size):
+            x_range = y + 1 if self.type == "triangle" else self.size
+            for x in range(x_range):
+                G.add_node((y, x))
+                for node in self.adjacencies[y][x]:
+                    G.add_edge((y,x), node)
         for state in states:
-            G = nx.Graph()
+            openNodes = []
+            closedNodes = []
+            state = list(state)
             for y in range(self.size):
                 x_range = y + 1 if self.type == "triangle" else self.size
                 for x in range(x_range):
-                    G.add_node((y, x))
-                    for node in self.adjacencies[y][x]:
-                        G.add_edge((y,x), node)
-        nx.draw(G, font_weight='bold')
-        plt.show()
+                    if state[self.from2D(y,x)] == "1":
+                        closedNodes.append((y, x))
+                    else:
+                        openNodes.append((y, x))
+
+            pos = pydot_layout(G)
+            nx.draw_networkx_nodes(G, pos, nodelist=openNodes, node_color="g")
+            nx.draw_networkx_nodes(G, pos, nodelist=closedNodes, node_color="r")
+
+            nx.draw_networkx_labels(G, pos)
+
+            nx.draw_networkx_edges(G, pos)
+            plt.show()
 
     def visualize_self(self):
-        return self.visualize([self.state])
+        return self.visualize([str(self)])
 
     def from2D(self, y, x):
         if self.type == "triangle":
@@ -113,12 +132,13 @@ if __name__ == "__main__":
     tri_config = {
         "type": "triangle",
         "size": 4,
-        "open_cells": [[0, 0], [3, 0]],
+        "open_cells": [[0, 0], [3, 0], [3, 2], [2, 0], [2, 2]],
     }
 
     dim_config = {
         "type": "diamond",
         "size": 4,
+        "open_cells": [[0, 0], [3, 0], [3, 2], [3, 3], [0, 3]],
     }
 
     tri_world = PegSolitaire(tri_config)
@@ -126,9 +146,6 @@ if __name__ == "__main__":
 
     print(tri_world.vector())
     print(tri_world)
-    print(int(tri_world))
 
-    print(tri_world.from2D(2, 2))
-    print(dim_world.from2D(2, 2))
     tri_world.visualize_self()
     dim_world.visualize_self()
