@@ -10,4 +10,12 @@ class Peg_solitaire:
             print("Unknown board type {}. Exiting".format(config.type))
             exit(1)
       
-        return 0
+        return self
+    
+    
+    def __str__(self):
+        return "010101010"
+    
+    def vector(self):
+        return [peg for peg in row for row in self.state]
+    
