@@ -62,7 +62,7 @@ class PegSolitaire:
                     print("Erroneous coordinate: {}\nExiting".format(cell))
                     exit(0)
                 self.state[cell[0]][cell[1]] = 0
-        self.episode = [str(self.state)]
+        self.episode = [self.vector()]
 
     def get_actions_self(self):
         return self.get_actions(self.state)
@@ -76,11 +76,10 @@ class PegSolitaire:
                 for n_peg in self.adjacencies[y][x]:
                     if state[n_peg[0]][n_peg[1]] == 0:
                         continue
-                    action_y = - y + 2 * n_peg[0]
-                    action_x = - x + 2 * n_peg[1]
-                    if self.valid_coords(action_y, action_x) \
-                            and state[action_y][action_x] == 0:
-                        actions.append(((y, x), (action_y, action_x)))
+                    to_y = 2 * n_peg[0] - y
+                    to_x = 2 * n_peg[1] - x
+                    if self.valid_coords(to_y, to_x) and state[to_y][to_x] == 0:
+                        actions.append(((y, x), (to_y, to_x)))
         return actions
 
     def do_action(self, action):
@@ -90,11 +89,8 @@ class PegSolitaire:
         self.state[from_pos[0]][from_pos[1]] = 0
         self.state[to_pos[0]][to_pos[1]] = 1
 
-        dif_y = (to_pos[0] - from_pos[0]) / 2
-        dif_x = (to_pos[1] - from_pos[1]) / 2
-
-        self.state[from_pos[0] + int(dif_y)][from_pos[1] + int(dif_x)] = 0
-        self.episode.append(str(self))
+        self.state[int((from_pos[0] + to_pos[0]) / 2)][int((from_pos[1] + to_pos[1]) / 2)] = 0
+        self.episode.append(self.vector())
         return str(self)
 
     def valid_coords(self, y, x):
@@ -126,11 +122,10 @@ class PegSolitaire:
         for state in states:
             open_nodes = []
             closed_nodes = []
-            state = list(state)
             for y in range(self.size):
                 x_range = y + 1 if self.type == "triangle" else self.size
                 for x in range(x_range):
-                    if state[self.from2D(y, x)] == "1":
+                    if state[self.from2D(y, x)] == 1:
                         closed_nodes.append((y, x))
                     else:
                         open_nodes.append((y, x))
@@ -143,7 +138,7 @@ class PegSolitaire:
             plt.show()
 
     def visualize_self(self):
-        return self.visualize([str(self)])
+        return self.visualize([self.vector()])
 
     def visualize_episode(self):
         return self.visualize(self.episode)
