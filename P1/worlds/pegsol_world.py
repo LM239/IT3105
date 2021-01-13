@@ -62,6 +62,12 @@ class PegSolitaire:
                     print("Erroneous coordinate: {}\nExiting".format(cell))
                     exit(0)
                 self.state[cell[0]][cell[1]] = 0
+        elif self.size > 4 or (self.type == "diamond" and self.size > 3):
+            row = int(self.size / 2)
+            col = row if self.type == "diamond" else int(row / 2)
+            self.state[row][col] = 0
+        else:
+            self.state[0][0] = 0
         self.episode = [self.vector()]
 
     def get_actions_self(self):
@@ -150,14 +156,14 @@ class PegSolitaire:
 if __name__ == "__main__":
     tri_config = {
         "type": "triangle",
-        "size": 4,
-        "open_cells": [[0, 0], [3, 0], [3, 2]],
+        "size": 6,
+        #"open_cells": [[0, 0], [3, 0], [3, 2]],
     }
 
     dim_config = {
         "type": "diamond",
-        "size": 4,
-        "open_cells": [[0, 0], [3, 0], [3, 2], [3, 3], [0, 3]],
+        "size": 5,
+        #"open_cells": [[0, 0], [3, 0], [3, 2], [3, 3], [0, 3]],
     }
 
     tri_world = PegSolitaire(tri_config)
@@ -170,5 +176,5 @@ if __name__ == "__main__":
 
     tri_world.visualize_self()
     dim_world.visualize_self()
-    dim_world.do_action(((1, 3), (3, 3)))
-    dim_world.visualize_self()
+    # dim_world.do_action(((1, 3), (3, 3)))
+    #dim_world.visualize_self()
