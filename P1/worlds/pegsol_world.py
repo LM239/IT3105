@@ -127,7 +127,7 @@ class PegSolitaire:
                 for node in self.adjacencies[y][x]:
                     G.add_edge((y, x), node)
         pos = nx.get_node_attributes(G, 'pos')
-        size = (self.size, int(1.5 * self.size)) if self.type == "diamond" else (self.size, self.size)
+        size = (self.size, int(1.5 * self.size)) if self.type == "diamond" else (self.size, 0.7 * self.size)
         for state in states:
             open_nodes = []
             closed_nodes = []
@@ -158,13 +158,13 @@ class PegSolitaire:
 if __name__ == "__main__":
     tri_config = {
         "type": "triangle",
-        "size": 8,
+        "size": 4,
         #"open_cells": [[0, 0], [3, 0], [3, 2]],
     }
 
     dim_config = {
         "type": "diamond",
-        "size": 6,
+        "size": 3,
         #"open_cells": [[0, 0], [3, 0], [3, 2], [3, 3], [0, 3]],
     }
 
