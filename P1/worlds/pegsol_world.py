@@ -122,8 +122,7 @@ class PegSolitaire:
         for y in range(self.size):
             x_range = y + 1 if self.type == "triangle" else self.size
             for x in range(x_range):
-                pos = (0.5 * (self.size - y) + x, self.size - y) if self.type == "triangle" \
-                    else (0.5 * (self.size**2 - x - y) + x, self.size**2 - x - y)
+                pos = (x - 0.5 * y, - y) if self.type == "triangle" else (x - 0.5 * (x + y), -x - y)
                 G.add_node((y, x), pos=pos)
                 for node in self.adjacencies[y][x]:
                     G.add_edge((y, x), node)
