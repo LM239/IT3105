@@ -122,9 +122,12 @@ class PegSolitaire:
         for y in range(self.size):
             x_range = y + 1 if self.type == "triangle" else self.size
             for x in range(x_range):
-                G.add_node((y, x))
+                pos = (0.5 * abs(self.size**2 - x - y) + x, self.size**2 - x - y) if self.type == "diamond" \
+                    else (0.5 * abs(self.size - y) + x, self.size - y)
+                G.add_node((y, x), pos=pos)
                 for node in self.adjacencies[y][x]:
                     G.add_edge((y, x), node)
+        pos = nx.get_node_attributes(G, 'pos')
         for state in states:
             open_nodes = []
             closed_nodes = []
@@ -135,8 +138,6 @@ class PegSolitaire:
                         closed_nodes.append((y, x))
                     else:
                         open_nodes.append((y, x))
-
-            pos = pydot_layout(G)
             nx.draw_networkx_nodes(G, pos, nodelist=open_nodes, node_color="g")
             nx.draw_networkx_nodes(G, pos, nodelist=closed_nodes, node_color="r")
             nx.draw_networkx_labels(G, pos, font_weight="bold")
