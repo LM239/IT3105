@@ -156,13 +156,13 @@ class PegSolitaire:
 if __name__ == "__main__":
     tri_config = {
         "type": "triangle",
-        "size": 6,
+        "size": 8,
         #"open_cells": [[0, 0], [3, 0], [3, 2]],
     }
 
     dim_config = {
         "type": "diamond",
-        "size": 5,
+        "size": 6,
         #"open_cells": [[0, 0], [3, 0], [3, 2], [3, 3], [0, 3]],
     }
 
