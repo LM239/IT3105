@@ -2,7 +2,7 @@ import getopt
 import sys
 import yaml
 from worlds.pegsol_world import PegSolitaire
-from actor_critic import Actor_critic
+from actor_critic import ActorCritic
 
 if __name__ == "__main__":
     short_options = "hc:"
@@ -15,7 +15,7 @@ if __name__ == "__main__":
         print(str(err))
         sys.exit(2)
 
-    path = ""
+    path = None
     for current_argument, current_value in arguments:
         if current_argument in ("-h", "--help"):
             print("Required args: -c <path-to-config> \n Optional args: none")
@@ -59,7 +59,9 @@ if __name__ == "__main__":
         print("Unknown world type: {} \n Exiting".format(world_config["world"]))
         exit(1)
 
-    actor_critic = Actor_critic(actor_config, critic_config, world, configs["episodes"])
+    actor_critic = ActorCritic(actor_config, critic_config, world, configs["episodes"])
     actor_critic.fit()
+    world.visualize_peg_count()
+    world.visualize_episode()
 
     exit(0)

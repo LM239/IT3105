@@ -2,6 +2,7 @@ import networkx as nx
 import pylab as plt
 from typing import List, Tuple
 
+
 class PegSolitaire:
 
     def __init__(self, config):
@@ -75,6 +76,7 @@ class PegSolitaire:
             self.state[0][0] = 0
             self.initial_open_cells = [[0, 0]]
         self.episode = [self.vector()]
+        self.peg_count = []
 
     def get_actions_self(self) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
         return self.get_actions(self.state)
@@ -133,6 +135,7 @@ class PegSolitaire:
         return [peg for row in self.state for peg in row]
 
     def reset(self):
+        self.peg_count.append(sum(self.vector()))
         if self.type == "triangle":
             self.state = [[1] * i for i in range(1, self.size + 1)]
         else:
@@ -141,6 +144,10 @@ class PegSolitaire:
             self.state[cell[0]][cell[1]] = 0
         self.episode = [self.vector()]
         return self
+
+    def visualize_peg_count(self):
+        plt.plot(self.peg_count)
+        plt.show()
 
     def visualize(self, states):
         G = nx.Graph()

@@ -1,10 +1,9 @@
-import matplotlib as plt
 from collections import defaultdict
 import random
 from typing import List, Tuple
 
 
-class Actor_critic:
+class ActorCritic:
     
     def __init__(self, actor_config, critic_config, world, episodes):
         self.verify_configs(actor_config, critic_config)
@@ -29,11 +28,9 @@ class Actor_critic:
         self.actor_PI = defaultdict(lambda: 0)
         self.world = world
 
-
     def fit(self):
         for episode in range(self.episodes):
             self.play_episode()
-        self.world.visualize_episode()
 
     def play_episode(self):
         actor_eligibility = defaultdict(lambda: 0)
@@ -109,7 +106,10 @@ class Actor_critic:
         if "type" not in critic_config:
             print("Missing required Critic argument: 'type' \nExiting")
             exit(1)
-        if critic_config["type"] == "neural_network" and "size" not in critic_config:
+        if not (critic_config["type"] == "neural_net" or critic_config["type"] == "table"):
+            print("Unknown critic type: {} \nExiting".format(critic_config["type"]))
+            exit(1)
+        if critic_config["type"] == "neural_net" and "size" not in critic_config:
             print("Missing required neural net based-Critic argument: 'size' \nExiting")
             exit(1)
         if "lr" not in critic_config:
@@ -122,5 +122,31 @@ class Actor_critic:
             print("Missing required Critic argument: 'discount_factor' \nExiting")
             exit(1)
 
+
 if __name__ == "__main__":
+    actor_config = {'lr': 0.1,
+                    'eligibility_decay': 0.05,
+                    'discount_factor': 0.9,
+                    'greedy_epsilon': 0.5,
+                    'epsilon_decay': 0.95}
+    critic_config = {'type': 'table',
+                     #'size': [15, 20, 30, 5, 1],
+                     'lr': 0.1,
+                     'eligibility_decay': 0.05,
+                     'discount_factor': 0.9}
+    world_config = {'world': 'peg_solitaire',
+                    'type': 'diamond',
+                    'size': 4,
+                    'display': {
+                        'train_display': False,
+                        'display_rate': 0.5},
+                    }
+    from worlds.pegsol_world import PegSolitaire
+    world = PegSolitaire(world_config)
+    episodes = 100
+
+    actor_critic = ActorCritic(actor_config, critic_config, world, episodes)
+    actor_critic.fit()
+    world.visualize_episode()
+    world.visualize_peg_count()
     exit(0)
