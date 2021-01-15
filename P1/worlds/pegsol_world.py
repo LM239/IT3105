@@ -27,10 +27,7 @@ class PegSolitaire:
         else:
             print("Unknown board type {}.\nExiting".format(self.type))
             exit(1)
-
-        if "display" in config:
-            self.display_rate = config["display"]["display_rate"]
-            self.train_display = config["display"]["train_display"]
+        self.display_rate = config["display_rate"] if "display_rate" in config else 0.5
 
         self.adjacencies = []
         for y in range(self.size):

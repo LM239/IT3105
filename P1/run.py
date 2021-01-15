@@ -48,10 +48,6 @@ if __name__ == "__main__":
     critic_config = configs["critic"]
     world_config = configs["sim_world"]
 
-    print(actor_config)
-    print(critic_config)
-    print(world_config)
-
     if "world" not in world_config:
         print("Missing required argument 'type' in sim_world config \n Exiting")
         exit(1)

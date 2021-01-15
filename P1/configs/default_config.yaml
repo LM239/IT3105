@@ -6,9 +6,7 @@ sim_world:
   type: "diamond"
   size: 4
   #Display:
-  display:
-    train_display: false
-    display_rate: 0.6 # in seconds
+  display_rate: 0.6 # in seconds
   
 #Critic args:
 critic:

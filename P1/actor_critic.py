@@ -30,40 +30,34 @@ class ActorCritic:
 
     def fit(self):
         for episode in range(self.episodes):
-            self.fit_episode()
+            actor_eligibility = defaultdict(lambda: 0)
+            critic_eligibility = defaultdict(lambda: 0)
 
-    def fit_episode(self):
-        actor_eligibility = defaultdict(lambda: 0)
-        critic_eligibility = defaultdict(lambda: 0)
+            self.world = self.world.reset()
+            a = self.use_policy(str(self.world), self.actor_greedy_epsilon)
+            state = str(self.world)
+            episode = []
+            while not self.world.is_end_state_self():
+                episode.append((state, str(a)))
+                self.world.do_action(a)
+                reward = self.world.state_reward_self()
+                state_prime = str(self.world)
 
-        self.world = self.world.reset()
-        a = self.use_policy(str(self.world), self.actor_greedy_epsilon)
-        state = str(self.world)
-        episode = []
-        while not self.world.is_end_state_self():
-            episode.append((state, str(a)))
-            self.world.do_action(a)
-            reward = self.world.state_reward_self()
-            state_prime = str(self.world)
+                a_prime = self.use_policy(state_prime, self.actor_greedy_epsilon)
+                if a_prime:
+                    actor_eligibility[state_prime + str(a_prime)] = 1
 
-            a_prime = self.use_policy(state_prime, self.actor_greedy_epsilon)
-            if a_prime:
-                actor_eligibility[state_prime + str(a_prime)] = 1
+                delta = reward + self.critic_discount_factor * self.critic_V[state_prime] - self.critic_V[state]
+                critic_eligibility[state] = 1
+                for state, action in episode:
+                    self.critic_V[state] += self.critic_lr * delta * critic_eligibility[state]
+                    critic_eligibility[state] *= self.critic_discount_factor * self.critic_eligibility_decay
 
-            delta = reward + self.critic_discount_factor * self.critic_V[state_prime] - self.critic_V[state]
-            critic_eligibility[state] = 1
-            for sap in episode:
-                state = sap[0]
-                action = sap[1]
-
-                self.critic_V[state] += self.critic_lr * delta * critic_eligibility[state]
-                critic_eligibility[state] *= self.critic_discount_factor * self.critic_eligibility_decay
-
-                self.actor_PI[state + action] += self.actor_lr * delta * actor_eligibility[state + action]
-                actor_eligibility[state + action] *= self.actor_discount_factor * self.actor_eligibility_decay
-            state = state_prime
-            a = a_prime
-            self.actor_greedy_epsilon *= self.actor_epsilon_decay
+                    self.actor_PI[state + action] += self.actor_lr * delta * actor_eligibility[state + action]
+                    actor_eligibility[state + action] *= self.actor_discount_factor * self.actor_eligibility_decay
+                state = state_prime
+                a = a_prime
+                self.actor_greedy_epsilon *= self.actor_epsilon_decay
 
     def play_episode(self):
         self.world = self.world.reset()
@@ -129,26 +123,26 @@ class ActorCritic:
 
 
 if __name__ == "__main__":
-    actor_config = {'lr': 2.0,
-                    'eligibility_decay': 0.85,
-                    'discount_factor': 0.9,
-                    'greedy_epsilon': 0.5,
-                    'epsilon_decay': 0.85}
+    actor_config = {'lr': 0.75,
+                    'eligibility_decay': 0.9,
+                    'discount_factor': 0.85,
+                    'greedy_epsilon': 0.6,
+                    'epsilon_decay': 0.85
+                    }
     critic_config = {'type': 'table',
                      #'size': [15, 20, 30, 5, 1],
                      'lr': 0.5,
-                     'eligibility_decay': 0.75,
-                     'discount_factor': 0.9}
+                     'eligibility_decay': 0.9,
+                     'discount_factor': 0.85
+                     }
     world_config = {'world': 'peg_solitaire',
-                    'type': 'diamond',
-                    'size': 4,
-                    'display': {
-                        'train_display': False,
-                        'display_rate': 0.3},
+                    'type': 'triangle',
+                    'size': 5,
+                    'display_rate': 0.3
                     }
     from worlds.pegsol_world import PegSolitaire
     world = PegSolitaire(world_config)
-    episodes = 50
+    episodes = 150
 
     actor_critic = ActorCritic(actor_config, critic_config, world, episodes)
     actor_critic.fit()
