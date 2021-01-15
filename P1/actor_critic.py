@@ -65,6 +65,7 @@ class ActorCritic:
             a = a_prime
             self.actor_greedy_epsilon *= self.actor_epsilon_decay
 
+
     def use_policy(self, state: str, epsilon: float) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
         actions = self.world.get_actions_self()
         if len(actions) == 0:

@@ -5,22 +5,25 @@ from worlds.pegsol_world import PegSolitaire
 from actor_critic import ActorCritic
 
 if __name__ == "__main__":
-    short_options = "hc:"
-    long_options = ["help", "config"]
-    argument_list = sys.argv[1:]  # remove filename
+    short_options = "h"
+    long_options = ["help"]
 
     try:
-        arguments, values = getopt.getopt(argument_list, short_options, long_options)
+        arguments, values = getopt.getopt(sys.argv[1:], short_options, long_options)
     except getopt.error as err:
         print(str(err))
         sys.exit(2)
 
-    path = None
     for current_argument, current_value in arguments:
         if current_argument in ("-h", "--help"):
-            print("Required args: -c <path-to-config> \n Optional args: none")
-        elif current_argument in ("-c", "--config"):
-            path = current_value
+            print("Usage: python {} <path-to-config>".format(sys.argv[0]))
+            exit(0)
+
+    try:
+        path = sys.argv[1]
+    except IndexError:
+        print("Error: No path specified\nExiting")
+        exit(1)
 
     try:
         with open(path) as file:
