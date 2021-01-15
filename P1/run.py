@@ -2,6 +2,7 @@ import getopt
 import sys
 import yaml
 from worlds.pegsol_world import PegSolitaire
+from actor_critic import Actor_critic
 
 if __name__ == "__main__":
     short_options = "hc:"
@@ -26,16 +27,38 @@ if __name__ == "__main__":
             configs = yaml.load(file, Loader=yaml.FullLoader)
             file.close()
     except FileNotFoundError:
-        print("Could not open file at {}\nExiting".format(path))
+        print("Could not find file at {}\nExiting".format(path))
         exit(1)
-
+    if "episodes" not in configs:
+        print("Missing required argument 'episodes' in config \n Exiting")
+        exit(1)
+    if "actor" not in configs:
+        print("Missing actor dict in config \n Exiting")
+        exit(1)
+    if "critic" not in configs:
+        print("Missing critic dict in config \n Exiting")
+        exit(1)
+    if "sim_world" not in configs:
+        print("Missing sim_world dict in config \n Exiting")
+        exit(1)
     actor_config = configs["actor"]
     critic_config = configs["critic"]
     world_config = configs["sim_world"]
 
-    world = PegSolitaire(world_config)
     print(actor_config)
     print(critic_config)
     print(world_config)
+
+    if "world" not in world_config:
+        print("Missing required argument 'type' in sim_world config \n Exiting")
+        exit(1)
+
+    if world_config["world"] == "peg_solitaire":
+        world = PegSolitaire(world_config)
+    else:
+        print("Unknown world type: {} \n Exiting".format(world_config["type"]))
+        exit(1)
+
+    actor_critic = Actor_critic(actor_config, critic_config, world, configs["episodes"])
 
     exit(0)

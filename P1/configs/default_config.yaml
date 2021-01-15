@@ -1,5 +1,6 @@
 ---
 #SimWorld args:
+episodes: 100
 sim_world: 
   world: "peg_solitaire"
   type: "triangle"
@@ -7,7 +8,6 @@ sim_world:
   open_cells: 
     - [0, 0]
     - [3, 2]
-  episodes: 10
   #Display:
   display:
     train_display: false
