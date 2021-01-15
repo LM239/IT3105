@@ -1,6 +1,6 @@
 import networkx as nx
 import pylab as plt
-from networkx.drawing.nx_pydot import pydot_layout
+from typing import List, Tuple
 
 
 class PegSolitaire:
@@ -70,10 +70,10 @@ class PegSolitaire:
             self.state[0][0] = 0
         self.episode = [self.vector()]
 
-    def get_actions_self(self):
+    def get_actions_self(self) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
         return self.get_actions(self.state)
 
-    def get_actions(self, state):
+    def get_actions(self, state: List[List[int]]) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
         actions = []
         for y, row in enumerate(state):
             for x, peg in enumerate(row):
@@ -88,7 +88,7 @@ class PegSolitaire:
                         actions.append(((y, x), (to_y, to_x)))
         return actions
 
-    def do_action(self, action):
+    def do_action(self, action: Tuple[Tuple[int, int], Tuple[int, int]]) -> None:
         to_pos = action[1]
         from_pos = action[0]
 
@@ -99,22 +99,22 @@ class PegSolitaire:
         self.episode.append(self.vector())
         return str(self)
 
-    def valid_coords(self, y, x):
+    def valid_coords(self, y: int, x: int) -> bool:
         return 0 <= x < self.size and 0 <= y < self.size and ((not self.type == "triangle") or x <= y)
 
-    def is_end_state_self(self):
+    def is_end_state_self(self) -> bool:
         return self.is_end_state(self.state)
 
-    def is_end_state(self, state):
+    def is_end_state(self, state: List[List[int]]) -> bool:
         return len(self.get_actions(state)) == 0
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "".join(str(peg) for row in self.state for peg in row)
 
-    def __int__(self):
+    def __int__(self) -> int:
         return int(str(self), 2)
 
-    def vector(self):
+    def vector(self) -> List[int]:
         return [peg for row in self.state for peg in row]
 
     def visualize(self, states):
@@ -145,26 +145,26 @@ class PegSolitaire:
             nx.draw_networkx_edges(G, pos)
             plt.show()
 
-    def visualize_self(self):
+    def visualize_self(self) -> None:
         return self.visualize([self.vector()])
 
-    def visualize_episode(self):
+    def visualize_episode(self) -> None:
         return self.visualize(self.episode)
 
-    def from2D(self, y, x):
+    def from2D(self, y: int, x: int) -> int:
         return int((y * (y + 1) / 2)) + x if self.type == "triangle" else (y * self.size) + x
 
 
 if __name__ == "__main__":
     tri_config = {
         "type": "triangle",
-        "size": 4,
+        "size": 5,
         #"open_cells": [[0, 0], [3, 0], [3, 2]],
     }
 
     dim_config = {
         "type": "diamond",
-        "size": 3,
+        "size": 4,
         #"open_cells": [[0, 0], [3, 0], [3, 2], [3, 3], [0, 3]],
     }
 
@@ -177,5 +177,5 @@ if __name__ == "__main__":
     print(dim_world.get_actions_self())
 
     tri_world.visualize_self()
-    #dim_world.do_action(((1, 3), (3, 3)))
+    # dim_world.do_action(((1, 3), (3, 3)))
     dim_world.visualize_self()
