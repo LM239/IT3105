@@ -3,11 +3,8 @@
 episodes: 1000
 sim_world: 
   world: "peg_solitaire"
-  type: "triangle"
+  type: "diamond"
   size: 4
-  open_cells: 
-    - [0, 0]
-    - [3, 2]
   #Display:
   display:
     train_display: false
@@ -32,4 +29,4 @@ actor:
   eligibility_decay: 0.05
   discount_factor: 0.9
   greedy_epsilon: 0.5
-  epsilon_decay: 0.9 # set to 1 for no decay
+  epsilon_decay: 0.95 # set to 1 for no decay

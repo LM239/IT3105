@@ -66,8 +66,8 @@ class PegSolitaire:
         elif self.size > 4 or (self.type == "diamond" and self.size > 3):
             row = int(self.size / 2)
             col = row if self.type == "diamond" else int(row / 2)
-            self.state[row][col] = 0
-            self.initial_open_cells = [[row, col]]
+            self.state[row][col - 1] = 0
+            self.initial_open_cells = [[row, col - 1]]
         else:
             self.state[0][0] = 0
             self.initial_open_cells = [[0, 0]]

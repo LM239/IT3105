@@ -42,26 +42,28 @@ class Actor_critic:
         self.world = self.world.reset()
         a = self.use_policy(str(self.world))
         state = str(self.world)
-        episode = [(state, a)]
+        episode = []
         while not self.world.is_end_state_self():
+            episode.append((state, str(a)))
             self.world.do_action(a)
             reward = self.world.state_reward_self()
             state_prime = str(self.world)
 
             a_prime = self.use_policy(state_prime)
             if a_prime:
-                actor_eligibility[(state_prime, a_prime)] = 1
+                actor_eligibility[state_prime + str(a_prime)] = 1
 
             delta = reward + self.critic_discount_factor * self.critic_V[state_prime] - self.critic_V[state]
             critic_eligibility[state] = 1
             for sap in episode:
                 state = sap[0]
+                action = sap[1]
 
                 self.critic_V[state] += self.critic_lr * delta * critic_eligibility[state]
                 critic_eligibility[state] *= self.critic_discount_factor * self.critic_eligibility_decay
 
-                self.actor_PI[sap] += self.actor_lr * delta * actor_eligibility[sap]
-                actor_eligibility[sap] *= self.actor_discount_factor * self.actor_eligibility_decay
+                self.actor_PI[state + action] += self.actor_lr * delta * actor_eligibility[state + action]
+                actor_eligibility[state + action] *= self.actor_discount_factor * self.actor_eligibility_decay
             state = state_prime
             a = a_prime
             self.actor_greedy_epsilon *= self.actor_epsilon_decay
@@ -70,15 +72,15 @@ class Actor_critic:
         actions = self.world.get_actions_self()
         if len(actions) == 0:
             return None
-        if random.random() > self.actor_greedy_epsilon: # TODO: check aligator thing
+        if random.random() < self.actor_greedy_epsilon: # TODO: check aligator thing
             return actions[random.randint(0, len(actions) - 1)]
         else:
-            best = -1
+            best = float('-inf')
             best_actions = []
             for action in actions:
-                if self.actor_PI[(state, action)] >= best:
-                    if self.actor_PI[(state, action)] > best:
-                        best = self.actor_PI[(state, action)]
+                if self.actor_PI[state + str(action)] >= best:
+                    if self.actor_PI[state + str(action)] > best:
+                        best = self.actor_PI[state + str(action)]
                         best_actions = [action]
                     else:
                         best_actions.append(action)
