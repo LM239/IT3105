@@ -1,34 +1,23 @@
 import networkx as nx
 import pylab as plt
 from typing import List, Tuple
+from configs.validate_configs import validate_pegsol_config
 
 
 class PegSolitaire:
 
     def __init__(self, config):
-        if "type" not in config:
-            print("Missing required PegSolitaire argument: 'type' \nExiting")
-            exit(1)
-        else:
-            self.type = config["type"]
-        if "size" not in config:
-            print("Missing required PegSolitaire argument: 'size' \nExiting")
-            exit(1)
-        elif config["size"] < 3:
-            print("Size parameter too small \nExiting")
-            exit(1)
-        else:
-            self.size = config["size"]
+        validate_pegsol_config(config)
+
+        self.type = config["type"]
+        self.size = config["size"]
 
         if self.type == "triangle":
             self.state = [[1] * i for i in range(1, self.size + 1)]
-        elif self.type == "diamond":
-            self.state = [[1 for i in range(self.size)] for j in range(self.size)]
         else:
-            print("Unknown board type {}.\nExiting".format(self.type))
-            exit(1)
-        self.display_rate = config["display_rate"] if "display_rate" in config else 0.5
+            self.state = [[1 for i in range(self.size)] for j in range(self.size)]
 
+        self.display_rate = config["display_rate"] if "display_rate" in config else 0.5
         self.adjacencies = []
         for y in range(self.size):
             x_range = y + 1 if self.type == "triangle" else self.size
