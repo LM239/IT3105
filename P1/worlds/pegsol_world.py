@@ -2,7 +2,6 @@ import networkx as nx
 import pylab as plt
 from typing import List, Tuple
 
-
 class PegSolitaire:
 
     def __init__(self, config):
@@ -27,6 +26,10 @@ class PegSolitaire:
         else:
             print("Unknown board type {}.\nExiting".format(self.type))
             exit(1)
+
+        if "display" in config:
+            self.display_rate = config["display"]["display_rate"]
+            self.train_display = config["display"]["train_display"]
 
         self.adjacencies = []
         for y in range(self.size):
@@ -100,7 +103,6 @@ class PegSolitaire:
 
         self.state[int((from_pos[0] + to_pos[0]) / 2)][int((from_pos[1] + to_pos[1]) / 2)] = 0
         self.episode.append(self.vector())
-        return str(self)
 
     def valid_coords(self, y: int, x: int) -> bool:
         return 0 <= x < self.size and 0 <= y < self.size and ((not self.type == "triangle") or x <= y)
@@ -166,7 +168,8 @@ class PegSolitaire:
             nx.draw_networkx_nodes(G, pos, nodelist=closed_nodes, node_color="r")
             nx.draw_networkx_labels(G, pos, font_weight="bold")
             nx.draw_networkx_edges(G, pos)
-            plt.show()
+            plt.draw()
+            plt.pause(self.display_rate)
 
     def visualize_self(self) -> None:
         return self.visualize([self.vector()])

@@ -8,7 +8,7 @@ sim_world:
   #Display:
   display:
     train_display: false
-    display_rate: 1000 # in milliseconds
+    display_rate: 0.8 # in seconds
   
 #Critic args:
 critic:
