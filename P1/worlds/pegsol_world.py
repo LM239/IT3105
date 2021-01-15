@@ -147,6 +147,8 @@ class PegSolitaire:
 
     def visualize_peg_count(self):
         plt.plot(self.peg_count)
+        plt.xlabel("Episode")
+        plt.ylabel("Remaining pegs")
         plt.show()
 
     def visualize(self, states):
