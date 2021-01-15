@@ -56,7 +56,7 @@ if __name__ == "__main__":
     if world_config["world"] == "peg_solitaire":
         world = PegSolitaire(world_config)
     else:
-        print("Unknown world type: {} \n Exiting".format(world_config["type"]))
+        print("Unknown world type: {} \n Exiting".format(world_config["world"]))
         exit(1)
 
     actor_critic = Actor_critic(actor_config, critic_config, world, configs["episodes"])
