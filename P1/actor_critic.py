@@ -30,14 +30,14 @@ class ActorCritic:
 
     def fit(self):
         for episode in range(self.episodes):
-            self.play_episode()
+            self.fit_episode()
 
-    def play_episode(self):
+    def fit_episode(self):
         actor_eligibility = defaultdict(lambda: 0)
         critic_eligibility = defaultdict(lambda: 0)
 
         self.world = self.world.reset()
-        a = self.use_policy(str(self.world))
+        a = self.use_policy(str(self.world), self.actor_greedy_epsilon)
         state = str(self.world)
         episode = []
         while not self.world.is_end_state_self():
@@ -46,7 +46,7 @@ class ActorCritic:
             reward = self.world.state_reward_self()
             state_prime = str(self.world)
 
-            a_prime = self.use_policy(state_prime)
+            a_prime = self.use_policy(state_prime, self.actor_greedy_epsilon)
             if a_prime:
                 actor_eligibility[state_prime + str(a_prime)] = 1
 
@@ -65,11 +65,11 @@ class ActorCritic:
             a = a_prime
             self.actor_greedy_epsilon *= self.actor_epsilon_decay
 
-    def use_policy(self, state: str) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
+    def use_policy(self, state: str, epsilon: float) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
         actions = self.world.get_actions_self()
         if len(actions) == 0:
             return None
-        if random.random() < self.actor_greedy_epsilon: # TODO: check aligator thing
+        if random.random() < epsilon:
             return actions[random.randint(0, len(actions) - 1)]
         else:
             best = float('-inf')
