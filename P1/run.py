@@ -64,6 +64,7 @@ if __name__ == "__main__":
 
     actor_critic = ActorCritic(actor_config, critic_config, world, configs["episodes"])
     actor_critic.fit()
+    actor_critic.play_episode()
     world.visualize_peg_count()
     world.visualize_episode()
 

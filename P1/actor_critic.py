@@ -65,6 +65,10 @@ class ActorCritic:
             a = a_prime
             self.actor_greedy_epsilon *= self.actor_epsilon_decay
 
+    def play_episode(self):
+        self.world = self.world.reset()
+        while not self.world.is_end_state_self():
+            self.world.do_action(self.use_policy(str(self.world), 0))
 
     def use_policy(self, state: str, epsilon: float) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
         actions = self.world.get_actions_self()
@@ -144,10 +148,11 @@ if __name__ == "__main__":
                     }
     from worlds.pegsol_world import PegSolitaire
     world = PegSolitaire(world_config)
-    episodes = 100
+    episodes = 500
 
     actor_critic = ActorCritic(actor_config, critic_config, world, episodes)
     actor_critic.fit()
+    actor_critic.play_episode()
     world.visualize_episode()
     world.visualize_peg_count()
     exit(0)
