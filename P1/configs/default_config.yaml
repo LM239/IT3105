@@ -1,6 +1,6 @@
 ---
 #SimWorld args:
-episodes: 1000
+episodes: 100
 sim_world: 
   world: "peg_solitaire"
   type: "diamond"
@@ -8,7 +8,7 @@ sim_world:
   #Display:
   display:
     train_display: false
-    display_rate: 0.8 # in seconds
+    display_rate: 0.6 # in seconds
   
 #Critic args:
 critic:
@@ -19,14 +19,14 @@ critic:
     - 30
     - 5
     - 1
-  lr: 0.1
-  eligibility_decay: 0.05
+  lr: 0.5
+  eligibility_decay: 0.75
   discount_factor: 0.9
   
 #Actor args:
 actor:
-  lr: 0.1
-  eligibility_decay: 0.05
+  lr: 2.0
+  eligibility_decay: 0.75
   discount_factor: 0.9
   greedy_epsilon: 0.5
-  epsilon_decay: 0.95 # set to 1 for no decay
+  epsilon_decay: 0.9 # set to 1 for no decay

@@ -129,30 +129,30 @@ class ActorCritic:
 
 
 if __name__ == "__main__":
-    actor_config = {'lr': 0.1,
-                    'eligibility_decay': 0.05,
+    actor_config = {'lr': 2.0,
+                    'eligibility_decay': 0.85,
                     'discount_factor': 0.9,
                     'greedy_epsilon': 0.5,
-                    'epsilon_decay': 0.95}
+                    'epsilon_decay': 0.85}
     critic_config = {'type': 'table',
                      #'size': [15, 20, 30, 5, 1],
-                     'lr': 0.1,
-                     'eligibility_decay': 0.05,
+                     'lr': 0.5,
+                     'eligibility_decay': 0.75,
                      'discount_factor': 0.9}
     world_config = {'world': 'peg_solitaire',
                     'type': 'diamond',
                     'size': 4,
                     'display': {
                         'train_display': False,
-                        'display_rate': 0.5},
+                        'display_rate': 0.3},
                     }
     from worlds.pegsol_world import PegSolitaire
     world = PegSolitaire(world_config)
-    episodes = 500
+    episodes = 50
 
     actor_critic = ActorCritic(actor_config, critic_config, world, episodes)
     actor_critic.fit()
     actor_critic.play_episode()
-    world.visualize_episode()
+    #world.visualize_episode()
     world.visualize_peg_count()
     exit(0)
