@@ -13,7 +13,6 @@ class ActorCritic:
         self.actor_eligibility_decay = actor_cfg["eligibility_decay"]
         self.actor_discount_factor = actor_cfg["discount_factor"]
         self.actor_greedy_epsilon = actor_cfg["greedy_epsilon"]
-        self.actor_greedy_epsilon = actor_cfg["greedy_epsilon"]
         self.actor_epsilon_decay = actor_cfg["epsilon_decay"]
 
         self.critic_type = critic_cfg["type"]
@@ -36,10 +35,10 @@ class ActorCritic:
             a = self.use_policy(str(self.world), self.actor_greedy_epsilon)
             state = str(self.world)
             episode = []
-            while not self.world.is_end_state_self():
+            while not self.world.is_end_state():
                 episode.append((state, str(a)))
                 self.world.do_action(a)
-                reward = self.world.state_reward_self()
+                reward = self.world.state_reward()
                 state_prime = str(self.world)
 
                 a_prime = self.use_policy(state_prime, self.actor_greedy_epsilon)
@@ -60,11 +59,11 @@ class ActorCritic:
 
     def play_episode(self):
         self.world = self.world.reset()
-        while not self.world.is_end_state_self():
+        while not self.world.is_end_state():
             self.world.do_action(self.use_policy(str(self.world), 0))
 
     def use_policy(self, state: str, epsilon: float) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
-        actions = self.world.get_actions_self()
+        actions = self.world.get_actions()
         if len(actions) == 0:
             return None
         if random.random() < epsilon:

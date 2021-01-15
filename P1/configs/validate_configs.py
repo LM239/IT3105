@@ -1,3 +1,22 @@
+def validate_config(configs):
+    if "episodes" not in configs:
+        print("Missing required argument 'episodes' in config \n Exiting")
+        exit(1)
+    if "actor" not in configs:
+        print("Missing actor dict in config \n Exiting")
+        exit(1)
+    if "critic" not in configs:
+        print("Missing critic dict in config \n Exiting")
+        exit(1)
+    if "sim_world" not in configs:
+        print("Missing sim_world dict in config \n Exiting")
+        exit(1)
+    if "episodes" not in configs:
+        print("Missing parameter 'episodes' in config \n Exiting")
+        exit(1)
+    if "world" not in configs["sim_world"]:
+        print("Missing required argument 'world' in sim_world config \n Exiting")
+        exit(1)
 
 def validate_pegsol_config(config):
     if "type" not in config:

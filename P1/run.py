@@ -3,6 +3,7 @@ import sys
 import yaml
 from worlds.pegsol_world import PegSolitaire
 from actor_critic import ActorCritic
+from configs.validate_configs import validate_config
 
 if __name__ == "__main__":
     short_options = "h"
@@ -32,25 +33,11 @@ if __name__ == "__main__":
     except FileNotFoundError:
         print("Could not find file at {}\nExiting".format(path))
         exit(1)
-    if "episodes" not in configs:
-        print("Missing required argument 'episodes' in config \n Exiting")
-        exit(1)
-    if "actor" not in configs:
-        print("Missing actor dict in config \n Exiting")
-        exit(1)
-    if "critic" not in configs:
-        print("Missing critic dict in config \n Exiting")
-        exit(1)
-    if "sim_world" not in configs:
-        print("Missing sim_world dict in config \n Exiting")
-        exit(1)
+
+    validate_config(configs)
     actor_config = configs["actor"]
     critic_config = configs["critic"]
     world_config = configs["sim_world"]
-
-    if "world" not in world_config:
-        print("Missing required argument 'type' in sim_world config \n Exiting")
-        exit(1)
 
     if world_config["world"] == "peg_solitaire":
         world = PegSolitaire(world_config)

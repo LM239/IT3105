@@ -64,21 +64,18 @@ class PegSolitaire:
         self.episode = [self.vector()]
         self.peg_count = []
 
-    def get_actions_self(self) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
-        return self.get_actions(self.state)
-
-    def get_actions(self, state: List[List[int]]) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
+    def get_actions(self) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
         actions = []
-        for y, row in enumerate(state):
+        for y, row in enumerate(self.state):
             for x, peg in enumerate(row):
                 if peg == 0:
                     continue
                 for n_peg in self.adjacencies[y][x]:
-                    if state[n_peg[0]][n_peg[1]] == 0:
+                    if self.state[n_peg[0]][n_peg[1]] == 0:
                         continue
                     to_y = 2 * n_peg[0] - y
                     to_x = 2 * n_peg[1] - x
-                    if self.valid_coords(to_y, to_x) and state[to_y][to_x] == 0:
+                    if self.valid_coords(to_y, to_x) and self.state[to_y][to_x] == 0:
                         actions.append(((y, x), (to_y, to_x)))
         return actions
 
@@ -95,19 +92,13 @@ class PegSolitaire:
     def valid_coords(self, y: int, x: int) -> bool:
         return 0 <= x < self.size and 0 <= y < self.size and ((not self.type == "triangle") or x <= y)
 
-    def is_end_state_self(self) -> bool:
-        return self.is_end_state(self.state)
+    def is_end_state(self) -> bool:
+        return len(self.get_actions()) == 0
 
-    def is_end_state(self, state: List[List[int]]) -> bool:
-        return len(self.get_actions(state)) == 0
-
-    def state_reward_self(self) -> int:
-        return self.state_reward(self.state)
-
-    def state_reward(self, state: List[List[int]]) -> int:
-        if not self.is_end_state(state):
+    def state_reward(self) -> int:
+        if not self.is_end_state():
             return 0
-        elif sum([peg for row in state for peg in row]) > 1:
+        elif sum([peg for row in self.state for peg in row]) > 1:
             return -100
         return 100
 
