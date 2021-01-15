@@ -1,4 +1,7 @@
 import matplotlib as plt
+from collections import defaultdict
+import random
+from typing import List, Tuple
 
 
 class Actor_critic:
@@ -21,6 +24,65 @@ class Actor_critic:
 
         if self.critic_type == "neural_net":
             self.critic_size = critic_config["size"]
+
+        self.critic_V = defaultdict(lambda: random.random() * 0.5)
+        self.actor_PI = defaultdict(lambda: 0)
+        self.world = world
+
+
+    def fit(self):
+        for episode in range(self.episodes):
+            self.play_episode()
+        self.world.visualize_episode()
+
+    def play_episode(self):
+        actor_eligibility = defaultdict(lambda: 0)
+        critic_eligibility = defaultdict(lambda: 0)
+
+        self.world = self.world.reset()
+        a = self.use_policy(str(self.world))
+        state = str(self.world)
+        episode = [(state, a)]
+        while not self.world.is_end_state_self():
+            self.world.do_action(a)
+            reward = self.world.state_reward_self()
+            state_prime = str(self.world)
+
+            a_prime = self.use_policy(state_prime)
+            if a_prime:
+                actor_eligibility[(state_prime, a_prime)] = 1
+
+            delta = reward + self.critic_discount_factor * self.critic_V[state_prime] - self.critic_V[state]
+            critic_eligibility[state] = 1
+            for sap in episode:
+                state = sap[0]
+
+                self.critic_V[state] += self.critic_lr * delta * critic_eligibility[state]
+                critic_eligibility[state] *= self.critic_discount_factor * self.critic_eligibility_decay
+
+                self.actor_PI[sap] += self.actor_lr * delta * actor_eligibility[sap]
+                actor_eligibility[sap] *= self.actor_discount_factor * self.actor_eligibility_decay
+            state = state_prime
+            a = a_prime
+            self.actor_greedy_epsilon *= self.actor_epsilon_decay
+
+    def use_policy(self, state: str) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
+        actions = self.world.get_actions_self()
+        if len(actions) == 0:
+            return None
+        if random.random() > self.actor_greedy_epsilon: # TODO: check aligator thing
+            return actions[random.randint(0, len(actions) - 1)]
+        else:
+            best = -1
+            best_actions = []
+            for action in actions:
+                if self.actor_PI[(state, action)] >= best:
+                    if self.actor_PI[(state, action)] > best:
+                        best = self.actor_PI[(state, action)]
+                        best_actions = [action]
+                    else:
+                        best_actions.append(action)
+            return best_actions[random.randint(0, len(best_actions) - 1)]
 
     def verify_configs(self, actor_config, critic_config):
         if "lr" not in actor_config:
@@ -58,3 +120,5 @@ class Actor_critic:
             print("Missing required Critic argument: 'discount_factor' \nExiting")
             exit(1)
 
+if __name__ == "__main__":
+    exit(0)

@@ -1,6 +1,6 @@
 ---
 #SimWorld args:
-episodes: 100
+episodes: 1000
 sim_world: 
   world: "peg_solitaire"
   type: "triangle"
@@ -22,7 +22,7 @@ critic:
     - 30
     - 5
     - 1
-  lr: 0.001
+  lr: 0.1
   eligibility_decay: 0.05
   discount_factor: 0.9
   

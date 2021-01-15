@@ -56,6 +56,7 @@ class PegSolitaire:
                         col.append((y + 1, x - 1))
 
         if "open_cells" in config:
+            self.initial_open_cells = config["open_cells"]
             for cell in config["open_cells"]:
                 if not (len(cell) == 2 and self.valid_coords(cell[0], cell[1])):
                     print("Open cells must be specified as 2D coordinates (y,x) within the boards' bounds")
@@ -66,8 +67,10 @@ class PegSolitaire:
             row = int(self.size / 2)
             col = row if self.type == "diamond" else int(row / 2)
             self.state[row][col] = 0
+            self.initial_open_cells = [[row, col]]
         else:
             self.state[0][0] = 0
+            self.initial_open_cells = [[0, 0]]
         self.episode = [self.vector()]
 
     def get_actions_self(self) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
@@ -108,6 +111,16 @@ class PegSolitaire:
     def is_end_state(self, state: List[List[int]]) -> bool:
         return len(self.get_actions(state)) == 0
 
+    def state_reward_self(self) -> int:
+        return self.state_reward(self.state)
+
+    def state_reward(self, state: List[List[int]]) -> int:
+        if not self.is_end_state(state):
+            return 0
+        elif sum([peg for row in state for peg in row]) > 1:
+            return -100
+        return 100
+
     def __str__(self) -> str:
         return "".join(str(peg) for row in self.state for peg in row)
 
@@ -116,6 +129,16 @@ class PegSolitaire:
 
     def vector(self) -> List[int]:
         return [peg for row in self.state for peg in row]
+
+    def reset(self):
+        if self.type == "triangle":
+            self.state = [[1] * i for i in range(1, self.size + 1)]
+        else:
+            self.state = [[1 for i in range(self.size)] for j in range(self.size)]
+        for cell in self.initial_open_cells:
+            self.state[cell[0]][cell[1]] = 0
+        self.episode = [self.vector()]
+        return self
 
     def visualize(self, states):
         G = nx.Graph()

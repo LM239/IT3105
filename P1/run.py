@@ -60,5 +60,6 @@ if __name__ == "__main__":
         exit(1)
 
     actor_critic = Actor_critic(actor_config, critic_config, world, configs["episodes"])
+    actor_critic.fit()
 
     exit(0)
