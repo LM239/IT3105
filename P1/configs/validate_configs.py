@@ -11,9 +11,6 @@ def validate_config(configs):
     if "sim_world" not in configs:
         print("Missing sim_world dict in config \n Exiting")
         exit(1)
-    if "episodes" not in configs:
-        print("Missing parameter 'episodes' in config \n Exiting")
-        exit(1)
     if "world" not in configs["sim_world"]:
         print("Missing required argument 'world' in sim_world config \n Exiting")
         exit(1)

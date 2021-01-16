@@ -185,8 +185,8 @@ if __name__ == "__main__":
 
     print(tri_world.vector())
     print(tri_world)
-    print(tri_world.get_actions_self())
-    print(dim_world.get_actions_self())
+    print(tri_world.get_actions())
+    print(dim_world.get_actions())
 
     tri_world.visualize_self()
     # dim_world.do_action(((1, 3), (3, 3)))
