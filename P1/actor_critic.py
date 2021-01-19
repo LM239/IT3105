@@ -27,7 +27,7 @@ class ActorCritic:
 
             self.world = self.world.reset()
             a = self.use_policy(str(self.world), self.actor_greedy_epsilon)
-            state = str(self.world)
+            state = self.world.vector()
             episode = []
             while not self.world.is_end_state():
                 episode.append((state, str(a)))
@@ -41,8 +41,8 @@ class ActorCritic:
 
                 delta = self.critic.update(episode, state, state_prime, reward)
                 for state, action in episode:
-                    self.actor_PI[state + action] += self.actor_lr * delta * actor_eligibility[state + action]
-                    actor_eligibility[state + action] *= self.actor_discount_factor * self.actor_eligibility_decay
+                    self.actor_PI[str(state) + action] += self.actor_lr * delta * actor_eligibility[str(state) + action]
+                    actor_eligibility[str(state) + action] *= self.actor_discount_factor * self.actor_eligibility_decay
                 state = state_prime
                 a = a_prime
             self.actor_greedy_epsilon *= self.actor_epsilon_decay

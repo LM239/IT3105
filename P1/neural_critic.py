@@ -19,11 +19,13 @@ class NeuralCritic:
         for layer in self.size:
             model.add(Dense(layer, activation='relu'))
         model.add(Dense(1))
+        model.compile(optimizer='sgd', loss='mse')
 
         self.split_gd = SplitGD(model)
 
     def update(self, episode, state, state_prime, reward):
-        raise NotImplementedError()
+        target = reward + self.discount_factor * self.split_gd.model.predict(state_prime)
+        self
 
     def reset_eligibilities(self):
         raise NotImplementedError()

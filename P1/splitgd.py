@@ -24,7 +24,6 @@ class SplitGD():
         self.model = keras_model
         self.eligibilities = [np.zeros(shape=layer.output_shape[1:]) for layer in self.model.layers]
 
-
     def reset_eligibilities(self):
         self.eligibilities = [np.zeros(shape=layer.output_shape[1:]) for layer in self.model.layers]
 

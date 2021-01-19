@@ -5,7 +5,6 @@ from worlds.pegsol_world import PegSolitaire
 from actor_critic import ActorCritic
 from configs.validate_configs import validate_config
 from table_critic import TableCritic
-from neural_critic import NeuralCritic
 
 if __name__ == "__main__":
     short_options = "h"
@@ -53,6 +52,7 @@ if __name__ == "__main__":
         exit(1)
 
     if critic_config["type"] == "neural_net":
+        from neural_critic import NeuralCritic
         world_size = world.size**2 if world.type == "diamond" else int(world.size * (world.size + 1) / 2)
         critic = NeuralCritic(critic_config, world_size)
     else:

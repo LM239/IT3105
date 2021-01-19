@@ -14,11 +14,11 @@ class TableCritic:
         self.discount_factor = critic_cfg["discount_factor"]
 
     def update(self, episode, state, state_prime, reward):
-        delta = reward + self.discount_factor * self.V[state_prime] - self.V[state]
-        self.eligibilities[state] = 1
+        delta = reward + self.discount_factor * self.V[str(state_prime)] - self.V[str(state)]
+        self.eligibilities[str(state)] = 1
         for state, action in episode:
-            self.V[state] += self.lr * delta * self.eligibilities[state]
-            self.eligibilities[state] *= self.discount_factor * self.eligibility_decay
+            self.V[str(state)] += self.lr * delta * self.eligibilities[str(state)]
+            self.eligibilities[str(state)] *= self.discount_factor * self.eligibility_decay
         return delta
 
     def reset_eligibilities(self):
