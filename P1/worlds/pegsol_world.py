@@ -1,36 +1,23 @@
 import networkx as nx
 import pylab as plt
 from typing import List, Tuple
+from configs.validate_configs import validate_pegsol_config
+
 
 class PegSolitaire:
 
     def __init__(self, config):
-        if "type" not in config:
-            print("Missing required PegSolitaire argument: 'type' \nExiting")
-            exit(1)
-        else:
-            self.type = config["type"]
-        if "size" not in config:
-            print("Missing required PegSolitaire argument: 'size' \nExiting")
-            exit(1)
-        elif config["size"] < 3:
-            print("Size parameter too small \nExiting")
-            exit(1)
-        else:
-            self.size = config["size"]
+        validate_pegsol_config(config)
+
+        self.type = config["type"]
+        self.size = config["size"]
 
         if self.type == "triangle":
             self.state = [[1] * i for i in range(1, self.size + 1)]
-        elif self.type == "diamond":
-            self.state = [[1 for i in range(self.size)] for j in range(self.size)]
         else:
-            print("Unknown board type {}.\nExiting".format(self.type))
-            exit(1)
+            self.state = [[1 for i in range(self.size)] for j in range(self.size)]
 
-        if "display" in config:
-            self.display_rate = config["display"]["display_rate"]
-            self.train_display = config["display"]["train_display"]
-
+        self.display_rate = config["display_rate"] if "display_rate" in config else 0.5
         self.adjacencies = []
         for y in range(self.size):
             x_range = y + 1 if self.type == "triangle" else self.size
@@ -75,22 +62,20 @@ class PegSolitaire:
             self.state[0][0] = 0
             self.initial_open_cells = [[0, 0]]
         self.episode = [self.vector()]
+        self.peg_count = []
 
-    def get_actions_self(self) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
-        return self.get_actions(self.state)
-
-    def get_actions(self, state: List[List[int]]) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
+    def get_actions(self) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
         actions = []
-        for y, row in enumerate(state):
+        for y, row in enumerate(self.state):
             for x, peg in enumerate(row):
                 if peg == 0:
                     continue
                 for n_peg in self.adjacencies[y][x]:
-                    if state[n_peg[0]][n_peg[1]] == 0:
+                    if self.state[n_peg[0]][n_peg[1]] == 0:
                         continue
                     to_y = 2 * n_peg[0] - y
                     to_x = 2 * n_peg[1] - x
-                    if self.valid_coords(to_y, to_x) and state[to_y][to_x] == 0:
+                    if self.valid_coords(to_y, to_x) and self.state[to_y][to_x] == 0:
                         actions.append(((y, x), (to_y, to_x)))
         return actions
 
@@ -107,19 +92,13 @@ class PegSolitaire:
     def valid_coords(self, y: int, x: int) -> bool:
         return 0 <= x < self.size and 0 <= y < self.size and ((not self.type == "triangle") or x <= y)
 
-    def is_end_state_self(self) -> bool:
-        return self.is_end_state(self.state)
+    def is_end_state(self) -> bool:
+        return len(self.get_actions()) == 0
 
-    def is_end_state(self, state: List[List[int]]) -> bool:
-        return len(self.get_actions(state)) == 0
-
-    def state_reward_self(self) -> int:
-        return self.state_reward(self.state)
-
-    def state_reward(self, state: List[List[int]]) -> int:
-        if not self.is_end_state(state):
+    def state_reward(self) -> int:
+        if not self.is_end_state():
             return 0
-        elif sum([peg for row in state for peg in row]) > 1:
+        elif sum([peg for row in self.state for peg in row]) > 1:
             return -100
         return 100
 
@@ -133,6 +112,7 @@ class PegSolitaire:
         return [peg for row in self.state for peg in row]
 
     def reset(self):
+        self.peg_count.append(sum(self.vector()))
         if self.type == "triangle":
             self.state = [[1] * i for i in range(1, self.size + 1)]
         else:
@@ -141,6 +121,12 @@ class PegSolitaire:
             self.state[cell[0]][cell[1]] = 0
         self.episode = [self.vector()]
         return self
+
+    def visualize_peg_count(self):
+        plt.plot(self.peg_count)
+        plt.xlabel("Episode")
+        plt.ylabel("Remaining pegs")
+        plt.show()
 
     def visualize(self, states):
         G = nx.Graph()
@@ -199,8 +185,8 @@ if __name__ == "__main__":
 
     print(tri_world.vector())
     print(tri_world)
-    print(tri_world.get_actions_self())
-    print(dim_world.get_actions_self())
+    print(tri_world.get_actions())
+    print(dim_world.get_actions())
 
     tri_world.visualize_self()
     # dim_world.do_action(((1, 3), (3, 3)))
