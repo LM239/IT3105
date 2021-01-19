@@ -14,6 +14,12 @@ def validate_config(configs):
     if "world" not in configs["sim_world"]:
         print("Missing required argument 'world' in sim_world config \n Exiting")
         exit(1)
+    if "type" not in configs["critic"]:
+        print("Missing required argument 'type' in critic config \n Exiting")
+        exit(1)
+    if not (configs["critic"]["type"] == "neural_net" or configs["critic"]["type"] == "table"):
+        print("Unknown critic type: {} \nExiting".format(configs["critic"]["type"]))
+        exit(1)
 
 def validate_pegsol_config(config):
     if "type" not in config:
@@ -30,7 +36,7 @@ def validate_pegsol_config(config):
         exit(1)
 
 
-def validate_actor_critic_config(actor_config, critic_config):
+def validate_actor_config(actor_config):
     if "lr" not in actor_config:
         print("Missing required actor_config argument: 'lr' \nExiting")
         exit(1)
@@ -50,14 +56,10 @@ def validate_actor_critic_config(actor_config, critic_config):
         print("Missing required actor_config argument: 'epsilon_decay' \nExiting")
         exit(1)
 
-    if "type" not in critic_config:
-        print("Missing required Critic argument: 'type' \nExiting")
-        exit(1)
-    if not (critic_config["type"] == "neural_net" or critic_config["type"] == "table"):
-        print("Unknown critic type: {} \nExiting".format(critic_config["type"]))
-        exit(1)
-    if critic_config["type"] == "neural_net" and "size" not in critic_config:
-        print("Missing required neural net based-Critic argument: 'size' \nExiting")
+def validate_critic_config(critic_config):
+
+    if critic_config["type"] == "neural_net" and "hidden_layers" not in critic_config:
+        print("Missing required neural net based-Critic argument: 'hidden_layers' \nExiting")
         exit(1)
     if "lr" not in critic_config:
         print("Missing required Critic argument: 'lr' \nExiting")

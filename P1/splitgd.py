@@ -22,9 +22,15 @@ class SplitGD():
 
     def __init__(self, keras_model):
         self.model = keras_model
+        self.eligibilities = [np.zeros(shape=layer.output_shape[1:]) for layer in self.model.layers]
+
+
+    def reset_eligibilities(self):
+        self.eligibilities = [np.zeros(shape=layer.output_shape[1:]) for layer in self.model.layers]
 
     # Subclass this with something useful.
-    def modify_gradients(self,gradients):   return gradients
+    def modify_gradients(self,gradients):
+        return gradients
 
     # This returns a tensor of losses, OR the value of the averaged tensor.  Note: use .numpy() to get the
     # value of a tensor.

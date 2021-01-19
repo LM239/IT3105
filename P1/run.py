@@ -4,6 +4,8 @@ import yaml
 from worlds.pegsol_world import PegSolitaire
 from actor_critic import ActorCritic
 from configs.validate_configs import validate_config
+from table_critic import TableCritic
+from neural_critic import NeuralCritic
 
 if __name__ == "__main__":
     short_options = "h"
@@ -50,7 +52,12 @@ if __name__ == "__main__":
         print("Unknown world type: {} \n Exiting".format(world_config["world"]))
         exit(1)
 
-    actor_critic = ActorCritic(actor_config, critic_config, world, configs["episodes"], display_episodes)
+    if critic_config["type"] == "neural_net":
+        world_size = world.size**2 if world.type == "diamond" else int(world.size * (world.size + 1) / 2)
+        critic = NeuralCritic(critic_config, world_size)
+    else:
+        critic = TableCritic(critic_config)
+    actor_critic = ActorCritic(actor_config, critic, world, configs["episodes"], display_episodes)
     actor_critic.fit()
     actor_critic.play_episode()
     world.visualize_peg_count()

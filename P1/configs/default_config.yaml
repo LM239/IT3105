@@ -16,7 +16,7 @@ sim_world:
 #Critic args:
 critic:
   type: "neural_net"
-  size:
+  hidden_layers:
     - 15
     - 20
     - 30

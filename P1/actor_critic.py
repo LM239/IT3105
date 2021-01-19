@@ -1,12 +1,12 @@
 from collections import defaultdict
 import random
 from typing import List, Tuple
-from configs.validate_configs import validate_actor_critic_config
+from configs.validate_configs import validate_actor_config
 
 class ActorCritic:
     
-    def __init__(self, actor_cfg, critic_cfg, sim_world, num_episodes, display_episodes):
-        validate_actor_critic_config(actor_cfg, critic_cfg)
+    def __init__(self, actor_cfg, critic, sim_world, num_episodes, display_episodes):
+        validate_actor_config(actor_cfg)
 
         self.episodes = num_episodes
         self.actor_lr = actor_cfg["lr"]
@@ -14,24 +14,16 @@ class ActorCritic:
         self.actor_discount_factor = actor_cfg["discount_factor"]
         self.actor_greedy_epsilon = actor_cfg["greedy_epsilon"]
         self.actor_epsilon_decay = actor_cfg["epsilon_decay"]
-
-        self.critic_type = critic_cfg["type"]
-        self.critic_lr = critic_cfg["lr"]
-        self.critic_eligibility_decay = critic_cfg["eligibility_decay"]
-        self.critic_discount_factor = critic_cfg["discount_factor"]
-        if self.critic_type == "neural_net":
-            self.critic_size = critic_cfg["size"]
+        self.critic = critic
 
         self.display_episodes = display_episodes
-
-        self.critic_V = defaultdict(lambda: random.random() * 0.5)
         self.actor_PI = defaultdict(lambda: 0)
         self.world = sim_world
 
     def fit(self):
         for episode_id in range(self.episodes):
             actor_eligibility = defaultdict(lambda: 0)
-            critic_eligibility = defaultdict(lambda: 0)
+            self.critic.reset_eligibilities()
 
             self.world = self.world.reset()
             a = self.use_policy(str(self.world), self.actor_greedy_epsilon)
@@ -47,12 +39,8 @@ class ActorCritic:
                 if a_prime:
                     actor_eligibility[state_prime + str(a_prime)] = 1
 
-                delta = reward + self.critic_discount_factor * self.critic_V[state_prime] - self.critic_V[state]
-                critic_eligibility[state] = 1
+                delta = self.critic.update(episode, state, state_prime, reward)
                 for state, action in episode:
-                    self.critic_V[state] += self.critic_lr * delta * critic_eligibility[state]
-                    critic_eligibility[state] *= self.critic_discount_factor * self.critic_eligibility_decay
-
                     self.actor_PI[state + action] += self.actor_lr * delta * actor_eligibility[state + action]
                     actor_eligibility[state + action] *= self.actor_discount_factor * self.actor_eligibility_decay
                 state = state_prime
