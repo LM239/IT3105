@@ -139,6 +139,7 @@ class PegSolitaire:
                     G.add_edge((y, x), node)
         pos = nx.get_node_attributes(G, 'pos')
         size = (self.size, int(1.5 * self.size)) if self.type == "diamond" else (self.size, 0.7 * self.size)
+        plt.figure(figsize=size)
         for state in states:
             open_nodes = []
             closed_nodes = []
@@ -149,13 +150,14 @@ class PegSolitaire:
                         closed_nodes.append((y, x))
                     else:
                         open_nodes.append((y, x))
-            f, ax = plt.subplots(1, 1, figsize=size)
             nx.draw_networkx_nodes(G, pos, nodelist=open_nodes, node_color="g")
             nx.draw_networkx_nodes(G, pos, nodelist=closed_nodes, node_color="r")
             nx.draw_networkx_labels(G, pos, font_weight="bold")
             nx.draw_networkx_edges(G, pos)
             plt.draw()
             plt.pause(self.display_rate)
+            plt.clf()
+        plt.close()
 
     def visualize_self(self) -> None:
         return self.visualize([self.vector()])

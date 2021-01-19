@@ -1,12 +1,17 @@
 ---
-#SimWorld args:
 episodes: 100
+display_episodes:
+    - 0
+    - 5
+    - 99
+#SimWorld args:
 sim_world: 
   world: "peg_solitaire"
   type: "diamond"
   size: 4
   #Display:
-  display_rate: 0.6 # in seconds
+  display_rate: 0.3 # in seconds
+
   
 #Critic args:
 critic:

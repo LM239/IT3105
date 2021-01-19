@@ -39,16 +39,20 @@ if __name__ == "__main__":
     critic_config = configs["critic"]
     world_config = configs["sim_world"]
 
+    if "display_episodes" in configs:
+        display_episodes = configs["display_episodes"]
+    else:
+        display_episodes = []
+
     if world_config["world"] == "peg_solitaire":
         world = PegSolitaire(world_config)
     else:
         print("Unknown world type: {} \n Exiting".format(world_config["world"]))
         exit(1)
 
-    actor_critic = ActorCritic(actor_config, critic_config, world, configs["episodes"])
+    actor_critic = ActorCritic(actor_config, critic_config, world, configs["episodes"], display_episodes)
     actor_critic.fit()
     actor_critic.play_episode()
     world.visualize_peg_count()
-    world.visualize_episode()
 
     exit(0)

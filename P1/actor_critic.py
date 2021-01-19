@@ -5,7 +5,7 @@ from configs.validate_configs import validate_actor_critic_config
 
 class ActorCritic:
     
-    def __init__(self, actor_cfg, critic_cfg, sim_world, num_episodes):
+    def __init__(self, actor_cfg, critic_cfg, sim_world, num_episodes, display_episodes):
         validate_actor_critic_config(actor_cfg, critic_cfg)
 
         self.episodes = num_episodes
@@ -22,12 +22,14 @@ class ActorCritic:
         if self.critic_type == "neural_net":
             self.critic_size = critic_cfg["size"]
 
+        self.display_episodes = display_episodes
+
         self.critic_V = defaultdict(lambda: random.random() * 0.5)
         self.actor_PI = defaultdict(lambda: 0)
         self.world = sim_world
 
     def fit(self):
-        for episode in range(self.episodes):
+        for episode_id in range(self.episodes):
             actor_eligibility = defaultdict(lambda: 0)
             critic_eligibility = defaultdict(lambda: 0)
 
@@ -55,7 +57,9 @@ class ActorCritic:
                     actor_eligibility[state + action] *= self.actor_discount_factor * self.actor_eligibility_decay
                 state = state_prime
                 a = a_prime
-                self.actor_greedy_epsilon *= self.actor_epsilon_decay
+            self.actor_greedy_epsilon *= self.actor_epsilon_decay
+            if episode_id in self.display_episodes:
+                self.world.visualize_episode()
 
     def play_episode(self):
         self.world = self.world.reset()
