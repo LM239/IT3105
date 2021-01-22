@@ -1,7 +1,6 @@
 ---
 episodes: 100
 display_episodes:
-    - 0
     - 5
     - 99
 #SimWorld args:
@@ -10,7 +9,7 @@ sim_world:
   type: "diamond"
   size: 4
   #Display:
-  display_rate: 0.5 # in seconds
+  display_rate: 0.2 # in seconds
 
   
 #Critic args:
@@ -20,7 +19,7 @@ critic:
     - 15
     - 20
     - 5
-  lr: 0.5
+  lr: 0.005
   eligibility_decay: 0.75
   discount_factor: 0.9
   

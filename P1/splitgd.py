@@ -22,15 +22,18 @@ class SplitGD():
 
     def __init__(self, keras_model):
         self.model = keras_model
-        self.eligibilities = [np.zeros(shape=layer.output_shape[1:]) for layer in self.model.layers]
+        print("Input", keras_model.layers[1].input_shape)
+        self.eligibilities = [np.zeros(shape=(layer.input_shape[1],layer.output_shape[1])) for layer in self.model.layers]
 
     def reset_eligibilities(self):
-        self.eligibilities = [np.zeros(shape=layer.output_shape[1:]) for layer in self.model.layers]
+        self.eligibilities = [np.zeros(shape=(layer.input_shape[1],layer.output_shape[1])) for layer in self.model.layers]
 
     # Subclass this with something useful.
     def modify_gradients(self,gradients, delta):
+        print(self.eligibilities[0])
+
         for index, el in enumerate(self.eligibilities):
-            el += -gradients[index] / (2 * delta)
+            self.eligibilities[index] += gradients[index].numpy() / (2 * delta)
 
             gradients[index] = delta * el
         return gradients
@@ -42,7 +45,7 @@ class SplitGD():
         loss = self.model.loss(targets, predictions) # model.loss = the loss function
         return tf.reduce_mean(loss).numpy() if avg else loss
 
-    def fit(self, features, targets, epochs=1, mbs=1,vfrac=0.1,verbosity=1,callbacks=[]):
+    def fit(self, features, targets, delta, epochs=1, mbs=1,vfrac=0.1,verbosity=1,callbacks=[]):
         params = self.model.trainable_weights
         train_ins, train_targs, val_ins, val_targs = split_training_data(features,targets,vfrac=vfrac)
         for cb in callbacks:    cb.on_train_begin()
@@ -54,7 +57,7 @@ class SplitGD():
                     feaset,tarset = gen_random_minibatch(train_ins,train_targs,mbs=mbs)
                     loss = self.gen_loss(feaset,tarset,avg=False)
                     gradients = tape.gradient(loss,params)
-                    gradients = self.modify_gradients(gradients, tarset)
+                    gradients = self.modify_gradients(gradients, delta)
                     self.model.optimizer.apply_gradients(zip(gradients,params))
             if verbosity > 0:
                 self.end_of_epoch_action(train_ins,train_targs,val_ins,val_targs,epoch,
