@@ -33,11 +33,11 @@ class ActorCritic:
                 episode.append((state, str(a)))
                 self.world.do_action(a)
                 reward = self.world.state_reward()
-                state_prime = str(self.world)
+                state_prime = self.world.vector()
 
                 a_prime = self.use_policy(state_prime, self.actor_greedy_epsilon)
                 if a_prime:
-                    actor_eligibility[state_prime + str(a_prime)] = 1
+                    actor_eligibility[str(state_prime) + str(a_prime)] = 1
 
                 delta = self.critic.update(episode, state, state_prime, reward)
                 for state, action in episode:
@@ -55,7 +55,7 @@ class ActorCritic:
         while not self.world.is_end_state():
             self.world.do_action(self.use_policy(str(self.world), 0))
 
-    def use_policy(self, state: str, epsilon: float) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
+    def use_policy(self, state: List[int], epsilon: float) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
         actions = self.world.get_actions()
         if len(actions) == 0:
             return None
@@ -65,9 +65,9 @@ class ActorCritic:
             best = float('-inf')
             best_actions = []
             for action in actions:
-                if self.actor_PI[state + str(action)] >= best:
-                    if self.actor_PI[state + str(action)] > best:
-                        best = self.actor_PI[state + str(action)]
+                if self.actor_PI[str(state) + str(action)] >= best:
+                    if self.actor_PI[str(state) + str(action)] > best:
+                        best = self.actor_PI[str(state) + str(action)]
                         best_actions = [action]
                     else:
                         best_actions.append(action)

@@ -3,6 +3,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Input
 from splitgd import SplitGD
 from configs.validate_configs import validate_critic_config
+import numpy as np
 
 class NeuralCritic:
 
@@ -25,8 +26,9 @@ class NeuralCritic:
         self.episode = []
 
     def update(self, episode, state, state_prime, reward):
-        V_star = reward + self.discount_factor * self.split_gd.model.predict(state_prime)
+        V_star = reward + self.discount_factor * self.split_gd.model.predict([state_prime], batch_size=1)
         self.episode.append((state, V_star))
+        return V_star
 
     def finish_episode(self):
         for state, target in self.episode:
@@ -34,4 +36,4 @@ class NeuralCritic:
         self.episode = []
 
     def reset_eligibilities(self):
-        raise NotImplementedError()
+        self.split_gd.reset_eligibilities()
