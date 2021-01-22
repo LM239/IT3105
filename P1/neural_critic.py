@@ -3,6 +3,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Input
 from splitgd import SplitGD
 from configs.validate_configs import validate_critic_config
+from keras.losses import MeanSquaredError
 import numpy as np
 
 class NeuralCritic:
@@ -18,16 +19,16 @@ class NeuralCritic:
         model = Sequential()
         model.add(Input(shape=(input_dim,)))
         for layer in self.size:
-            model.add(Dense(layer, activation='relu'))
+            model.add(Dense(layer, activation='tanh'))
         model.add(Dense(1))
-        model.compile(optimizer=SGD(learning_rate=self.lr), loss='mse')
+        model.compile(optimizer=SGD(learning_rate=self.lr), loss=MeanSquaredError)
 
         self.split_gd = SplitGD(model)
         self.episode = []
 
     def update(self, episode, state, state_prime, reward):
         V_star = reward + self.discount_factor * self.split_gd.model.predict([state_prime], batch_size=1)
-        self.episode.append((state, V_star))
+        self.episode.append((np.array([state]), V_star))
         return V_star
 
     def finish_episode(self):

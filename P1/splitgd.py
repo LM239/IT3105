@@ -100,7 +100,7 @@ class SplitGD():
 def gen_random_minibatch(inputs, targets, mbs=1):
     indices = np.random.randint(len(inputs), size=mbs)
     print(indices)
-    return inputs[indices], targets[indices]
+    return inputs[0], targets[0]
 
 # This returns: train_features, train_targets, validation_features, validation_targets
 def split_training_data(inputs,targets,vfrac=0.1,mix=True):
