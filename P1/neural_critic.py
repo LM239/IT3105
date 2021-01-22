@@ -22,9 +22,16 @@ class NeuralCritic:
         model.compile(optimizer='sgd', loss='mse')
 
         self.split_gd = SplitGD(model)
+        self.episode = []
 
     def update(self, episode, state, state_prime, reward):
-        target = reward + self.discount_factor * self.split_gd.model.predict(state_prime)
+        V_star = reward + self.discount_factor * self.split_gd.model.predict(state_prime)
+        self.episode.append((state, V_star))
+
+    def finish_episode(self):
+        for state, target in self.episode:
+            self.split_gd.fit([state], [target], vfrac=0.0, verbosity=0)
+        self.episode = []
 
     def reset_eligibilities(self):
         raise NotImplementedError()

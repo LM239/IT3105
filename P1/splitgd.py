@@ -28,7 +28,11 @@ class SplitGD():
         self.eligibilities = [np.zeros(shape=layer.output_shape[1:]) for layer in self.model.layers]
 
     # Subclass this with something useful.
-    def modify_gradients(self,gradients):
+    def modify_gradients(self,gradients, delta):
+        for index, el in enumerate(self.eligibilities):
+            el += -gradients[index] / (2 * delta)
+
+            gradients[index] = delta * el
         return gradients
 
     # This returns a tensor of losses, OR the value of the averaged tensor.  Note: use .numpy() to get the
@@ -49,7 +53,7 @@ class SplitGD():
                     feaset,tarset = gen_random_minibatch(train_ins,train_targs,mbs=mbs)
                     loss = self.gen_loss(feaset,tarset,avg=False)
                     gradients = tape.gradient(loss,params)
-                    gradients = self.modify_gradients(gradients)
+                    gradients = self.modify_gradients(gradients, tarset)
                     self.model.optimizer.apply_gradients(zip(gradients,params))
             if verbosity > 0:
                 self.end_of_epoch_action(train_ins,train_targs,val_ins,val_targs,epoch,

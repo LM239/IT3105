@@ -46,6 +46,7 @@ class ActorCritic:
                 state = state_prime
                 a = a_prime
             self.actor_greedy_epsilon *= self.actor_epsilon_decay
+            self.critic.finish_episode()
             if episode_id in self.display_episodes:
                 self.world.visualize_episode()
 

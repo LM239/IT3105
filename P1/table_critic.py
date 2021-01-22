@@ -2,6 +2,7 @@ import random
 from collections import defaultdict
 from configs.validate_configs import validate_critic_config
 
+
 class TableCritic:
 
     def __init__(self, critic_cfg):
@@ -23,6 +24,9 @@ class TableCritic:
 
     def reset_eligibilities(self):
         self.eligibilities = defaultdict(lambda: 0)
+
+    def finish_episode(self):
+        pass
 
 
 
