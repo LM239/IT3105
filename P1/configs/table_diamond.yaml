@@ -5,14 +5,14 @@ display_episodes:
     - 5
     - 99
 #SimWorld args:
-sim_world: 
+sim_world:
   world: "peg_solitaire"
   type: "diamond"
   size: 4
   #Display:
   display_rate: 0.5 # in seconds
 
-  
+
 #Critic args:
 critic:
   type: "table"
@@ -25,7 +25,7 @@ critic:
   lr: 0.5
   eligibility_decay: 0.75
   discount_factor: 0.9
-  
+
 #Actor args:
 actor:
   lr: 2.0

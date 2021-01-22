@@ -25,7 +25,6 @@ class NeuralCritic:
 
     def update(self, episode, state, state_prime, reward):
         target = reward + self.discount_factor * self.split_gd.model.predict(state_prime)
-        self
 
     def reset_eligibilities(self):
         raise NotImplementedError()
