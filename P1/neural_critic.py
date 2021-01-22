@@ -1,4 +1,4 @@
-import keras
+from keras.optimizers import SGD
 from keras.models import Sequential
 from keras.layers import Dense, Input
 from splitgd import SplitGD
@@ -19,7 +19,7 @@ class NeuralCritic:
         for layer in self.size:
             model.add(Dense(layer, activation='relu'))
         model.add(Dense(1))
-        model.compile(optimizer='sgd', loss='mse')
+        model.compile(optimizer=SGD(learning_rate=self.lr), loss='mse')
 
         self.split_gd = SplitGD(model)
         self.episode = []
