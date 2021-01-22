@@ -22,20 +22,16 @@ class SplitGD():
 
     def __init__(self, keras_model):
         self.model = keras_model
-        print("Input", keras_model.layers[1].input_shape)
         self.eligibilities = [np.zeros(shape=(layer.input_shape[1],layer.output_shape[1])) for layer in self.model.layers]
-
     def reset_eligibilities(self):
         self.eligibilities = [np.zeros(shape=(layer.input_shape[1],layer.output_shape[1])) for layer in self.model.layers]
 
     # Subclass this with something useful.
     def modify_gradients(self,gradients, delta):
-        print(self.eligibilities[0])
-
+        print(self.eligibilities[1])
         for index, el in enumerate(self.eligibilities):
-            self.eligibilities[index] += gradients[index].numpy() / (2 * delta)
-
-            gradients[index] = delta * el
+            self.eligibilities[index] += gradients[index] / delta
+            gradients[index] = delta * self.eligibilities[index]
         return gradients
 
     # This returns a tensor of losses, OR the value of the averaged tensor.  Note: use .numpy() to get the
@@ -46,6 +42,7 @@ class SplitGD():
         return tf.reduce_mean(loss).numpy() if avg else loss
 
     def fit(self, features, targets, delta, epochs=1, mbs=1,vfrac=0.1,verbosity=1,callbacks=[]):
+        print(targets, delta)
         params = self.model.trainable_weights
         train_ins, train_targs, val_ins, val_targs = split_training_data(features,targets,vfrac=vfrac)
         for cb in callbacks:    cb.on_train_begin()
@@ -53,7 +50,6 @@ class SplitGD():
             for cb in callbacks:    cb.on_epoch_begin(epoch)
             for _ in range(math.floor(len(train_ins) / mbs)):
                 with tf.GradientTape() as tape:  # Read up on tf.GradientTape !!
-                    print(train_ins, train_targs)
                     feaset,tarset = gen_random_minibatch(train_ins,train_targs,mbs=mbs)
                     loss = self.gen_loss(feaset,tarset,avg=False)
                     gradients = tape.gradient(loss,params)
@@ -102,7 +98,6 @@ class SplitGD():
 
 def gen_random_minibatch(inputs, targets, mbs=1):
     indices = np.random.randint(len(inputs), size=mbs)
-    print(indices)
     return inputs[0], targets[0]
 
 # This returns: train_features, train_targets, validation_features, validation_targets

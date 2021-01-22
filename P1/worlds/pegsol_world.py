@@ -99,8 +99,8 @@ class PegSolitaire:
         if not self.is_end_state():
             return 0
         elif sum([peg for row in self.state for peg in row]) > 1:
-            return -10
-        return 100
+            return -5
+        return 5
 
     def __str__(self) -> str:
         return "".join(str(peg) for row in self.state for peg in row)
