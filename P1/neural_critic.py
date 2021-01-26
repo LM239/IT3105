@@ -35,7 +35,7 @@ class NeuralCritic:
 
     def finish_episode(self):
         for state, target, delta in self.episode:
-            self.split_gd.fit([state], [target], delta,vfrac=0.0, verbosity=0)
+            self.split_gd.fit([state], [target], delta, vfrac=0.0, verbosity=0)
         self.episode = []
 
     def reset_eligibilities(self):
