@@ -3,6 +3,7 @@ import random
 from typing import List, Tuple
 from configs.validate_configs import validate_actor_config
 
+
 class ActorCritic:
     
     def __init__(self, actor_cfg, critic, sim_world, num_episodes, display_episodes):
@@ -25,7 +26,6 @@ class ActorCritic:
             actor_eligibility = defaultdict(lambda: 0)
             self.critic.reset_eligibilities()
 
-            self.world = self.world.reset()
             a = self.use_policy(str(self.world), self.actor_greedy_epsilon)
             state = self.world.vector()
             episode = []
@@ -49,6 +49,8 @@ class ActorCritic:
             self.critic.finish_episode()
             if episode_id in self.display_episodes:
                 self.world.visualize_episode()
+            if episode_id < self.episodes - 1:
+                self.world = self.world.reset()
 
     def play_episode(self):
         self.world = self.world.reset()
