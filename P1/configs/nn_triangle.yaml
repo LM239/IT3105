@@ -1,5 +1,4 @@
----
-episodes: 100
+episodes: 600
 display_episodes:
     - 99
 #SimWorld args:
@@ -8,26 +7,24 @@ sim_world:
   type: "triangle"
   size: 5
   #Display:
-  display_rate: 0.07 # in seconds
+  display_rate: 0.08 # in seconds
 
 
 #Critic args:
 critic:
-  type: "table"
+  type: "neural_net"
   hidden_layers:
-    - 15
     - 20
-    - 30
+    - 20
     - 5
-    - 1
-  lr: 0.5
-  eligibility_decay: 0.8
+  lr: 0.0001
+  eligibility_decay: 0.75
   discount_factor: 0.9
 
 #Actor args:
 actor:
-  lr: 2.0
-  eligibility_decay: 0.8
+  lr: 0.75
+  eligibility_decay: 0.75
   discount_factor: 0.9
-  greedy_epsilon: 0.6
-  epsilon_decay: 0.9 # set to 1 for no decay
+  greedy_epsilon: 0.7
+  epsilon_decay: 0.985 # set to 1 for no decay

@@ -34,7 +34,6 @@ class ActorCritic:
                 self.world.do_action(a)
                 reward = self.world.state_reward()
                 state_prime = self.world.vector()
-
                 a_prime = self.use_policy(state_prime, self.actor_greedy_epsilon)
                 if a_prime:
                     actor_eligibility[str(state_prime) + str(a_prime)] = 1
@@ -51,6 +50,7 @@ class ActorCritic:
                 self.world.visualize_episode()
             if episode_id < self.episodes - 1:
                 self.world = self.world.reset()
+            print(episode_id)
 
     def play_episode(self):
         self.world = self.world.reset()

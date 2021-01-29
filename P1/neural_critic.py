@@ -6,6 +6,7 @@ from configs.validate_configs import validate_critic_config
 from keras.losses import MeanSquaredError
 import tensorflow as tf
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class NeuralCritic:
@@ -21,13 +22,15 @@ class NeuralCritic:
         self.model = Sequential()
         self.model.add(Input(shape=(input_dim,)))
         for layer in self.size:
-            self.model.add(Dense(layer, activation='tanh', use_bias=False))
+            self.model.add(Dense(layer, activation='relu', use_bias=False))
         self.model.add(Dense(1, use_bias=False))
         self.model.compile(optimizer=SGD(learning_rate=self.lr), loss=MeanSquaredError(reduction=Reduction.NONE))
 
         self.eligibilities = [np.zeros(shape=(layer.input_shape[1], layer.output_shape[1])) for layer in
                               self.model.layers]
         self.episode = []
+
+        self.deltas = []
 
     def update(self, episode, state, state_prime, reward):
         target = reward + self.discount_factor * self.model.predict([state_prime], batch_size=1)
@@ -48,8 +51,12 @@ class NeuralCritic:
 
     # Subclass this with something useful.
     def modify_gradients(self, gradients, delta):
+        '''self.deltas.append(abs(delta[0][0]))
+        if len(self.deltas) > 1200:
+            plt.plot(self.deltas)
+            plt.show()'''
         for index, el in enumerate(self.eligibilities):
-            self.eligibilities[index] = self.eligibilities[index] * self.eligibility_decay * self.discount_factor + gradients[index] / delta
+            self.eligibilities[index] = self.eligibilities[index] * self.eligibility_decay * self.discount_factor + gradients[index] / (2*delta)
             gradients[index] = delta * self.eligibilities[index]
         return gradients
 
@@ -66,6 +73,9 @@ class NeuralCritic:
             with tf.GradientTape() as tape:  # Read up on tf.GradientTape !!
                 loss = self.gen_loss(features, targets, avg=False)
                 gradients = tape.gradient(loss, params)
+                #print("Before:", np.shape(gradients))
                 gradients = self.modify_gradients(gradients, delta)
+                #print("After:", np.shape(gradients))
+                #print("Zip: ", tuple(zip(gradients, params)))
                 self.model.optimizer.apply_gradients(zip(gradients, params))
 
