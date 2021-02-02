@@ -66,7 +66,7 @@ class ActorCritic:
         if random.random() < epsilon:
             return  actions[random.randint(0, len(actions) - 1)]  # non-greedy choice
         else:  # greedy choice
-            best = float('-inf')  # evalution of best action(s) so far
+            best = float('-inf')  # evaluation of best action(s) so far
             best_actions = []  # find best action(s)
             for action in actions:
                 if self.actor_PI[str(state) + str(action)] >= best:
@@ -75,7 +75,7 @@ class ActorCritic:
                         best_actions = [action]  # update list and evaluation
                     else:
                         best_actions.append(action)  # as good as other action but not better
-            return best_actions[random.randint(0, len(best_actions) - 1)]
+            return best_actions[0] if len(best_actions) == 1 else best_actions[random.randint(0, len(best_actions) - 1)]
 
 
 if __name__ == "__main__":
