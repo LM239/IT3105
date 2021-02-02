@@ -36,7 +36,7 @@ class NeuralCritic:
         target = reward + self.discount_factor * self.model.predict([state_prime], batch_size=1)
         delta = target - self.model.predict([state], batch_size=1)
         self.episode.append((np.array([state]), target, delta))
-        return delta
+        return delta[0][0]
 
     def finish_episode(self):
         for state, target, delta in self.episode:
@@ -51,7 +51,8 @@ class NeuralCritic:
     # Subclass this with something useful.
     def modify_gradients(self, gradients, delta):
         for index, el in enumerate(self.eligibilities):
-            self.eligibilities[index] = self.eligibilities[index] * self.eligibility_decay * self.discount_factor + gradients[index] / (2*delta)
+            if not delta == 0.0:
+                self.eligibilities[index] = self.eligibilities[index] * self.eligibility_decay * self.discount_factor + gradients[index] / (2*delta)
             gradients[index] = delta * self.eligibilities[index]
         return gradients
 

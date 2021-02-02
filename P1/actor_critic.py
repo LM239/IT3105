@@ -2,6 +2,7 @@ from collections import defaultdict
 import random
 from typing import List, Tuple
 from configs.validate_configs import validate_actor_config
+import math
 
 
 class ActorCritic:
@@ -61,21 +62,19 @@ class ActorCritic:
         actions = self.world.get_actions()  # get possible actions
         if len(actions) == 0:
             return None  # return None when no actions are available (assumed as end state)
-        if len(actions) == 1:
-            return actions[0]  # avoid issues with random.randint(0, 0)
         if random.random() < epsilon:
-            return  actions[random.randint(0, len(actions) - 1)]  # non-greedy choice
+            return actions[random.randint(0, len(actions) - 1)]  # non-greedy choice
         else:  # greedy choice
             best = float('-inf')  # evaluation of best action(s) so far
             best_actions = []  # find best action(s)
             for action in actions:
                 if self.actor_PI[str(state) + str(action)] >= best:
                     if self.actor_PI[str(state) + str(action)] > best:
-                        best = self.actor_PI[str(state) + str(action)] # better than all other actions (so far)
+                        best = self.actor_PI[str(state) + str(action)]  # better than all other actions (so far)
                         best_actions = [action]  # update list and evaluation
                     else:
                         best_actions.append(action)  # as good as other action but not better
-            return best_actions[0] if len(best_actions) == 1 else best_actions[random.randint(0, len(best_actions) - 1)]
+            return best_actions[random.randint(0, len(best_actions) - 1)]
 
 
 if __name__ == "__main__":

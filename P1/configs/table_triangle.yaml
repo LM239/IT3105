@@ -1,7 +1,7 @@
 ---
 episodes: 500
 display_episodes:
-    - 249
+    - 500
 #SimWorld args:
 sim_world:
   world: "peg_solitaire"
@@ -14,13 +14,13 @@ sim_world:
 #Critic args:
 critic:
   type: "table"
-  lr: 0.55
+  lr: 0.6
   eligibility_decay: 0.7
   discount_factor: 0.9
 
 #Actor args:
 actor:
-  lr: 0.75
+  lr: 0.9
   eligibility_decay: 0.75
   discount_factor: 0.9
   greedy_epsilon: 0.6
