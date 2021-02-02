@@ -39,7 +39,6 @@ class NeuralCritic:
         return delta
 
     def finish_episode(self):
-        print("done")
         for state, target, delta in self.episode:
             self.fit([state], [target], delta)
         self.episode = []
@@ -51,10 +50,6 @@ class NeuralCritic:
 
     # Subclass this with something useful.
     def modify_gradients(self, gradients, delta):
-        '''self.deltas.append(abs(delta[0][0]))
-        if len(self.deltas) > 1200:
-            plt.plot(self.deltas)
-            plt.show()'''
         for index, el in enumerate(self.eligibilities):
             self.eligibilities[index] = self.eligibilities[index] * self.eligibility_decay * self.discount_factor + gradients[index] / (2*delta)
             gradients[index] = delta * self.eligibilities[index]
