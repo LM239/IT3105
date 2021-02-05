@@ -76,32 +76,3 @@ class ActorCritic:
                         best_actions.append(action)  # as good as other action but not better
             return best_actions[random.randint(0, len(best_actions) - 1)]
 
-
-if __name__ == "__main__":
-    actor_config = {'lr': 0.75,
-                    'eligibility_decay': 0.9,
-                    'discount_factor': 0.85,
-                    'greedy_epsilon': 0.6,
-                    'epsilon_decay': 0.85
-                    }
-    critic_config = {'type': 'table',
-                     #'size': [15, 20, 30, 5, 1],
-                     'lr': 0.5,
-                     'eligibility_decay': 0.9,
-                     'discount_factor': 0.85
-                     }
-    world_config = {'world': 'peg_solitaire',
-                    'type': 'triangle',
-                    'size': 5,
-                    'display_rate': 0.3
-                    }
-    from worlds.pegsol_world import PegSolitaire
-    world = PegSolitaire(world_config)
-    episodes = 150
-
-    actor_critic = ActorCritic(actor_config, critic_config, world, episodes)
-    actor_critic.fit()
-    actor_critic.play_episode()
-    #world.visualize_episode()
-    world.visualize_peg_count()
-    exit(0)

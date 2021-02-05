@@ -150,12 +150,12 @@ class PegSolitaire:
                         open_nodes.append((y, x))
             nx.draw_networkx_nodes(G, pos, nodelist=open_nodes, node_color="g")  # draw open nodes (green)
             nx.draw_networkx_nodes(G, pos, nodelist=closed_nodes, node_color="r")  # draw closed nodes (red)
-            nx.draw_networkx_labels(G, pos, font_weight="bold")  #  draw node names (their coordinate)
+            nx.draw_networkx_labels(G, pos, font_weight="bold")  # draw node names (their coordinate)
             nx.draw_networkx_edges(G, pos)  # draw edges
-            plt.draw()  # dinish figure
+            plt.draw()  # finish figure
             plt.pause(self.display_rate)  # delay before continuing to next state in states
             plt.clf()  # clear canvas
-        plt.close() # close window
+        plt.close()  # close window
 
     def visualize_self(self) -> None:
         return self.visualize([self.vector()])  # visualize current state
@@ -166,28 +166,3 @@ class PegSolitaire:
     def from2D(self, y: int, x: int) -> int:  # find 1D list index for a given 2D coordinate
         return int((y * (y + 1) / 2)) + x if self.type == "triangle" else (y * self.size) + x
 
-
-if __name__ == "__main__":
-    tri_config = {
-        "type": "triangle",
-        "size": 5,
-        #"open_cells": [[0, 0], [3, 0], [3, 2]],
-    }
-
-    dim_config = {
-        "type": "diamond",
-        "size": 4,
-        #"open_cells": [[0, 0], [3, 0], [3, 2], [3, 3], [0, 3]],
-    }
-
-    tri_world = PegSolitaire(tri_config)
-    dim_world = PegSolitaire(dim_config)
-
-    print(tri_world.vector())
-    print(tri_world)
-    print(tri_world.get_actions())
-    print(dim_world.get_actions())
-
-    tri_world.visualize_self()
-    # dim_world.do_action(((1, 3), (3, 3)))
-    dim_world.visualize_self()
