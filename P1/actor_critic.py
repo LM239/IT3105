@@ -56,7 +56,7 @@ class ActorCritic:
     def play_episode(self): # use current policy (epsilon=0)
         self.world = self.world.reset()
         while not self.world.is_end_state():
-            self.world.do_action(self.use_policy(str(self.world), 0))
+            self.world.do_action(self.use_policy(self.world.vector(), 0))
 
     def use_policy(self, state: str, epsilon: float) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
         actions = self.world.get_actions()  # get possible actions

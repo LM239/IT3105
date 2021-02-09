@@ -1,5 +1,5 @@
 ---
-episodes: 500
+episodes: 50
 display_episodes:
     - 249
 display_greedy: True
@@ -7,7 +7,7 @@ display_greedy: True
 sim_world:
   world: "peg_solitaire"
   type: "triangle"
-  size: 5
+  size: 8
   #Display:
   display_rate: 0.07 # in seconds
 
