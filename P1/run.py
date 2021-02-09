@@ -21,18 +21,16 @@ if __name__ == "__main__":
             print("Usage: python {} <path-to-config>".format(sys.argv[0]))  # print help
             exit(0)
 
-    try:
-        path = sys.argv[1]  # check that config file is given
-    except IndexError:
-        print("Error: No path specified\nExiting")
+    if not len(sys.argv) == 1:
+        print("Error: Expected 1 argument <path-to-config>, but received {} argument(s)\nExiting".format(len(sys.argv)))
         exit(1)
 
     try:
-        with open(path) as file:  #  try to open config file
+        with open(sys.argv[1]) as file:  # try to open config file
             configs = yaml.load(file, Loader=yaml.FullLoader)
             file.close()
     except FileNotFoundError:
-        print("Could not find file at {}\nExiting".format(path))
+        print("Could not find file at {}\nExiting".format(sys.argv[1]))
         exit(1)
 
     validate_config(configs)  # do an initial validation of the configs (not thorough)
@@ -59,7 +57,8 @@ if __name__ == "__main__":
         critic = TableCritic(critic_config)   # table based
     actor_critic = ActorCritic(actor_config, critic, world, configs["episodes"], display_episodes)  # make actor
     actor_critic.fit()  # train actor
-    actor_critic.play_episode()  # visualize policy with epsilon=0
+    if "display_greedy" in configs and configs["display_greedy"]:
+        actor_critic.play_episode()  # visualize policy with epsilon=0
     world.visualize_peg_count()  # show peg count
 
     exit(0)

@@ -2,6 +2,7 @@
 episodes: 500
 display_episodes:
     - 500
+display_greedy: True
 #SimWorld args:
 sim_world:
   world: "peg_solitaire"
@@ -20,7 +21,7 @@ critic:
 
 #Actor args:
 actor:
-  lr: 0.9
+  lr: 0.85
   eligibility_decay: 0.75
   discount_factor: 0.9
   greedy_epsilon: 0.6
