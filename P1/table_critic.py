@@ -26,6 +26,7 @@ class TableCritic:
         self.eligibilities = defaultdict(lambda: 0) # reset eligibilities (used before each episode)
 
     def finish_episode(self):
+        # Does not need special end of episode handling
         pass
 
 

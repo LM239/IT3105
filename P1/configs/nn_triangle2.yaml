@@ -1,0 +1,31 @@
+---
+episodes: 600
+display_episodes:
+    - 99
+#SimWorld args:
+sim_world:
+  world: "peg_solitaire"
+  type: "triangle"
+  size: 5
+  #Display:
+  display_rate: 0.08 # in seconds
+
+
+#Critic args:
+critic:
+  type: "neural_net"
+  hidden_layers:
+    - 20
+    - 20
+    - 5
+  lr: 0.00001
+  eligibility_decay: 0.55
+  discount_factor: 0.95
+
+#Actor args:
+actor:
+  lr: 0.8
+  eligibility_decay: 0.75
+  discount_factor: 0.9
+  greedy_epsilon: 0.7
+  epsilon_decay: 0.98 # set to 1 for no decay
