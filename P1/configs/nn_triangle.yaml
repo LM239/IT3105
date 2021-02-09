@@ -7,7 +7,7 @@ sim_world:
   type: "triangle"
   size: 5
   #Display:
-  display_rate: 0.08 # in seconds
+  display_rate: 0.18 # in seconds
 
 
 #Critic args:
@@ -15,8 +15,8 @@ critic:
   type: "neural_net"
   hidden_layers:
     - 20
-    - 20
-    - 5
+    - 30
+    - 10
   lr: 0.00004
   eligibility_decay: 0.55
   discount_factor: 0.9
