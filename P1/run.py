@@ -21,8 +21,8 @@ if __name__ == "__main__":
             print("Usage: python {} <path-to-config>".format(sys.argv[0]))  # print help
             exit(0)
 
-    if not len(sys.argv) == 1:
-        print("Error: Expected 1 argument <path-to-config>, but received {} argument(s)\nExiting".format(len(sys.argv)))
+    if not len(sys.argv) == 2:
+        print("Error: Expected 1 argument <path-to-config>, but received {} argument(s)\nExiting".format(len(sys.argv) - 1))
         exit(1)
 
     try:
