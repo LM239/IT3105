@@ -59,6 +59,7 @@ if __name__ == "__main__":
     actor_critic.fit()  # train actor
     if "display_greedy" in configs and configs["display_greedy"]:
         actor_critic.play_episode()  # visualize policy with epsilon=0
+        world.visualize_episode()
     world.visualize_peg_count()  # show peg count
 
     exit(0)
