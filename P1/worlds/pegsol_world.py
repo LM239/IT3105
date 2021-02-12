@@ -91,15 +91,12 @@ class PegSolitaire:
         self.state[int((from_pos[0] + to_pos[0]) / 2)][int((from_pos[1] + to_pos[1]) / 2)] = 0
         self.episode.append(self.vector())  # store the new state in the game's state history
 
-        if self.is_end_state():
+        if len(self.get_actions()) == 0:  # if new state is end state
             self.peg_count.append(sum(self.vector()))  # keep track of peg count for all gamess
             self.end_state = True
 
     def valid_coords(self, y: int, x: int) -> bool:  #  verifies that coorinates are within the board
         return 0 <= x < self.size and 0 <= y < self.size and ((not self.type == "triangle") or x <= y)
-
-    def is_end_state(self) -> bool:  # return True when state iss endtsate, i-e no avaiable actions
-        return len(self.get_actions()) == 0
 
     def in_end_state(self) -> bool:
         return self.end_state
@@ -107,7 +104,7 @@ class PegSolitaire:
     def state_reward(self) -> int:
         if not self.end_state:
             return 0  # no reward when no end state
-        elif self.peg_count[-1] > 1:
+        if self.peg_count[-1] > 1:  # get final peg count for this game
             return -3  # punishment when end state is unfavourable
         return 5  # reward when en state is winning
 

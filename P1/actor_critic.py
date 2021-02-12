@@ -75,4 +75,3 @@ class ActorCritic:
                     else:
                         best_actions.append(action)  # as good as other action but not better
             return best_actions[random.randint(0, len(best_actions) - 1)]
-
