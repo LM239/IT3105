@@ -2,13 +2,14 @@
 episodes: 500
 display_episodes:
     - 500
+display_greedy: True
 #SimWorld args:
 sim_world:
   world: "peg_solitaire"
   type: "triangle"
   size: 5
   #Display:
-  display_rate: 0.07 # in seconds
+  display_rate: 0.1 # in seconds
 
 
 #Critic args:

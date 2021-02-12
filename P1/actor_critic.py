@@ -24,22 +24,24 @@ class ActorCritic:
 
     def fit(self):  # train policy
         for episode_id in range(self.episodes):  # perform episodes
+            if episode_id > 0:
+                self.world.reset()
             actor_eligibility = defaultdict(lambda: 0)  # defaults to zero for unknown values
             self.critic.reset_eligibilities()  # zero critic eligibilities
 
-            a = self.use_policy(str(self.world), self.actor_greedy_epsilon)  # current action at s=state
+            a = self.use_policy(str(self.world.vector()), self.actor_greedy_epsilon)  # current action at s=state
             state = self.world.vector()  # vector of board state
             episode = []  # state action pairs for current episodes
-            while not self.world.is_end_state():
+            while not self.world.in_end_state():
                 episode.append((state, str(a)))
-                self.world.do_action(a) #  perform action a
+                self.world.do_action(a)  # perform action a
                 reward = self.world.state_reward()  # collect reward
-                state_prime = self.world.vector()  #  get curent state_vector
-                a_prime = self.use_policy(state_prime, self.actor_greedy_epsilon)  #  use policy with epsillon=self.actor_greedy_epsilon
-                if a_prime: #  None if state_prime is end state
-                    actor_eligibility[str(state_prime) + str(a_prime)] = 1  #  update eligibility trace for (state_prime, a_prime)
+                state_prime = self.world.vector()  # get curent state_vector
+                a_prime = self.use_policy(str(state_prime), self.actor_greedy_epsilon)  # use policy with epsillon=self.actor_greedy_epsilon
+                if a_prime:  # None if state_prime is end state
+                    actor_eligibility[str(state_prime) + str(a_prime)] = 1  # update eligibility trace for (state_prime, a_prime)
 
-                delta = self.critic.update(episode, state, state_prime, reward)  #  update critic, and recive delta
+                delta = self.critic.update(episode, state, state_prime, reward)  # update critic, and recive delta
                 for state, action in episode:  # update eligibilities and policy for all (s, a) in the list episode
                     self.actor_PI[str(state) + action] += self.actor_lr * delta * actor_eligibility[str(state) + action]
                     actor_eligibility[str(state) + action] *= self.actor_discount_factor * self.actor_eligibility_decay
@@ -49,14 +51,12 @@ class ActorCritic:
             self.critic.finish_episode()  # train nn_critic if relevant
             if episode_id in self.display_episodes:
                 self.world.visualize_episode()
-            if episode_id < self.episodes - 1: # keep state from last episode (for visualization)
-                self.world = self.world.reset()
             print(episode_id)
 
-    def play_episode(self): # use current policy (epsilon=0)
+    def play_episode(self):  # use current policy (epsilon=0)
         self.world = self.world.reset()
-        while not self.world.is_end_state():
-            self.world.do_action(self.use_policy(self.world.vector(), 0))
+        while not self.world.in_end_state():
+            self.world.do_action(self.use_policy(str(self.world.vector()), 0))
 
     def use_policy(self, state: str, epsilon: float) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
         actions = self.world.get_actions()  # get possible actions
@@ -68,9 +68,9 @@ class ActorCritic:
             best = float('-inf')  # evaluation of best action(s) so far
             best_actions = []  # find best action(s)
             for action in actions:
-                if self.actor_PI[str(state) + str(action)] >= best:
-                    if self.actor_PI[str(state) + str(action)] > best:
-                        best = self.actor_PI[str(state) + str(action)]  # better than all other actions (so far)
+                if self.actor_PI[state + str(action)] >= best:
+                    if self.actor_PI[state + str(action)] > best:
+                        best = self.actor_PI[state + str(action)]  # better than all other actions (so far)
                         best_actions = [action]  # update list and evaluation
                     else:
                         best_actions.append(action)  # as good as other action but not better
