@@ -1,7 +1,8 @@
 ---
 episodes: 100
 display_episodes:
-    - 99
+    - 100
+display_greedy: True
 #SimWorld args:
 sim_world:
   world: "peg_solitaire"
