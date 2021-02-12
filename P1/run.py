@@ -55,12 +55,13 @@ if __name__ == "__main__":
         critic = NeuralCritic(critic_config, world_size)  # nn based
     else:
         critic = TableCritic(critic_config)   # table based
+
     actor_critic = ActorCritic(actor_config, critic, world, configs["episodes"], display_episodes)  # make actor
     actor_critic.fit()  # train actor
+    
     if "display_greedy" in configs and configs["display_greedy"]:
         actor_critic.play_episode()  # visualize policy with epsilon=0
         world.visualize_episode()
-        world.reset()
     world.visualize_peg_count()  # show peg count
 
     exit(0)
