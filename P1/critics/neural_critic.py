@@ -6,7 +6,7 @@ from configs.validate_configs import validate_critic_config
 from keras.losses import MeanSquaredError
 import tensorflow as tf
 import numpy as np
-import matplotlib.pyplot as plt
+import os
 
 
 class NeuralCritic:
@@ -19,6 +19,13 @@ class NeuralCritic:
         self.lr = critic_cfg["lr"]
         self.eligibility_decay = critic_cfg["eligibility_decay"]
         self.discount_factor = critic_cfg["discount_factor"]
+
+        if "cuda" in critic_cfg and not critic_cfg["cuda"]:
+            os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+            if tf.test.gpu_device_name():
+                print('GPU found')
+            else:
+                print("No GPU found")
 
         # Build the network with first layer of input size, last layer with size 1,
         # and hidden layers with sizes from config

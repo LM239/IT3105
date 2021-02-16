@@ -4,7 +4,7 @@ import yaml
 from worlds.pegsol_world import PegSolitaire
 from actor_critic import ActorCritic
 from configs.validate_configs import validate_config
-from table_critic import TableCritic
+from critics.table_critic import TableCritic
 
 if __name__ == "__main__":
     short_options = "h"
@@ -50,7 +50,7 @@ if __name__ == "__main__":
         exit(1)
 
     if critic_config["type"] == "neural_net":  # create critic for actor critic
-        from neural_critic import NeuralCritic
+        from critics.neural_critic import NeuralCritic
         world_size = world.size**2 if world.type == "diamond" else int(world.size * (world.size + 1) / 2)  # input layer dim, given by board size
         critic = NeuralCritic(critic_config, world_size)  # nn based
     else:
@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
     actor_critic = ActorCritic(actor_config, critic, world, configs["episodes"], display_episodes)  # make actor
     actor_critic.fit()  # train actor
-    
+
     if "display_greedy" in configs and configs["display_greedy"]:
         actor_critic.play_episode()  # visualize policy with epsilon=0
         world.visualize_episode()

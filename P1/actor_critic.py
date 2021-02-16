@@ -2,13 +2,12 @@ from collections import defaultdict
 import random
 from typing import List, Tuple
 from configs.validate_configs import validate_actor_config
-import math
 
 
 class ActorCritic:
     
     def __init__(self, actor_cfg, critic, sim_world, num_episodes, display_episodes):
-        validate_actor_config(actor_cfg) # check all parameters are present
+        validate_actor_config(actor_cfg)  # check all parameters are present
 
         self.episodes = num_episodes
         self.actor_lr = actor_cfg["lr"]
@@ -19,7 +18,7 @@ class ActorCritic:
         self.critic = critic  # either neural net or table based
 
         self.display_episodes = display_episodes  # list of episodes to visualize
-        self.actor_PI = defaultdict(lambda: 0)  # defaults to 0 for unknoiwn states
+        self.actor_PI = defaultdict(lambda: 0)  # defaults to 0 for unknown states
         self.world = sim_world  # world to get available action, reward, etc from
 
     def fit(self):  # train policy
