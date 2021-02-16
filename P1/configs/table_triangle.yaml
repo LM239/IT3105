@@ -7,9 +7,11 @@ display_greedy: True
 sim_world:
   world: "peg_solitaire"
   type: "triangle"
-  size: 5
+  size: 4
   #Display:
   display_rate: 0.51 # in seconds
+  open_cells:
+    - [ 1, 0 ]
 
 
 #Critic args:

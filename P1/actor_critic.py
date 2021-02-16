@@ -29,6 +29,9 @@ class ActorCritic:
             self.critic.reset_eligibilities()  # zero critic eligibilities
 
             a = self.use_policy(str(self.world.vector()), self.actor_greedy_epsilon)  # current action at s=state
+            if not a:
+                print("Error: Game has no legal moves\nExiting")
+                exit()
             state = self.world.vector()  # vector of board state
             episode = []  # state action pairs for current episodes
             while not self.world.in_end_state():
