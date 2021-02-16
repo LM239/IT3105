@@ -7,23 +7,14 @@ display_greedy: True
 sim_world:
   world: "peg_solitaire"
   type: "diamond"
-  size: 3
+  size: 4
   #Display:
   display_rate: 0.57 # in seconds
-  open_cells:
-    - [0, 1]
-    - [1, 1]
 
 
 #Critic args:
 critic:
   type: "table"
-  hidden_layers:
-    - 15
-    - 20
-    - 30
-    - 5
-    - 1
   lr: 0.75
   eligibility_decay: 0.75
   discount_factor: 0.9
