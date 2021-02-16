@@ -9,7 +9,7 @@ sim_world:
   type: "diamond"
   size: 4
   #Display:
-  display_rate: 0.77 # in seconds
+  display_rate: 0.57 # in seconds
 
 
 #Critic args:

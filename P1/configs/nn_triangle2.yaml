@@ -8,7 +8,7 @@ sim_world:
   type: "triangle"
   size: 5
   #Display:
-  display_rate: 0.78 # in seconds
+  display_rate: 0.58 # in seconds
 
 
 #Critic args:
