@@ -32,7 +32,8 @@ class HexWorld(SimWorld):
         return 0 <= x < self.size and 0 <= y < self.size
 
     def new_state(self):
-        state = [(0, 0) for i in range(self.size ** 2)].append((1, 0))
+        state = [(0, 0) for i in range(self.size ** 2)]
+        state.append((1, 0))
         return state
 
     def get_actions(self, state):
