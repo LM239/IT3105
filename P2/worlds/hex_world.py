@@ -21,16 +21,16 @@ class HexWorld(SimWorld):
                 self.adjacencies[index] = []
                 if self.valid_coords(y + 1, x):  # see if coordinate is within the board
                     self.adjacencies[index].append(self.from2D(y + 1, x))
+                    if self.valid_coords(y + 1, x - 1):
+                        self.adjacencies[index].append(self.from2D(y + 1, x - 1))
                 if self.valid_coords(y - 1, x):
                     self.adjacencies[index].append(self.from2D(y - 1, x))
+                    if self.valid_coords(y - 1, x + 1):
+                        self.adjacencies[index].append(self.from2D(y - 1, x + 1))
                 if self.valid_coords(y, x + 1):
                     self.adjacencies[index].append(self.from2D(y, x + 1))
                 if self.valid_coords(y, x - 1):
                     self.adjacencies[index].append(self.from2D(y, x - 1))
-                if self.valid_coords(y - 1, x + 1):
-                    self.adjacencies[index].append(self.from2D(y - 1, x + 1))
-                if self.valid_coords(y + 1, x - 1):
-                    self.adjacencies[index].append(self.from2D(y + 1, x - 1))
 
     def valid_coords(self, y: int, x: int) -> bool:  # verifies that coordinates are within the board
         return 0 <= x < self.size and 0 <= y < self.size
@@ -78,9 +78,11 @@ class HexWorld(SimWorld):
             pos = (x - 0.5 * (x + y), -x - y)  # use manhattan distance to find node positions
             G.add_node(i, pos=pos)
             for node in self.adjacencies[str(i)]:  # use adjacency matrix to add edges
-                if (i < self.size or i >= self.size * (self.size - 1)) and (node < self.size or node >= self.size * (self.size - 1)):
+                if node < i:
+                    continue
+                if (i < self.size and node < self.size or i >= self.size * (self.size - 1) and node >= self.size * (self.size - 1)):
                     G.add_edge(i, node, width=2, color="green")
-                elif (i % self.size == 0 or i % self.size == self.size - 1) and (node % self.size == 0 or node % self.size == self.size - 1):
+                elif (i % self.size == 0 and node % self.size == 0 or i % self.size == self.size - 1 and node % self.size == self.size - 1):
                     G.add_edge(i, node, width=2, color="red")
                 else:
                     G.add_edge(i, node, width=1, color="black")
@@ -108,7 +110,7 @@ class HexWorld(SimWorld):
             p2_nodes = []
             empty_nodes = []  # set of nodes to color as closed
             for i in range(self.size ** 2):
-                if state[i][0] == 1:  #  add node to appropriate set
+                if state[i][0] == 1:  # add node to appropriate set
                     p1_nodes.append(i)
                 elif state[i][1] == 1:
                     p2_nodes.append(i)
@@ -121,12 +123,15 @@ class HexWorld(SimWorld):
             nx.draw_networkx_edges(G, pos, width=edge_widths, edge_color=edge_colors)  # draw edges
             plt.legend(handles=[green_patch, red_patch], prop={'size': 2 * self.size + 2})
             plt.draw()  # finish figure
-            plt.pause(self.display_rate) # delay before continuing to next state in states
+            plt.pause(self.display_rate)  # delay before continuing to next state in states
             plt.clf()  # clear canvas
         plt.close()  # close window
 
     def vector(self, state: List[Tuple[int, int]]) -> List[int]:
         return [val for tuple in state for val in tuple]  # flatten board state and return as list / vector
+
+    def action_vector(self, state):
+        return [1 if state[i] == (0, 0) else 0 for i in range(self.size ** 2)]
 
 
 if __name__ == "__main__":
