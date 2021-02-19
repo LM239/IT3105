@@ -56,13 +56,13 @@ class HexWorld(SimWorld):
 
     def in_end_state_rec_y(self, state, index, path, start) -> bool:
         if index >= self.size * (self.size - 1):
-            self.paths[str(state)] = path[:self.size] + [start]
+            self.paths[str(state)] = path[:-self.size] + [start]
             return True
         return any((self.in_end_state_rec_y(state, i, [i] + path, start) for i in self.adjacencies[str(index)] if state[i][0] == 1 and i not in path))
 
     def in_end_state_rec_x(self, state, index, path, start) -> bool:
         if index % self.size == self.size - 1:
-            self.paths[str(state)] = path[:self.size] + [start]
+            self.paths[str(state)] = path[:-self.size] + [start]
             return True
         return any((self.in_end_state_rec_x(state, i, [i] + path, start) for i in self.adjacencies[str(index)] if state[i][1] == 1 and i not in path))
 
