@@ -51,22 +51,20 @@ class HexWorld(SimWorld):
         return divmod(index, self.size)
 
     def in_end_state(self, state: List) -> bool:
-        return any(map(self.in_end_state_rec_y, ((state, i, list(range(self.size)), i) for i in range(self.size) if state[i][0] == 1))) if state[-1][1] == 1 \
-               else any(map(self.in_end_state_rec_x, ((state, self.size * i, list(range(0, self.size ** 2, self.size)), self.size * i) for i in range(self.size) if state[self.size * i][1] == 1)))
+        return any((self.in_end_state_rec_y(state, i, list(range(self.size)), i) for i in range(self.size) if state[i][0] == 1)) if state[-1][1] == 1 \
+               else any((self.in_end_state_rec_x(state, self.size * i, list(range(0, self.size ** 2, self.size)), self.size * i) for i in range(self.size) if state[self.size * i][1] == 1))
 
-    def in_end_state_rec_y(self, data) -> bool:
-        state, index, path, start = data
+    def in_end_state_rec_y(self, state, index, path, start) -> bool:
         if index >= self.size * (self.size - 1):
             self.paths[str(state)] = [start] + path[self.size:]
             return True
-        return any(map(self.in_end_state_rec_y, ((state, i, path + [i], start) for i in self.adjacencies[str(index)] if state[i][0] == 1 and i not in path)))
+        return any((self.in_end_state_rec_y(state, i, path + [i], start) for i in self.adjacencies[str(index)] if state[i][0] == 1 and i not in path))
 
-    def in_end_state_rec_x(self, data) -> bool:
-        state, index, path, start = data
+    def in_end_state_rec_x(self, state, index, path, start) -> bool:
         if index % self.size == self.size - 1:
             self.paths[str(state)] = [start] + path[self.size:]
             return True
-        return any(map(self.in_end_state_rec_x, ((state, i, path + [i], start) for i in self.adjacencies[str(index)] if state[i][1] == 1 and i not in path)))
+        return any((self.in_end_state_rec_x(state, i, path + [i], start) for i in self.adjacencies[str(index)] if state[i][1] == 1 and i not in path))
 
     def winner(self, state):
         return tuple(reversed(state[-1])) if self.in_end_state(state) else None
