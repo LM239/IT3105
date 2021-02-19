@@ -15,6 +15,8 @@ class HexWorld(SimWorld):
         self.paths = defaultdict(lambda: [])
 
         self.adjacencies = {}
+        self.adjacencies_xsort = {}
+        self.adjacencies_ysort = {}
         for y in range(self.size):
             for x in range(self.size):
                 index = str(self.from2D(y, x))
@@ -31,6 +33,8 @@ class HexWorld(SimWorld):
                     self.adjacencies[index].append(self.from2D(y, x + 1))
                 if self.valid_coords(y, x - 1):
                     self.adjacencies[index].append(self.from2D(y, x - 1))
+                self.adjacencies_ysort[index] = sorted(self.adjacencies[index], reverse=True)
+                self.adjacencies_xsort[index] = sorted(self.adjacencies[index], reverse=True, key=(lambda x: x % self.size))
 
     def valid_coords(self, y: int, x: int) -> bool:  # verifies that coordinates are within the board
         return 0 <= x < self.size and 0 <= y < self.size
@@ -58,13 +62,13 @@ class HexWorld(SimWorld):
         if index >= self.size * (self.size - 1):
             self.paths[str(state)] = path[:-self.size] + [start]
             return True
-        return any((self.in_end_state_rec_y(state, i, [i] + path, start) for i in self.adjacencies[str(index)] if state[i][0] == 1 and i not in path))
+        return any((self.in_end_state_rec_y(state, i, [i] + path, start) for i in self.adjacencies_ysort[str(index)] if state[i][0] == 1 and i not in path))
 
     def in_end_state_rec_x(self, state, index, path, start) -> bool:
         if index % self.size == self.size - 1:
             self.paths[str(state)] = path[:-self.size] + [start]
             return True
-        return any((self.in_end_state_rec_x(state, i, [i] + path, start) for i in self.adjacencies[str(index)] if state[i][1] == 1 and i not in path))
+        return any((self.in_end_state_rec_x(state, i, [i] + path, start) for i in self.adjacencies_xsort[str(index)] if state[i][1] == 1 and i not in path))
 
     def winner(self, state):
         return tuple(reversed(state[-1])) if self.in_end_state(state) else None
@@ -134,7 +138,7 @@ class HexWorld(SimWorld):
 
 if __name__ == "__main__":
     cfg = {
-        "size": 15
+        "size": 10
     }
     game = HexWorld(cfg, 0.3)
 
