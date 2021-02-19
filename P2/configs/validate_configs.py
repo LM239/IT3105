@@ -1,72 +1,63 @@
 def validate_config(configs):
-    if "episodes" not in configs:
-        print("Missing required argument 'episodes' in config \n Exiting")
-        exit(1)
-    if "actor" not in configs:
-        print("Missing actor dict in config \n Exiting")
-        exit(1)
-    if "critic" not in configs:
-        print("Missing critic dict in config \n Exiting")
+    if "display" not in configs:
+        print("Missing required argument 'display' in config \n Exiting")
         exit(1)
     if "sim_world" not in configs:
         print("Missing sim_world dict in config \n Exiting")
         exit(1)
-    if "world" not in configs["sim_world"]:
-        print("Missing required argument 'world' in sim_world config \n Exiting")
+    if "mcts" not in configs:
+        print("Missing mcts dict in config \n Exiting")
         exit(1)
-    if "type" not in configs["critic"]:
-        print("Missing required argument 'type' in critic config \n Exiting")
+    if "anet" not in configs:
+        print("Missing anet dict in config \n Exiting")
         exit(1)
-    if not (configs["critic"]["type"] == "neural_net" or configs["critic"]["type"] == "table"):
-        print("Unknown critic type: {} \nExiting".format(configs["critic"]["type"]))
+    if "topp" not in configs:
+        print("Missing topp dict in config \n Exiting")
         exit(1)
+    return True
 
-def validate_pegsol_config(config):
-    if "type" not in config:
-        print("Missing required PegSolitaire argument: 'type' \nExiting")
-        exit(1)
+
+def validate_hex_board(config):
     if "size" not in config:
         print("Missing required PegSolitaire argument: 'size' \nExiting")
         exit(1)
-    elif config["size"] < 3:
-        print("Size parameter too small \nExiting")
-        exit(1)
-    if not (config["type"] == "triangle" or config["type"] == "diamond"):
-        print("Unknown board type {}.\nExiting".format(config["type"]))
+    elif config["size"] < 3 or config["size"] > 10:
+        print("Size parameter outside of accepted range: [3,10] \nExiting")
         exit(1)
 
 
-def validate_actor_config(actor_config):
-    if "lr" not in actor_config:
-        print("Missing required actor_config argument: 'lr' \nExiting")
+def validate_mcts(config):
+    if "episodes" not in config:
+        print("Missing required actor_config argument: 'episodes' \nExiting")
         exit(1)
-    if "eligibility_decay" not in actor_config:
-        print("Missing required actor_config argument: 'eligibility_decay' \nExiting")
-        exit(1)
-    if "discount_factor" not in actor_config:
-        print("Missing required actor_config argument: 'discount_factor' \nExiting")
-        exit(1)
-    if "greedy_epsilon" not in actor_config:
-        print("Missing required actor_config argument: 'greedy_epsilon' \nExiting")
-        exit(1)
-    if "greedy_epsilon" not in actor_config:
-        print("Missing required actor_config argument: 'greedy_epsilon' \nExiting")
-        exit(1)
-    if "epsilon_decay" not in actor_config:
-        print("Missing required actor_config argument: 'epsilon_decay' \nExiting")
+    if "search_games" not in config:
+        print("Missing required actor_config argument: 'search_games' \nExiting")
         exit(1)
 
-def validate_critic_config(critic_config):
 
-    if critic_config["type"] == "neural_net" and "hidden_layers" not in critic_config:
-        print("Missing required neural net based-Critic argument: 'hidden_layers' \nExiting")
-        exit(1)
-    if "lr" not in critic_config:
+def validate_anet(config):
+    valid_activations = ["linear", "sigmoid", "tanh", "relu"]
+    valid_optmizers = ["Adagrad", "SGD", "RMSProp", "Adam"]
+    if "lr" not in config:
         print("Missing required Critic argument: 'lr' \nExiting")
         exit(1)
-    if "eligibility_decay" not in critic_config:
-        print("Missing required Critic argument: 'eligibility_decay' \nExiting")
+    if "optimizer" not in config:
+        print("Missing required Critic argument: 'optimizer' \nExiting")
         exit(1)
-    if "discount_factor" not in critic_config:
-        print("Missing required Critic argument: 'discount_factor' \nExiting")
+    if "hidden_layers" not in config:
+        print("Missing required Critic argument: 'hidden_layers' \nExiting")
+        exit(1)
+    if config["optimizer"] not in valid_optmizers:
+        print("ANET optimizer invalid. Valid options are:", valid_optmizers, "\nExiting")
+    for i, layer in enumerate(config["hidden_layers"]):
+        if layer[1] not in valid_activations:
+            print("ANET layer", i, "activation function in invalid. Valid options are:", valid_activations, "\nExiting")
+
+
+def validate_topp(config):
+    if "cache_m" not in config:
+        print("Missing required actor_config argument: 'cache_m' \nExiting")
+        exit(1)
+    if "games_g" not in config:
+        print("Missing required actor_config argument: 'games_g' \nExiting")
         exit(1)
