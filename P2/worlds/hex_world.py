@@ -9,7 +9,7 @@ class HexWorld:
         return [(1, 0)].extend([(0, 0) for i in self.size ** 2])
 
     def get_actions(self, state):
-        return [i for i, tuple in enumerate(state[1:]) if tuple[0] == tuple[1]]
+        return [i for i, t in enumerate(state[1:]) if t[0] == t[1]]
 
     def do_action(self, state, action):
-        return state[0:action] + state[0] + state[action + 1:]
+        return [reversed(state[0])] + state[1:action] + [state[0]] + state[action + 1:]
