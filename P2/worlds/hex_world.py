@@ -51,22 +51,22 @@ class HexWorld(SimWorld):
         return divmod(index, self.size)
 
     def in_end_state(self, state: List) -> bool:
-        return any(map(self.in_end_state_rec_y, list((state, i, list(range(self.size))) for i in range(self.size) if state[i][0] == 1))) if state[-1][1] == 1 \
-               else any(map(self.in_end_state_rec_x, list((state, self.size * i, list(range(0, self.size ** 2, self.size))) for i in range(self.size) if state[self.size * i][1] == 1)))
+        return any(map(self.in_end_state_rec_y, ((state, i, list(range(self.size)), i) for i in range(self.size) if state[i][0] == 1))) if state[-1][1] == 1 \
+               else any(map(self.in_end_state_rec_x, ((state, self.size * i, list(range(0, self.size ** 2, self.size)), self.size * i) for i in range(self.size) if state[self.size * i][1] == 1)))
 
     def in_end_state_rec_y(self, data) -> bool:
-        state, index,path = data
+        state, index, path, start = data
         if index >= self.size * (self.size - 1):
-            self.paths[str(state)] = path
+            self.paths[str(state)] = [start] + path[self.size:]
             return True
-        return any(map(self.in_end_state_rec_y, list((state, i, path + [i]) for i in self.adjacencies[str(index)] if state[i][0] == 1 and i not in path)))
+        return any(map(self.in_end_state_rec_y, ((state, i, path + [i], start) for i in self.adjacencies[str(index)] if state[i][0] == 1 and i not in path)))
 
     def in_end_state_rec_x(self, data) -> bool:
-        state, index, path = data
+        state, index, path, start = data
         if index % self.size == self.size - 1:
-            self.paths[str(state)] = path
+            self.paths[str(state)] = [start] + path[self.size:]
             return True
-        return any(map(self.in_end_state_rec_x, list((state, i, path + [i]) for i in self.adjacencies[str(index)] if state[i][1] == 1 and i not in path)))
+        return any(map(self.in_end_state_rec_x, ((state, i, path + [i], start) for i in self.adjacencies[str(index)] if state[i][1] == 1 and i not in path)))
 
     def visualize(self, states):  # visalize states (list of states)
         G = nx.Graph()
@@ -91,16 +91,6 @@ class HexWorld(SimWorld):
             if i == len(states) - 1:
                 path = self.paths[str(state)]
                 if len(path) > 0:
-                    start = 0
-                    for i in path[:self.size]:
-                        for a in self.adjacencies[str(i)]:
-                            if a in path[self.size:] and state[a] == state[i]:
-                                start = i
-                                break
-                        else:
-                            continue
-                        break
-                    path = [start] + path[self.size:]
                     i = 2
                     while i < len(path):
                         if path[i - 2] in self.adjacencies[str(path[i])]:
@@ -135,12 +125,12 @@ class HexWorld(SimWorld):
     def vector(self, state: List[Tuple[int, int]]) -> List[int]:
         return [val for tuple in state for val in tuple]  # flatten board state and return as list / vector
 
+
 if __name__ == "__main__":
     cfg = {
         "size": 5
     }
     game = HexWorld(cfg, 0.3)
-
 
     states = []
     state = game.new_state()
@@ -151,7 +141,6 @@ if __name__ == "__main__":
         print(actions)
         state = game.do_action(state, actions[random.randint(0, len(actions) - 1)])
         actions = game.get_actions(state)
-        print(game.in_end_state(state))
     states.append(state)
     game.visualize([state])
 
