@@ -14,10 +14,10 @@ class NimWorld(SimWorld):
         return self.n, (1, 0)
 
     def get_actions(self, state):
-        return [*range(1,self.k+1)]
+        return [*range(1, self.k + 1)]
 
     def do_action(self, state, action):
-        return state[0]-action, tuple(reversed(state[1]))
+        return state[0] - action, tuple(reversed(state[1]))
 
     def in_end_state(self, state) -> bool:
         return state[0] <= 0
@@ -25,6 +25,9 @@ class NimWorld(SimWorld):
     def visualize(self, states):
         plt.plot(states[:][0])
         plt.show()
+
+    def winner(self, state):
+        return tuple(reversed(state[1])) if self.in_end_state(state) else None
 
     def vector(self, state):
         return state[0], state[1][0], state[1][1]

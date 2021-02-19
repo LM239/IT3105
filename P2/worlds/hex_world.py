@@ -68,13 +68,16 @@ class HexWorld(SimWorld):
             return True
         return any(map(self.in_end_state_rec_x, ((state, i, path + [i], start) for i in self.adjacencies[str(index)] if state[i][1] == 1 and i not in path)))
 
-    def visualize(self, states):  # visalize states (list of states)
+    def winner(self, state):
+        return tuple(reversed(state[-1])) if self.in_end_state(state) else None
+
+    def visualize(self, states):  # visualize states (list of states)
         G = nx.Graph()
         for i in range(self.size ** 2):
             y, x = self.from1D(i)
             pos = (x - 0.5 * (x + y), -x - y)  # use manhattan distance to find node positions
             G.add_node(i, pos=pos)
-            for node in self.adjacencies[str(i)]:  # use adjancency matrix to add edges
+            for node in self.adjacencies[str(i)]:  # use adjacency matrix to add edges
                 if (i < self.size or i >= self.size * (self.size - 1)) and (node < self.size or node >= self.size * (self.size - 1)):
                     G.add_edge(i, node, width=2, color="green")
                 elif (i % self.size == 0 or i % self.size == self.size - 1) and (node % self.size == 0 or node % self.size == self.size - 1):
@@ -135,7 +138,6 @@ if __name__ == "__main__":
     states = []
     state = game.new_state()
     actions = game.get_actions(state)
-    print(game.adjacencies)
     while len(actions) > 0:
         states.append(state)
         print(actions)
@@ -143,6 +145,7 @@ if __name__ == "__main__":
         actions = game.get_actions(state)
     states.append(state)
     game.visualize([state])
+    print(game.winner(state))
 
 
 

@@ -19,4 +19,5 @@ class SimWorld:
     def vector(self, state):
         pass
 
-
+    def winner(self, state):
+        pass
