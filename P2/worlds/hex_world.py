@@ -42,7 +42,7 @@ class HexWorld(SimWorld):
         return [i for i, t in enumerate(state[:-1]) if t[0] == t[1]] if not self.in_end_state(state) else []
 
     def do_action(self, state, action):
-        return state[0:action] + [state[-1]] + state[action + 1:] + [tuple(reversed(state[-1]))]
+        return state[0:action] + [state[-1]] + state[action + 1:-1] + [tuple(reversed(state[-1]))]
 
     def from2D(self, y: int, x: int) -> int:  # find 1D list index for a given 2D coordinate
         return (y * self.size) + x
@@ -138,6 +138,7 @@ if __name__ == "__main__":
     states = []
     state = game.new_state()
     actions = game.get_actions(state)
+    print(game.child_states(state))
     while len(actions) > 0:
         states.append(state)
         print(actions)
@@ -145,7 +146,6 @@ if __name__ == "__main__":
         actions = game.get_actions(state)
     states.append(state)
     game.visualize([state])
-    print(game.winner(state))
 
 
 
