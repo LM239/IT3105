@@ -50,7 +50,7 @@ class HexWorld(SimWorld):
         return divmod(index, self.size)
 
     def in_end_state(self, state: List) -> bool:
-        return any(map(self.in_end_state_rec, list((state, i, "y", list(range(self.size))) for i in range(self.size) if state[i][0] == 1))) if state[-1][0] == 1 \
+        return any(map(self.in_end_state_rec, list((state, i, "y", list(range(self.size))) for i in range(self.size) if state[i][0] == 1))) if state[-1][1] == 1 \
                else any(map(self.in_end_state_rec, list((state, self.size * i, "x", list(range(0, self.size ** 2, self.size))) for i in range(self.size) if state[self.size * i][1] == 1)))
 
     def in_end_state_rec(self, data) -> bool:
@@ -90,6 +90,13 @@ class HexWorld(SimWorld):
                             continue
                         break
                     path = [start] + path[self.size:]
+                    i = 2
+                    while i < len(path):
+                        if path[i - 2] in self.adjacencies[str(path[i])]:
+                            path = path[:i - 1] + path[i:]
+                            i -= 1
+                        else:
+                            i += 1
                     for i in range(1, len(path)):
                         G.add_edge(path[i], path[i - 1], width=5)
                     edge_withs = list(nx.get_edge_attributes(G, 'width').values())
@@ -118,7 +125,7 @@ class HexWorld(SimWorld):
 
 if __name__ == "__main__":
     cfg = {
-        "size": 4
+        "size": 8
     }
     game = HexWorld(cfg, 0.3)
 
@@ -134,7 +141,6 @@ if __name__ == "__main__":
         actions = game.get_actions(state)
         print(game.in_end_state(state))
     states.append(state)
-    print(game.paths[str(state)])
     game.visualize([state])
 
 
