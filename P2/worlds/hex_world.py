@@ -65,7 +65,7 @@ class HexWorld(SimWorld):
     def visualize(self, states):  # visalize states (list of states)
         G = nx.Graph()
         for i in range(self.size ** 2):
-            x, y = self.from1D(i)
+            y, x = self.from1D(i)
             pos = (x - 0.5 * (x + y), -x - y)  # use manhattan distance to find node positions
             G.add_node(i, pos=pos)
             for node in self.adjacencies[str(i)]:  # use adjancency matrix to add edges
@@ -76,7 +76,7 @@ class HexWorld(SimWorld):
             p1_nodes = []  # set of nodes to color as open
             p2_nodes = []
             empty_nodes = []  # set of nodes to color as closed
-            for i in range(self.size):
+            for i in range(self.size ** 2):
                 if state[i][0] == 1:  #  add node to appropriate set
                     p1_nodes.append(i)
                 elif state[i][1] == 1:
