@@ -75,12 +75,18 @@ class HexWorld(SimWorld):
             pos = (x - 0.5 * (x + y), -x - y)  # use manhattan distance to find node positions
             G.add_node(i, pos=pos)
             for node in self.adjacencies[str(i)]:  # use adjancency matrix to add edges
-                G.add_edge(i, node, width=1)
+                if (i < self.size or i >= self.size * (self.size - 1)) and (node < self.size or node >= self.size * (self.size - 1)):
+                    G.add_edge(i, node, width=2, color="green")
+                elif (i % self.size == 0 or i % self.size == self.size - 1) and (node % self.size == 0 or node % self.size == self.size - 1):
+                    G.add_edge(i, node, width=2, color="red")
+                else:
+                    G.add_edge(i, node, width=1, color="black")
         pos = nx.get_node_attributes(G, 'pos')  # extract node positions
         red_patch = patches.Patch(color='red', label='Player 2')
         green_patch = patches.Patch(color='green', label='Player 1')
         plt.figure(figsize=(self.size, int(1.5 * self.size)))  # set fig size
-        edge_withs = list(nx.get_edge_attributes(G,'width').values())
+        edge_widths = list(nx.get_edge_attributes(G, 'width').values())
+        edge_colors = list(nx.get_edge_attributes(G, 'color').values())
         for i, state in enumerate(states):  # go through each state and visualize
             if i == len(states) - 1:
                 path = self.paths[str(state)]
@@ -102,8 +108,9 @@ class HexWorld(SimWorld):
                         else:
                             i += 1
                     for i in range(1, len(path)):
-                        G.add_edge(path[i], path[i - 1], width=5)
-                    edge_withs = list(nx.get_edge_attributes(G, 'width').values())
+                        G.add_edge(path[i], path[i - 1], width=5, color="black")
+                    edge_colors = list(nx.get_edge_attributes(G, 'color').values())
+                    edge_widths = list(nx.get_edge_attributes(G, 'width').values())
             p1_nodes = []  # set of nodes to color as open
             p2_nodes = []
             empty_nodes = []  # set of nodes to color as closed
@@ -118,8 +125,8 @@ class HexWorld(SimWorld):
             nx.draw_networkx_nodes(G, pos, nodelist=p2_nodes, node_color="r")  # draw closed nodes (red)
             nx.draw_networkx_nodes(G, pos, nodelist=empty_nodes, node_color="y")  # draw closed nodes (red)
             nx.draw_networkx_labels(G, pos, font_weight="bold")  # draw node names (their coordinate)
-            nx.draw_networkx_edges(G, pos, width=edge_withs)  # draw edges
-            plt.legend(handles=[red_patch, green_patch], prop={'size': 2 * self.size + 2})
+            nx.draw_networkx_edges(G, pos, width=edge_widths, edge_color=edge_colors)  # draw edges
+            plt.legend(handles=[green_patch, red_patch], prop={'size': 2 * self.size + 2})
             plt.draw()  # finish figure
             plt.pause(self.display_rate) # delay before continuing to next state in states
             plt.clf()  # clear canvas
