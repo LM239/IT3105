@@ -99,7 +99,6 @@ class HexWorld(SimWorld):
                     while i < len(path):
                         if path[i - 2] in self.adjacencies[str(path[i])]:
                             path = path[:i - 1] + path[i:]
-                            i -= 1
                         else:
                             i += 1
                     for i in range(1, len(path)):
@@ -131,7 +130,7 @@ class HexWorld(SimWorld):
 
 if __name__ == "__main__":
     cfg = {
-        "size": 3
+        "size": 5
     }
     game = HexWorld(cfg, 0.3)
 
