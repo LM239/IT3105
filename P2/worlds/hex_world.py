@@ -1,6 +1,7 @@
 from typing import List, Tuple
 import networkx as nx
 from matplotlib import pyplot as plt
+from matplotlib import patches
 from world import SimWorld
 from collections import defaultdict
 import random
@@ -31,7 +32,7 @@ class HexWorld(SimWorld):
                 if self.valid_coords(y + 1, x - 1):
                     self.adjacencies[index].append(self.from2D(y + 1, x - 1))
 
-    def valid_coords(self, y: int, x: int) -> bool:  # verifies that coorinates are within the board
+    def valid_coords(self, y: int, x: int) -> bool:  # verifies that coordinates are within the board
         return 0 <= x < self.size and 0 <= y < self.size
 
     def new_state(self):
@@ -58,14 +59,14 @@ class HexWorld(SimWorld):
         if index >= self.size * (self.size - 1):
             self.paths[str(state)] = path
             return True
-        return any(map(self.in_end_state_rec_y, list((state, i, path.copy() + [i]) for i in self.adjacencies[str(index)] if state[i][0] == 1 and i not in path)))
+        return any(map(self.in_end_state_rec_y, list((state, i, path + [i]) for i in self.adjacencies[str(index)] if state[i][0] == 1 and i not in path)))
 
     def in_end_state_rec_x(self, data) -> bool:
         state, index, path = data
         if index % self.size == self.size - 1:
             self.paths[str(state)] = path
             return True
-        return any(map(self.in_end_state_rec_x, list((state, i, path.copy() + [i]) for i in self.adjacencies[str(index)] if state[i][1] == 1 and i not in path)))
+        return any(map(self.in_end_state_rec_x, list((state, i, path + [i]) for i in self.adjacencies[str(index)] if state[i][1] == 1 and i not in path)))
 
     def visualize(self, states):  # visalize states (list of states)
         G = nx.Graph()
@@ -76,6 +77,8 @@ class HexWorld(SimWorld):
             for node in self.adjacencies[str(i)]:  # use adjancency matrix to add edges
                 G.add_edge(i, node, width=1)
         pos = nx.get_node_attributes(G, 'pos')  # extract node positions
+        red_patch = patches.Patch(color='red', label='Player 2')
+        green_patch = patches.Patch(color='green', label='Player 1')
         plt.figure(figsize=(self.size, int(1.5 * self.size)))  # set fig size
         edge_withs = list(nx.get_edge_attributes(G,'width').values())
         for i, state in enumerate(states):  # go through each state and visualize
@@ -117,17 +120,18 @@ class HexWorld(SimWorld):
             nx.draw_networkx_nodes(G, pos, nodelist=empty_nodes, node_color="y")  # draw closed nodes (red)
             nx.draw_networkx_labels(G, pos, font_weight="bold")  # draw node names (their coordinate)
             nx.draw_networkx_edges(G, pos, width=edge_withs)  # draw edges
+            plt.legend(handles=[red_patch, green_patch], prop={'size': 2 * self.size + 2})
             plt.draw()  # finish figure
             plt.pause(self.display_rate) # delay before continuing to next state in states
             plt.clf()  # clear canvas
         plt.close()  # close window
 
     def vector(self, state: List[Tuple[int, int]]) -> List[int]:
-        return [val for tuple in state for val in tuple] # flatten board state and return as list / vector
+        return [val for tuple in state for val in tuple]  # flatten board state and return as list / vector
 
 if __name__ == "__main__":
     cfg = {
-        "size": 10
+        "size": 3
     }
     game = HexWorld(cfg, 0.3)
 
