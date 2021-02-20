@@ -55,20 +55,46 @@ class HexWorld(SimWorld):
         return divmod(index, self.size)
 
     def in_end_state(self, state: List) -> bool:
-        return any((self.in_end_state_rec_y(state, i, [i], list(range(self.size))) for i in range(self.size) if state[i][0] == 1)) if state[-1][1] == 1 \
-               else any((self.in_end_state_rec_x(state, self.size * i, [self.size * i], list(range(0, self.size ** 2, self.size))) for i in range(self.size) if state[self.size * i][1] == 1))
+        if state[-1][1] == 1:
+            return any((self.in_end_state_rec_y(state, i, [i], list(range(self.size))) for i in range(self.size) if state[i][0] == 1))
+        else:
+            return any((self.in_end_state_rec_x(state, self.size * i, [self.size * i], list(range(0, self.size ** 2, self.size))) for i in range(self.size) if state[self.size * i][1] == 1))
 
-    def in_end_state_rec_y(self, state, index, path, solved) -> bool:
-        if index >= self.size * (self.size - 1):
-            self.paths[str(state)] = path
-            return True
-        return any((self.in_end_state_rec_y(state, i, [i] + path, self.adjacencies_ysort[str(index)][:pos + 1] + solved) for pos, i in enumerate(self.adjacencies_ysort[str(index)]) if state[i][0] == 1 and i not in solved))
+
+    #def in_end_state_rec_y(self, state, index, path, solved) -> bool:
+       # if index >= self.size * (self.size - 1):
+           # self.paths[str(state)] = path
+            #return True
+        #return any((self.in_end_state_rec_y(state, i, [i] + path, [x for x in self.adjacencies_ysort[str(index)][:pos + 1] if state[x][0] == 1] + solved) for pos, i in enumerate(self.adjacencies_ysort[str(index)]) if state[i][0] == 1 and i not in solved and not any(i in self.adjacencies[str(a)] for a in solved[:-self.size] if a != index)))
+
+    #def in_end_state_rec_x(self, state, index, path, solved) -> bool:
+        #if index % self.size == self.size - 1:
+            #self.paths[str(state)] = path
+            #return True
+        #return any((self.in_end_state_rec_x(state, i, [i] + path, [x for x in self.adjacencies_ysort[str(index)][:pos + 1] if state[x][1] == 1] + solved) for pos, i in enumerate(self.adjacencies_xsort[str(index)]) if state[i][1] == 1 and i not in solved and not any(i in self.adjacencies[str(a)] for a in solved[:-self.size] if a != index)))
+
 
     def in_end_state_rec_x(self, state, index, path, solved) -> bool:
         if index % self.size == self.size - 1:
             self.paths[str(state)] = path
             return True
-        return any((self.in_end_state_rec_x(state, i, [i] + path, self.adjacencies_xsort[str(index)][:pos + 1] + solved) for pos, i in enumerate(self.adjacencies_xsort[str(index)]) if state[i][1] == 1 and i not in solved))
+        for pos, i in enumerate(self.adjacencies_xsort[str(index)]):
+            if state[i][1] == 1 and i not in solved and not any(i in self.adjacencies[str(a)] for a in solved[:-self.size] if a != index):
+                if self.in_end_state_rec_x(state, i, [i] + path,
+                                               [x for x in self.adjacencies_xsort[str(index)][:pos + 1] if state[x][1] == 1] + solved):
+                    return True
+        return False
+
+    def in_end_state_rec_y(self, state, index, path, solved) -> bool:
+        if index >= self.size * (self.size - 1):
+            self.paths[str(state)] = path
+            return True
+        for pos, i in enumerate(self.adjacencies_ysort[str(index)]):
+            if state[i][0] == 1 and i not in solved and not any(i in self.adjacencies[str(a)] for a in solved[:-self.size] if a != index):
+                if self.in_end_state_rec_y(state, i, [i] + path,
+                                               [x for x in self.adjacencies_ysort[str(index)][:pos + 1] if state[x][0] == 1] + solved):
+                    return True
+        return False
 
     def winner(self, state):
         return tuple(reversed(state[-1])) if self.in_end_state(state) else None
@@ -91,7 +117,7 @@ class HexWorld(SimWorld):
         pos = nx.get_node_attributes(G, 'pos')  # extract node positions
         red_patch = patches.Patch(color='red', label='Player 2')
         green_patch = patches.Patch(color='green', label='Player 1')
-        plt.figure(figsize=(self.size, int(1.5 * self.size)))  # set fig size
+        plt.figure(figsize=(min(40, self.size), int(1.5 * min(40, self.size))))  # set fig size
         edge_widths = list(nx.get_edge_attributes(G, 'width').values())
         edge_colors = list(nx.get_edge_attributes(G, 'color').values())
         for i, state in enumerate(states):  # go through each state and visualize
@@ -123,11 +149,11 @@ class HexWorld(SimWorld):
             nx.draw_networkx_nodes(G, pos, nodelist=empty_nodes, node_color="y")  # draw closed nodes (red)
             nx.draw_networkx_labels(G, pos, font_weight="bold")  # draw node names (their coordinate)
             nx.draw_networkx_edges(G, pos, width=edge_widths, edge_color=edge_colors)  # draw edges
-            plt.legend(handles=[green_patch, red_patch], prop={'size': 2 * self.size + 2})
+            plt.legend(handles=[green_patch, red_patch], prop={'size': 2 * min(40, self.size) + 2})
             plt.draw()  # finish figure
             plt.pause(self.display_rate)  # delay before continuing to next state in states
-            plt.clf()  # clear canvas
-        plt.close()  # close window
+            plt.clf()  # clear canvas#
+        #plt.close()  # close window
 
     def vector(self, state: List[Tuple[int, int]]) -> List[int]:
         return [val for tuple in state for val in tuple]  # flatten board state and return as list / vector
@@ -138,14 +164,13 @@ class HexWorld(SimWorld):
 
 if __name__ == "__main__":
     cfg = {
-        "size": 14
+        "size": 75
     }
     game = HexWorld(cfg, 0.3)
 
     states = []
     state = game.new_state()
     actions = game.get_actions(state)
-    print(game.child_states(state))
     while len(actions) > 0:
         states.append(state)
         print(actions)
