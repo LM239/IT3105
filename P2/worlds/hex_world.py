@@ -55,20 +55,20 @@ class HexWorld(SimWorld):
         return divmod(index, self.size)
 
     def in_end_state(self, state: List) -> bool:
-        return any((self.in_end_state_rec_y(state, i, list(range(self.size)), i) for i in range(self.size) if state[i][0] == 1)) if state[-1][1] == 1 \
-               else any((self.in_end_state_rec_x(state, self.size * i, list(range(0, self.size ** 2, self.size)), self.size * i) for i in range(self.size) if state[self.size * i][1] == 1))
+        return any((self.in_end_state_rec_y(state, i, [i], list(range(self.size))) for i in range(self.size) if state[i][0] == 1)) if state[-1][1] == 1 \
+               else any((self.in_end_state_rec_x(state, self.size * i, [self.size * i], list(range(0, self.size ** 2, self.size))) for i in range(self.size) if state[self.size * i][1] == 1))
 
-    def in_end_state_rec_y(self, state, index, path, start) -> bool:
+    def in_end_state_rec_y(self, state, index, path, solved) -> bool:
         if index >= self.size * (self.size - 1):
-            self.paths[str(state)] = path[:-self.size] + [start]
+            self.paths[str(state)] = path
             return True
-        return any((self.in_end_state_rec_y(state, i, [i] + path, start) for i in self.adjacencies_ysort[str(index)] if state[i][0] == 1 and i not in path))
+        return any((self.in_end_state_rec_y(state, i, [i] + path, solved + self.adjacencies_ysort[str(index)][:pos + 1]) for pos, i in enumerate(self.adjacencies_ysort[str(index)]) if state[i][0] == 1 and i not in solved))
 
-    def in_end_state_rec_x(self, state, index, path, start) -> bool:
+    def in_end_state_rec_x(self, state, index, path, solved) -> bool:
         if index % self.size == self.size - 1:
-            self.paths[str(state)] = path[:-self.size] + [start]
+            self.paths[str(state)] = path
             return True
-        return any((self.in_end_state_rec_x(state, i, [i] + path, start) for i in self.adjacencies_xsort[str(index)] if state[i][1] == 1 and i not in path))
+        return any((self.in_end_state_rec_x(state, i, [i] + path, solved + self.adjacencies_xsort[str(index)][:pos + 1]) for pos, i in enumerate(self.adjacencies_xsort[str(index)]) if state[i][1] == 1 and i not in solved))
 
     def winner(self, state):
         return tuple(reversed(state[-1])) if self.in_end_state(state) else None
@@ -79,9 +79,9 @@ class HexWorld(SimWorld):
             y, x = self.from1D(i)
             pos = (x - 0.5 * (x + y), -x - y)  # use manhattan distance to find node positions
             G.add_node(i, pos=pos)
-            for node in self.adjacencies[str(i)]:  # use adjacency matrix to add edges
+            for node in self.adjacencies_ysort[str(i)]:  # use adjacency matrix to add edges
                 if node < i:
-                    continue
+                    break
                 if (i < self.size and node < self.size or i >= self.size * (self.size - 1) and node >= self.size * (self.size - 1)):
                     G.add_edge(i, node, width=2, color="green")
                 elif (i % self.size == 0 and node % self.size == 0 or i % self.size == self.size - 1 and node % self.size == self.size - 1):
@@ -138,7 +138,7 @@ class HexWorld(SimWorld):
 
 if __name__ == "__main__":
     cfg = {
-        "size": 10
+        "size": 18
     }
     game = HexWorld(cfg, 0.3)
 
