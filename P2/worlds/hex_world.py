@@ -64,19 +64,20 @@ class HexWorld(SimWorld):
         while len(stack) > 0:
             v = stack[0]
             stack = stack[1:]
-            if goal_test(v):
-                path = [v]
-                while parents[str(v)] >= 0:
-                    v = parents[str(v)]
-                    path.append(v)
-                self.paths[str(state)] = path
-                print(path)
-                return True
-            visits[str(v)] = True
-            for c in e[str(v)]:
-                if state[c][c_index] == 1 and not visits[str(c)]:
-                    parents[str(c)] = v
-                    stack = [c] + stack
+            if not visits[v]:
+                if goal_test(v):
+                    path = [v]
+                    while parents[v] >= 0:
+                        v = parents[v]
+                        path.append(v)
+                    self.paths[str(state)] = path
+                    print(path)
+                    return True
+                visits[v] = True
+                for c in e[str(v)]:
+                    if state[c][c_index] == 1 and not visits[c]:
+                        parents[c] = v
+                        stack = [c] + stack
         return False
 
     def winner(self, state):
@@ -147,7 +148,7 @@ class HexWorld(SimWorld):
 
 if __name__ == "__main__":
     cfg = {
-        "size": 10
+        "size": 20
     }
     game = HexWorld(cfg, 0.3)
 
