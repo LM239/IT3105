@@ -62,13 +62,13 @@ class HexWorld(SimWorld):
         if index >= self.size * (self.size - 1):
             self.paths[str(state)] = path
             return True
-        return any((self.in_end_state_rec_y(state, i, [i] + path, solved + self.adjacencies_ysort[str(index)][:pos + 1]) for pos, i in enumerate(self.adjacencies_ysort[str(index)]) if state[i][0] == 1 and i not in solved))
+        return any((self.in_end_state_rec_y(state, i, [i] + path, self.adjacencies_ysort[str(index)][:pos + 1] + solved) for pos, i in enumerate(self.adjacencies_ysort[str(index)]) if state[i][0] == 1 and i not in solved))
 
     def in_end_state_rec_x(self, state, index, path, solved) -> bool:
         if index % self.size == self.size - 1:
             self.paths[str(state)] = path
             return True
-        return any((self.in_end_state_rec_x(state, i, [i] + path, solved + self.adjacencies_xsort[str(index)][:pos + 1]) for pos, i in enumerate(self.adjacencies_xsort[str(index)]) if state[i][1] == 1 and i not in solved))
+        return any((self.in_end_state_rec_x(state, i, [i] + path, self.adjacencies_xsort[str(index)][:pos + 1] + solved) for pos, i in enumerate(self.adjacencies_xsort[str(index)]) if state[i][1] == 1 and i not in solved))
 
     def winner(self, state):
         return tuple(reversed(state[-1])) if self.in_end_state(state) else None
@@ -138,7 +138,7 @@ class HexWorld(SimWorld):
 
 if __name__ == "__main__":
     cfg = {
-        "size": 18
+        "size": 14
     }
     game = HexWorld(cfg, 0.3)
 
