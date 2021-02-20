@@ -54,17 +54,17 @@ class HexWorld(SimWorld):
     def from1D(self, index):
         return divmod(index, self.size)
 
-    def in_end_state(self, state: List) -> bool:
-        return self.end_state_dfs_y(state) if state[-1][1] == 1 else self.end_state_dfs_x(state)
-
-    def end_state_dfs_x(self, state):
-        stack = [x for x in range(0, self.size ** 2, self.size) if state[x][1] == 1]
+    def in_end_state(self, state):
+        stack = [x for x in range(0, self.size ** 2, self.size) if state[x][1] == 1] if state[-1][0] == 1 else [x for x in range(self.size) if state[x][0] == 1]
         visits = defaultdict(lambda: False)
         parents = defaultdict(lambda: -1)
+        goal_test = (lambda x: x % self.size == self.size - 1) if state[-1][0] == 1 else (lambda x: x >= self.size * (self.size - 1))
+        c_index = 1 if state[-1][0] == 1 else 0
+        e = self.adjacencies_xsort if state[-1][0] == 1 else self.adjacencies_ysort
         while len(stack) > 0:
             v = stack[0]
             stack = stack[1:]
-            if v % self.size == self.size - 1:
+            if goal_test(v):
                 path = [v]
                 while parents[str(v)] > 0:
                     v = parents[str(v)]
@@ -72,29 +72,8 @@ class HexWorld(SimWorld):
                 self.paths[str(state)] = path
                 return True
             visits[str(v)] = True
-            for c in self.adjacencies_xsort[str(v)]:
-                if state[c][1] == 1 and not visits[str(c)]:
-                    parents[str(c)] = v
-                    stack = [c] + stack
-        return False
-
-    def end_state_dfs_y(self, state):
-        stack = [x for x in range(0, self.size) if state[x][0] == 1]
-        visits = defaultdict(lambda: False)
-        parents = defaultdict(lambda: -1)
-        while len(stack) > 0:
-            v = stack[0]
-            stack = stack[1:]
-            if v >= self.size * (self.size - 1):
-                path = [v]
-                while parents[str(v)] > 0:
-                    v = parents[str(v)]
-                    path.append(v)
-                self.paths[str(state)] = path
-                return True
-            visits[str(v)] = True
-            for c in self.adjacencies_ysort[str(v)]:
-                if state[c][0] == 1 and not visits[str(c)]:
+            for c in e[str(v)]:
+                if state[c][c_index] == 1 and not visits[str(c)]:
                     parents[str(c)] = v
                     stack = [c] + stack
         return False
@@ -134,7 +113,7 @@ class HexWorld(SimWorld):
                         else:
                             i += 1
                     for i in range(1, len(path)):
-                        G.add_edge(path[i], path[i - 1], width=4, color="black")
+                        G.add_edge(path[i], path[i - 1], width=5, color="black")
                     edge_colors = list(nx.get_edge_attributes(G, 'color').values())
                     edge_widths = list(nx.get_edge_attributes(G, 'width').values())
             p1_nodes = []  # set of nodes to color as open
@@ -147,10 +126,10 @@ class HexWorld(SimWorld):
                     p2_nodes.append(i)
                 else:
                     empty_nodes.append(i)
-            nx.draw_networkx_nodes(G, pos, nodelist=p1_nodes, node_color="g", node_size=15)  # draw open nodes (green)
-            nx.draw_networkx_nodes(G, pos, nodelist=p2_nodes, node_color="r", node_size=15)  # draw closed nodes (red)
-            nx.draw_networkx_nodes(G, pos, nodelist=empty_nodes, node_color="y", node_size=15)  # draw closed nodes (red)
-            #nx.draw_networkx_labels(G, pos, font_weight="bold")  # draw node names (their coordinate)
+            nx.draw_networkx_nodes(G, pos, nodelist=p1_nodes, node_color="g", node_size=150)  # draw open nodes (green)
+            nx.draw_networkx_nodes(G, pos, nodelist=p2_nodes, node_color="r", node_size=150)  # draw closed nodes (red)
+            nx.draw_networkx_nodes(G, pos, nodelist=empty_nodes, node_color="y", node_size=150)  # draw closed nodes (red)
+            nx.draw_networkx_labels(G, pos, font_weight="bold")  # draw node names (their coordinate)
             nx.draw_networkx_edges(G, pos, width=edge_widths, edge_color=edge_colors)  # draw edges
             plt.legend(handles=[green_patch, red_patch], prop={'size': 2 * min(40, self.size) + 2})
             plt.draw()  # finish figure
@@ -167,7 +146,7 @@ class HexWorld(SimWorld):
 
 if __name__ == "__main__":
     cfg = {
-        "size": 300
+        "size": 15
     }
     game = HexWorld(cfg, 0.3)
 
