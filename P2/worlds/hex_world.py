@@ -66,10 +66,11 @@ class HexWorld(SimWorld):
             stack = stack[1:]
             if goal_test(v):
                 path = [v]
-                while parents[str(v)] > 0:
+                while parents[str(v)] >= 0:
                     v = parents[str(v)]
                     path.append(v)
                 self.paths[str(state)] = path
+                print(path)
                 return True
             visits[str(v)] = True
             for c in e[str(v)]:
@@ -146,7 +147,7 @@ class HexWorld(SimWorld):
 
 if __name__ == "__main__":
     cfg = {
-        "size": 15
+        "size": 10
     }
     game = HexWorld(cfg, 0.3)
 
