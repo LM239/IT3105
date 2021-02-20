@@ -25,16 +25,16 @@ class HexWorld(SimWorld):
                     self.adjacencies[index].append(self.from2D(y + 1, x))
                     if self.valid_coords(y + 1, x - 1):
                         self.adjacencies[index].append(self.from2D(y + 1, x - 1))
-                if self.valid_coords(y - 1, x):
-                    self.adjacencies[index].append(self.from2D(y - 1, x))
-                    if self.valid_coords(y - 1, x + 1):
-                        self.adjacencies[index].append(self.from2D(y - 1, x + 1))
                 if self.valid_coords(y, x + 1):
                     self.adjacencies[index].append(self.from2D(y, x + 1))
                 if self.valid_coords(y, x - 1):
                     self.adjacencies[index].append(self.from2D(y, x - 1))
-                self.adjacencies_ysort[index] = sorted(self.adjacencies[index], reverse=True)
-                self.adjacencies_xsort[index] = sorted(self.adjacencies[index], reverse=True, key=(lambda x: x % self.size))
+                if self.valid_coords(y - 1, x):
+                    if self.valid_coords(y - 1, x + 1):
+                        self.adjacencies[index].append(self.from2D(y - 1, x + 1))
+                    self.adjacencies[index].append(self.from2D(y - 1, x))
+                self.adjacencies_ysort[index] = list(reversed(self.adjacencies[index]))
+                self.adjacencies_xsort[index] = sorted(self.adjacencies[index], key=(lambda x: x % self.size))
 
     def valid_coords(self, y: int, x: int) -> bool:  # verifies that coordinates are within the board
         return 0 <= x < self.size and 0 <= y < self.size
@@ -58,49 +58,45 @@ class HexWorld(SimWorld):
         return self.end_state_dfs_y(state) if state[-1][1] == 1 else self.end_state_dfs_x(state)
 
     def end_state_dfs_x(self, state):
-        start_vs = [x for x in range(0, self.size ** 2, self.size) if state[x][1] == 1]
+        stack = [x for x in range(0, self.size ** 2, self.size) if state[x][1] == 1]
         visits = defaultdict(lambda: False)
         parents = defaultdict(lambda: -1)
-        for start in start_vs:
-            stack = [start]
-            while len(stack) > 0:
-                v = stack[0]
-                stack = stack[1:]
-                if v % self.size == self.size - 1:
-                    path = [v]
-                    while parents[str(v)] > 0:
-                        v = parents[str(v)]
-                        path.append(v)
-                    self.paths[str(state)] = path
-                    return True
-                visits[str(v)] = True
-                for c in reversed(self.adjacencies_xsort[str(v)]):
-                    if state[c][1] == 1 and not visits[str(c)]:
-                        parents[str(c)] = v
-                        stack = [c] + stack
+        while len(stack) > 0:
+            v = stack[0]
+            stack = stack[1:]
+            if v % self.size == self.size - 1:
+                path = [v]
+                while parents[str(v)] > 0:
+                    v = parents[str(v)]
+                    path.append(v)
+                self.paths[str(state)] = path
+                return True
+            visits[str(v)] = True
+            for c in self.adjacencies_xsort[str(v)]:
+                if state[c][1] == 1 and not visits[str(c)]:
+                    parents[str(c)] = v
+                    stack = [c] + stack
         return False
 
     def end_state_dfs_y(self, state):
-        start_vs = [x for x in range(0, self.size) if state[x][0] == 1]
+        stack = [x for x in range(0, self.size) if state[x][0] == 1]
         visits = defaultdict(lambda: False)
         parents = defaultdict(lambda: -1)
-        for start in start_vs:
-            stack = [start]
-            while len(stack) > 0:
-                v = stack[0]
-                stack = stack[1:]
-                if v >= self.size * (self.size - 1):
-                    path = [v]
-                    while parents[str(v)] > 0:
-                        v = parents[str(v)]
-                        path.append(v)
-                    self.paths[str(state)] = path
-                    return True
-                visits[str(v)] = True
-                for c in reversed(self.adjacencies_ysort[str(v)]):
-                    if state[c][0] == 1 and not visits[str(c)]:
-                        parents[str(c)] = v
-                        stack = [c] + stack
+        while len(stack) > 0:
+            v = stack[0]
+            stack = stack[1:]
+            if v >= self.size * (self.size - 1):
+                path = [v]
+                while parents[str(v)] > 0:
+                    v = parents[str(v)]
+                    path.append(v)
+                self.paths[str(state)] = path
+                return True
+            visits[str(v)] = True
+            for c in self.adjacencies_ysort[str(v)]:
+                if state[c][0] == 1 and not visits[str(c)]:
+                    parents[str(c)] = v
+                    stack = [c] + stack
         return False
 
     def winner(self, state):
@@ -112,7 +108,7 @@ class HexWorld(SimWorld):
             y, x = self.from1D(i)
             pos = (x - 0.5 * (x + y), -x - y)  # use manhattan distance to find node positions
             G.add_node(i, pos=pos)
-            for node in self.adjacencies_ysort[str(i)]:  # use adjacency matrix to add edges
+            for node in self.adjacencies[str(i)]:  # use adjacency matrix to add edges
                 if node < i:
                     break
                 if (i < self.size and node < self.size or i >= self.size * (self.size - 1) and node >= self.size * (self.size - 1)):
@@ -124,7 +120,7 @@ class HexWorld(SimWorld):
         pos = nx.get_node_attributes(G, 'pos')  # extract node positions
         red_patch = patches.Patch(color='red', label='Player 2')
         green_patch = patches.Patch(color='green', label='Player 1')
-        plt.figure(figsize=(min(40, self.size), int(1.5 * min(40, self.size))))  # set fig size
+        plt.figure(figsize=(min(41, self.size), int(1.5 * min(41, self.size))))  # set fig size
         edge_widths = list(nx.get_edge_attributes(G, 'width').values())
         edge_colors = list(nx.get_edge_attributes(G, 'color').values())
         for i, state in enumerate(states):  # go through each state and visualize
@@ -138,7 +134,7 @@ class HexWorld(SimWorld):
                         else:
                             i += 1
                     for i in range(1, len(path)):
-                        G.add_edge(path[i], path[i - 1], width=5, color="black")
+                        G.add_edge(path[i], path[i - 1], width=4, color="black")
                     edge_colors = list(nx.get_edge_attributes(G, 'color').values())
                     edge_widths = list(nx.get_edge_attributes(G, 'width').values())
             p1_nodes = []  # set of nodes to color as open
@@ -151,10 +147,10 @@ class HexWorld(SimWorld):
                     p2_nodes.append(i)
                 else:
                     empty_nodes.append(i)
-            nx.draw_networkx_nodes(G, pos, nodelist=p1_nodes, node_color="g")  # draw open nodes (green)
-            nx.draw_networkx_nodes(G, pos, nodelist=p2_nodes, node_color="r")  # draw closed nodes (red)
-            nx.draw_networkx_nodes(G, pos, nodelist=empty_nodes, node_color="y")  # draw closed nodes (red)
-            nx.draw_networkx_labels(G, pos, font_weight="bold")  # draw node names (their coordinate)
+            nx.draw_networkx_nodes(G, pos, nodelist=p1_nodes, node_color="g", node_size=15)  # draw open nodes (green)
+            nx.draw_networkx_nodes(G, pos, nodelist=p2_nodes, node_color="r", node_size=15)  # draw closed nodes (red)
+            nx.draw_networkx_nodes(G, pos, nodelist=empty_nodes, node_color="y", node_size=15)  # draw closed nodes (red)
+            #nx.draw_networkx_labels(G, pos, font_weight="bold")  # draw node names (their coordinate)
             nx.draw_networkx_edges(G, pos, width=edge_widths, edge_color=edge_colors)  # draw edges
             plt.legend(handles=[green_patch, red_patch], prop={'size': 2 * min(40, self.size) + 2})
             plt.draw()  # finish figure
@@ -171,7 +167,7 @@ class HexWorld(SimWorld):
 
 if __name__ == "__main__":
     cfg = {
-        "size": 50
+        "size": 300
     }
     game = HexWorld(cfg, 0.3)
 
@@ -179,8 +175,7 @@ if __name__ == "__main__":
     state = game.new_state()
     actions = game.get_actions(state)
     while len(actions) > 0:
-        states.append(state)
-        print(actions)
+        print(len(actions))
         state = game.do_action(state, actions[random.randint(0, len(actions) - 1)])
         actions = game.get_actions(state)
     states.append(state)
