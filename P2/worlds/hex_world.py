@@ -55,45 +55,52 @@ class HexWorld(SimWorld):
         return divmod(index, self.size)
 
     def in_end_state(self, state: List) -> bool:
-        if state[-1][1] == 1:
-            return any((self.in_end_state_rec_y(state, i, [i], list(range(self.size))) for i in range(self.size) if state[i][0] == 1))
-        else:
-            return any((self.in_end_state_rec_x(state, self.size * i, [self.size * i], list(range(0, self.size ** 2, self.size))) for i in range(self.size) if state[self.size * i][1] == 1))
+        return self.end_state_dfs_y(state) if state[-1][1] == 1 else self.end_state_dfs_x(state)
 
-
-    #def in_end_state_rec_y(self, state, index, path, solved) -> bool:
-       # if index >= self.size * (self.size - 1):
-           # self.paths[str(state)] = path
-            #return True
-        #return any((self.in_end_state_rec_y(state, i, [i] + path, [x for x in self.adjacencies_ysort[str(index)][:pos + 1] if state[x][0] == 1] + solved) for pos, i in enumerate(self.adjacencies_ysort[str(index)]) if state[i][0] == 1 and i not in solved and not any(i in self.adjacencies[str(a)] for a in solved[:-self.size] if a != index)))
-
-    #def in_end_state_rec_x(self, state, index, path, solved) -> bool:
-        #if index % self.size == self.size - 1:
-            #self.paths[str(state)] = path
-            #return True
-        #return any((self.in_end_state_rec_x(state, i, [i] + path, [x for x in self.adjacencies_ysort[str(index)][:pos + 1] if state[x][1] == 1] + solved) for pos, i in enumerate(self.adjacencies_xsort[str(index)]) if state[i][1] == 1 and i not in solved and not any(i in self.adjacencies[str(a)] for a in solved[:-self.size] if a != index)))
-
-
-    def in_end_state_rec_x(self, state, index, path, solved) -> bool:
-        if index % self.size == self.size - 1:
-            self.paths[str(state)] = path
-            return True
-        for pos, i in enumerate(self.adjacencies_xsort[str(index)]):
-            if state[i][1] == 1 and i not in solved and not any(i in self.adjacencies[str(a)] for a in solved[:-self.size] if a != index):
-                if self.in_end_state_rec_x(state, i, [i] + path,
-                                               [x for x in self.adjacencies_xsort[str(index)][:pos + 1] if state[x][1] == 1] + solved):
+    def end_state_dfs_x(self, state):
+        start_vs = [x for x in range(0, self.size ** 2, self.size) if state[x][1] == 1]
+        visits = defaultdict(lambda: False)
+        parents = defaultdict(lambda: -1)
+        for start in start_vs:
+            stack = [start]
+            while len(stack) > 0:
+                v = stack[0]
+                stack = stack[1:]
+                if v % self.size == self.size - 1:
+                    path = [v]
+                    while parents[str(v)] > 0:
+                        v = parents[str(v)]
+                        path.append(v)
+                    self.paths[str(state)] = path
                     return True
+                visits[str(v)] = True
+                for c in reversed(self.adjacencies_xsort[str(v)]):
+                    if state[c][1] == 1 and not visits[str(c)]:
+                        parents[str(c)] = v
+                        stack = [c] + stack
         return False
 
-    def in_end_state_rec_y(self, state, index, path, solved) -> bool:
-        if index >= self.size * (self.size - 1):
-            self.paths[str(state)] = path
-            return True
-        for pos, i in enumerate(self.adjacencies_ysort[str(index)]):
-            if state[i][0] == 1 and i not in solved and not any(i in self.adjacencies[str(a)] for a in solved[:-self.size] if a != index):
-                if self.in_end_state_rec_y(state, i, [i] + path,
-                                               [x for x in self.adjacencies_ysort[str(index)][:pos + 1] if state[x][0] == 1] + solved):
+    def end_state_dfs_y(self, state):
+        start_vs = [x for x in range(0, self.size) if state[x][0] == 1]
+        visits = defaultdict(lambda: False)
+        parents = defaultdict(lambda: -1)
+        for start in start_vs:
+            stack = [start]
+            while len(stack) > 0:
+                v = stack[0]
+                stack = stack[1:]
+                if v >= self.size * (self.size - 1):
+                    path = [v]
+                    while parents[str(v)] > 0:
+                        v = parents[str(v)]
+                        path.append(v)
+                    self.paths[str(state)] = path
                     return True
+                visits[str(v)] = True
+                for c in reversed(self.adjacencies_ysort[str(v)]):
+                    if state[c][0] == 1 and not visits[str(c)]:
+                        parents[str(c)] = v
+                        stack = [c] + stack
         return False
 
     def winner(self, state):
@@ -164,7 +171,7 @@ class HexWorld(SimWorld):
 
 if __name__ == "__main__":
     cfg = {
-        "size": 75
+        "size": 50
     }
     game = HexWorld(cfg, 0.3)
 
