@@ -12,7 +12,6 @@ class HexWorld(SimWorld):
     def __init__(self, hex_cfg, display_rate):
         self.size = hex_cfg["size"]
         self.display_rate = display_rate
-        self.paths = defaultdict(lambda: [])
 
         self.adjacencies = {}
         self.adjacencies_xsort = {}
@@ -57,7 +56,6 @@ class HexWorld(SimWorld):
     def in_end_state(self, state):
         stack = [x for x in range(0, self.size ** 2, self.size) if state[x][1] == 1] if state[-1][0] == 1 else [x for x in range(self.size) if state[x][0] == 1]
         visits = defaultdict(lambda: False)
-        parents = defaultdict(lambda: -1)
         goal_test = (lambda x: x % self.size == self.size - 1) if state[-1][0] == 1 else (lambda x: x >= self.size * (self.size - 1))
         c_index = 1 if state[-1][0] == 1 else 0
         e = self.adjacencies_xsort if state[-1][0] == 1 else self.adjacencies_ysort
@@ -66,19 +64,37 @@ class HexWorld(SimWorld):
             stack = stack[1:]
             if not visits[v]:
                 if goal_test(v):
-                    path = [v]
-                    while parents[v] >= 0:
-                        v = parents[v]
-                        path.append(v)
-                    self.paths[str(state)] = path
-                    print(path)
                     return True
                 visits[v] = True
                 for c in e[str(v)]:
                     if state[c][c_index] == 1 and not visits[c]:
-                        parents[c] = v
                         stack = [c] + stack
         return False
+
+    def bfs(self, state):
+        queue = [x for x in range(0, self.size ** 2, self.size) if state[x][1] == 1] if state[-1][0] == 1 else [x for x in range(self.size) if state[x][0] == 1]
+        found = defaultdict(lambda: False)
+        parents = defaultdict(lambda: -1)
+        goal_test = (lambda x: x % self.size == self.size - 1) if state[-1][0] == 1 else (lambda x: x >= self.size * (self.size - 1))
+        c_index = 1 if state[-1][0] == 1 else 0
+        e = self.adjacencies_xsort if state[-1][0] == 1 else self.adjacencies_ysort
+        for v in queue:
+            found[v] = True
+        while len(queue) > 0:
+            v = queue[0]
+            queue = queue[1:]
+            if goal_test(v):
+                path = [v]
+                while parents[v] >= 0:
+                    v = parents[v]
+                    path.append(v)
+                return path
+            for c in e[str(v)]:
+                if state[c][c_index] == 1 and not found[c]:
+                    parents[c] = v
+                    found[c] = True
+                    queue = queue + [c]
+        return []
 
     def winner(self, state):
         return tuple(reversed(state[-1])) if self.in_end_state(state) else None
@@ -106,14 +122,8 @@ class HexWorld(SimWorld):
         edge_colors = list(nx.get_edge_attributes(G, 'color').values())
         for i, state in enumerate(states):  # go through each state and visualize
             if i == len(states) - 1:
-                path = self.paths[str(state)]
+                path = self.bfs(state)
                 if len(path) > 0:
-                    i = 2
-                    while i < len(path):
-                        if path[i - 2] in self.adjacencies[str(path[i])]:
-                            path = path[:i - 1] + path[i:]
-                        else:
-                            i += 1
                     for i in range(1, len(path)):
                         G.add_edge(path[i], path[i - 1], width=5, color="black")
                     edge_colors = list(nx.get_edge_attributes(G, 'color').values())
