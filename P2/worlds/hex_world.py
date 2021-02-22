@@ -60,15 +60,14 @@ class HexWorld(SimWorld):
         c_index = 1 if state[-1][0] == 1 else 0
         e = self.adjacencies_xsort if state[-1][0] == 1 else self.adjacencies_ysort
         while len(stack) > 0:
-            v = stack[0]
-            stack = stack[1:]
+            v = stack.pop()
             if not visits[v]:
                 if goal_test(v):
                     return True
                 visits[v] = True
                 for c in e[str(v)]:
                     if state[c][c_index] == 1 and not visits[c]:
-                        stack = [c] + stack
+                        stack.append(c)
         return False
 
     def bfs(self, state):
@@ -81,8 +80,7 @@ class HexWorld(SimWorld):
         for v in queue:
             found[v] = True
         while len(queue) > 0:
-            v = queue[0]
-            queue = queue[1:]
+            v = queue.pop(0)
             if goal_test(v):
                 path = [v]
                 while parents[v] >= 0:
@@ -93,7 +91,7 @@ class HexWorld(SimWorld):
                 if state[c][c_index] == 1 and not found[c]:
                     parents[c] = v
                     found[c] = True
-                    queue = queue + [c]
+                    queue.append(c)
         return []
 
     def winner(self, state):
@@ -164,7 +162,7 @@ class HexWorld(SimWorld):
 
 if __name__ == "__main__":
     cfg = {
-        "size": 200
+        "size": 5
     }
     game = HexWorld(cfg, 0.3)
 
