@@ -98,7 +98,7 @@ class HexWorld(SimWorld):
         return tuple(reversed(state[-1])) if self.in_end_state(state) else None
 
     def p1_reward(self, state):
-        return state[-1][0] - state[-1][1] if self.in_end_state(state) else 0
+        return state[-1][0] if self.in_end_state(state) else None
 
     def p1_to_move(self, state):
         return state[-1][0] == 1
