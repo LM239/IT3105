@@ -98,7 +98,7 @@ class HexWorld(SimWorld):
         return tuple(reversed(state[-1])) if self.in_end_state(state) else None
 
     def p1_reward(self, state):
-        return state[-1][0] if self.in_end_state(state) else None
+        return state[-1][1] if self.in_end_state(state) else None
 
     def p1_to_move(self, state):
         return state[-1][0] == 1
@@ -163,19 +163,22 @@ class HexWorld(SimWorld):
 
 if __name__ == "__main__":
     cfg = {
-        "size": 35
+        "size": 5
     }
     game = HexWorld(cfg, 0.3)
 
     states = []
     state = game.new_state()
     actions = game.get_actions(state)
+    print(game.p1_to_move(state))
     while len(actions) > 0:
-        print(len(actions))
         state = game.do_action(state, actions[random.randint(0, len(actions) - 1)])
         actions = game.get_actions(state)
     states.append(state)
     game.visualize([state])
+    print(game.winner(state))
+    print(game.p1_reward(state))
+    print(game.p1_to_move(state))
 
 
 
