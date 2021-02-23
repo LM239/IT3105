@@ -1,11 +1,11 @@
 import time
 import random
-from typing import List, Tuple, Any
+from typing import List, Any
 from collections import defaultdict
-from worlds.world import SimWorld
+from interfaces.world import SimWorld
 from search.treesearch import default_search
-from Node import Node
-from mcts import Mcts
+from interfaces.Node import Node
+from interfaces.mcts import Mcts
 
 
 class McRave(Mcts):

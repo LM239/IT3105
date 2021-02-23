@@ -1,5 +1,5 @@
-from worlds.world import SimWorld
-from mcts import Mcts
+from interfaces.world import SimWorld
+from interfaces.mcts import Mcts
 
 
 class Actor:

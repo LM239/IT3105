@@ -2,7 +2,7 @@ from typing import List, Tuple
 import networkx as nx
 from matplotlib import pyplot as plt
 from matplotlib import patches
-from worlds.world import SimWorld
+from interfaces.world import SimWorld
 from collections import defaultdict
 import random
 

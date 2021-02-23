@@ -11,6 +11,7 @@
       <sourceFolder url="file://$MODULE_DIR$/P1/critics" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/P1/worlds" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/P2/search" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/P2/interfaces" isTestSource="false" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.7 (untitled)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

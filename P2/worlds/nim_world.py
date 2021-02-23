@@ -1,9 +1,6 @@
-from typing import Tuple
 import matplotlib.pyplot as plt
-import numpy as np
 from configs.validate_configs import validate_nim
-
-from worlds.world import SimWorld
+from interfaces.world import SimWorld
 
 
 class NimWorld(SimWorld):

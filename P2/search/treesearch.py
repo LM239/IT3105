@@ -1,4 +1,4 @@
-from Node import Node
+from interfaces.Node import Node
 from collections import defaultdict
 
 def default_search(root: Node, target):
