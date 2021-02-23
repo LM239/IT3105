@@ -157,9 +157,11 @@ class HexWorld(SimWorld):
     def vector(self, state: List[Tuple[int, int]]) -> List[int]:
         return [val for tuple in state for val in tuple]  # flatten board state and return as list / vector
 
-    def action_vector(self, state):
+    def action_vector_mask(self, state):
         return [1 if state[i] == (0, 0) else 0 for i in range(self.size ** 2)]
 
+    def action_vector(self, actions):
+        return [1 if i in actions else 0 for i in range(self.size ** 2)]
 
 if __name__ == "__main__":
     cfg = {

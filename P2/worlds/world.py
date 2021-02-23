@@ -21,6 +21,12 @@ class SimWorld:
     def vector(self, state):
         pass
 
+    def action_vector(self, actions):
+        pass
+
+    def action_vector_mask(self, state):
+        pass
+
     def winner(self, state):
         pass
 
@@ -35,3 +41,4 @@ class SimWorld:
 
     def find_action(self, parent_state, child_state):
         pass
+

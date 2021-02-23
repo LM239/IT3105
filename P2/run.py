@@ -5,6 +5,7 @@ from worlds.hex_world import HexWorld
 from worlds.nim_world import NimWorld
 from mc_rave import McRave
 from configs.validate_configs import validate_config
+from actor import Actor
 
 
 if __name__ == "__main__":

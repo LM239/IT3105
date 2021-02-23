@@ -113,6 +113,6 @@ class McRave(Mcts):
                     best_a = action
         return best_a
 
-    def default_policy(self, state: Any):  # 'reasonably explorative'
+    def default_policy(self, state: Any) -> int:  # 'reasonably explorative'
         legal = self.state_manager.get_actions(state)
         return legal[random.randint(0, len(legal)-1)]
