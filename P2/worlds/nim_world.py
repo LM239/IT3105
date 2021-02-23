@@ -4,6 +4,7 @@ import numpy as np
 
 from world import SimWorld
 
+
 class NimWorld(SimWorld):
 
     def __init__(self, n: int, k: int):
@@ -32,11 +33,14 @@ class NimWorld(SimWorld):
     def vector(self, state):
         return state[0], state[1][0], state[1][1]
 
+    def find_action(self, parent_state, child_state):
+        return parent_state[0] - child_state[0]
+
 
 if __name__ == "__main__":
     world = NimWorld(10, 3)
     state = world.new_state()
-    while(not world.in_end_state(state)):
+    while not world.in_end_state(state):
         print(world.vector(state))
         actions = world.get_actions(state)
         action = int(input("Choose action: " + str(actions)))
