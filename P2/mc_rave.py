@@ -22,7 +22,7 @@ class McRave:
         self.Q = defaultdict(lambda: defaultdict(lambda: 0.5))
         self.amaf_Q = defaultdict(lambda: defaultdict(lambda: 0.5))
         self.search_duration = mcts_cfg["search_duration"]
-        self.root: Node = None
+        self.root: Node | None = None
         self.state_manager: SimWorld = state_manager
         self.node_heuristic = node_heuristic
         self.node_search = node_search
@@ -38,7 +38,10 @@ class McRave:
 
     def run_subtree(self, state: Any):
         now = time.time()
-        self.root = self.node_search(self.root, state)
+        for child in self.root.children:
+            if child.state == state:
+                self.root = child
+                break
         while time.time() - now < self.search_duration:
             self.simulate(self.root)
 
@@ -67,6 +70,8 @@ class McRave:
             node = node.children[node.child_actions.index(action)] if action in node.child_actions else None
             state = self.state_manager.do_action(state, action)
             actions.append(action)
+            if node is None:
+                node = self.node_search(state)
         return nodes, actions
 
     def sim_default(self, state: Node, t: int):
