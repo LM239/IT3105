@@ -15,6 +15,8 @@ class Actor:
         self.state_manager: SimWorld = world
 
     def fit(self):
+        wins = 0
+        late_wins = 0
         for episode in self.episodes:
             replay_buffer = []
             if self.anet is not None and episode in self.save_episodes:
@@ -32,6 +34,10 @@ class Actor:
                     action = self.mcts.default_policy(actual_board)
                 actual_board = self.state_manager.do_action(actual_board, action)
                 self.mcts.run_subtree(actual_board)
-
+            wins += self.state_manager.p1_reward(actual_board)
+            if episode > self.episodes / 2:
+                late_wins += self.state_manager.p1_reward(actual_board)
         if self.anet is not None and len(self.save_episodes) > 0:
             self.anet.save_params()
+        print("All episodes win percentage: ", wins / self.episodes)
+        print("Last 50% episodes win percentage: ", 2 * late_wins / self.episodes)
