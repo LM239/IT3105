@@ -4,20 +4,12 @@ from typing import List, Tuple, Any
 from collections import defaultdict
 from worlds.world import SimWorld
 from search.treesearch import default_search
-
-
-class Node:
-    def __init__(self, state: Any, heuristic):
-        self.state: Any = state
-        self.children: List[Node] = []
-        self.N = defaultdict(heuristic)
-        self.amaf_N = defaultdict(heuristic)
-        self.child_actions: List[int] = []
+from Node import Node
 
 
 class McRave:
 
-    def __init__(self, mcts_cfg, state_manager, node_heuristic=lambda state: 10, node_search=default_search):
+    def __init__(self, mcts_cfg, state_manager, node_heuristic=lambda: 10, node_search=default_search):
         self.bias: float = mcts_cfg["bias"]
         self.Q = defaultdict(lambda: defaultdict(lambda: 0.5))
         self.amaf_Q = defaultdict(lambda: defaultdict(lambda: 0.5))
@@ -34,21 +26,22 @@ class McRave:
         now = time.time()
         self.root = Node(state, self.node_heuristic)
         while time.time() - now < self.search_duration:
-            self.simulate(self.root)
+            self.simulate(self.root.state)
+        self.epsilon *= self.epsilon_decay
 
     def run_subtree(self, state: Any):
-        now = time.time()
         for child in self.root.children:
             if child.state == state:
                 self.root = child
                 break
+        now = time.time()
         while time.time() - now < self.search_duration:
             self.simulate(self.root)
 
     def simulate(self, state):
-        states, actions = self.sim_tree(state)
-        rollout_actions, z = self.sim_default(states[-1], len(actions))
-        self.backup(states, actions + rollout_actions, z)
+        nodes, actions = self.sim_tree(state)
+        rollout_actions, z = self.sim_default(nodes[-1].state, len(actions))
+        self.backup(nodes, actions + rollout_actions, z)
 
     def sim_tree(self, state):
         actions = []
@@ -70,20 +63,20 @@ class McRave:
             state = self.state_manager.do_action(state, action)
             actions.append(action)
             if node is None:
-                node = self.node_search(state)
+                node = self.node_search(self.root, state)
                 if node is not None:
                     child_action = self.state_manager.find_action(nodes[-1].state, state)
                     nodes[-1].children.append(node)
                     nodes[-1].child_actions.append(child_action)
         return nodes, actions
 
-    def sim_default(self, state: Node, t: int):
+    def sim_default(self, state: Any, t: int):
         actions = []
         while not self.state_manager.in_end_state(state):
             a = self.default_policy(state)
             actions.append(a)
             state = self.state_manager.do_action(state, a)
-        return actions, self.state_manager.p1_reward()
+        return actions, self.state_manager.p1_reward(state)
 
     def backup(self, nodes: List[Node], actions: List[int], z):
         for t, node in enumerate(nodes):
@@ -103,7 +96,7 @@ class McRave:
         p = random.random()
         if p < self.epsilon + self.epsilon_min:
             return legal[random.randint(0, len(legal)-1)]
-        if self.state_manager.p1_to_move():
+        if self.state_manager.p1_to_move(node.state):
             best = float("-inf")
             for action in legal:
                 score = self.evaluate(node, action)

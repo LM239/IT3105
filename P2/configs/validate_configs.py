@@ -16,6 +16,13 @@ def validate_config(configs):
         exit(1)
     return True
 
+def validate_nim(config):
+    if "n" not in config:
+        print("Missing required nim argument: 'n' \nExiting")
+        exit(1)
+    if "k" not in config:
+        print("Missing required nim argument: 'k' \nExiting")
+        exit(1)
 
 def validate_hex_board(config):
     if "size" not in config:

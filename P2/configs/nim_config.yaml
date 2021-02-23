@@ -5,7 +5,8 @@ display:
 #SimWorld args:
 sim_world:
   world: "nim"
-  size: 10
+  n: 10
+  k: 3
 
 
 mcts:

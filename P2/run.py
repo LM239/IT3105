@@ -52,7 +52,8 @@ if __name__ == "__main__":
         mcts = McRave(mcts_config, world_manager, node_heuristic)
     elif world_config["world"] == "nim":
         world_manager = NimWorld(world_config)
-        mcts = McRave(mcts_config, world_manager, )
+        mcts = McRave(mcts_config, world_manager)
+        mcts.run_root(world_manager.new_state())
     else:
         print("Unknown world type: {} \n Exiting".format(world_config["world"]))
         exit(1)

@@ -1,4 +1,4 @@
-from mc_rave import Node
+from Node import Node
 from collections import defaultdict
 def default_search(root: Node, target):
     stack = [root]
@@ -26,7 +26,7 @@ def hex_search(root: Node, target):
     while len(stack) > 0:
         v = stack.pop()
         if not visited[v]:
-            if v_moves == target_moves:
+            if v_moves[v] == target_moves:
                 return v
             visited[v] = True
             for action, child in zip(v.child_actions, v.children):
