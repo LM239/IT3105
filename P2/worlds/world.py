@@ -32,3 +32,6 @@ class SimWorld:
 
     def p1_to_move(self, state):
         pass
+
+    def find_action(self, parent_state, child_state):
+        pass

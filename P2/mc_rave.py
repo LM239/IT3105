@@ -51,7 +51,6 @@ class McRave:
         self.backup(states, actions + rollout_actions, z)
 
     def sim_tree(self, state):
-
         actions = []
         node: Node = self.node_search(self.root, state)
         nodes = []
@@ -72,6 +71,10 @@ class McRave:
             actions.append(action)
             if node is None:
                 node = self.node_search(state)
+                if node is not None:
+                    child_action = self.state_manager.find_action(nodes[-1].state, state)
+                    nodes[-1].children.append(node)
+                    nodes[-1].child_actions.append(child_action)
         return nodes, actions
 
     def sim_default(self, state: Node, t: int):
