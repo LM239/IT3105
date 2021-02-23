@@ -21,7 +21,7 @@ class SimWorld:
     def vector(self, state):
         pass
 
-    def action_vector(self, actions):
+    def complete_action_dist(self, actions):
         pass
 
     def action_vector_mask(self, state):

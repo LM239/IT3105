@@ -6,7 +6,7 @@ class Actor:
     def __init__(self, actor_cfg, anet, mcts: Mcts, world: SimWorld):
         self.episodes = actor_cfg["episodes"]
         self.save_episodes = []
-        if "num_checkpoints" in actor_cfg:
+        if "num_checkpoints" in actor_cfg and actor_cfg["num_checkpoints"] > 0:
             self.save_episodes = [self.episodes]
             if actor_cfg["num_checkpoints"] > 1:
                 self.save_episodes.extend([*range(0, self.episodes, self.episodes / (actor_cfg["num_checkpoints"] - 1))])
@@ -24,7 +24,7 @@ class Actor:
             actual_board = self.state_manager.new_state()
             self.mcts.run_root(actual_board)
             while not self.state_manager.in_end_state(actual_board):
-                D = self.state_manager.action_vector(self.mcts.root_distribution())
+                D = self.state_manager.complete_action_dist(self.mcts.root_distribution())
                 replay_buffer.append((D, actual_board))
 
 

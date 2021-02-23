@@ -48,7 +48,7 @@ class HexWorld(SimWorld):
         return state[0:action] + [state[-1]] + state[action + 1:-1] + [tuple(reversed(state[-1]))]
 
     def find_action(self, parent_state, child_state):
-        for action, square1, square2 in enumerate(zip(parent_state[:-1], child_state[:-1])):
+        for action, (square1, square2) in enumerate(zip(parent_state[:-1], child_state[:-1])):
             if square1 != square2:
                 return action
         return None
@@ -166,7 +166,7 @@ class HexWorld(SimWorld):
     def action_vector_mask(self, state):
         return [1 if state[i] == (0, 0) else 0 for i in range(self.size ** 2)]
 
-    def action_vector(self, action_dist):
+    def complete_action_dist(self, action_dist):
         return [action_dist[i] if i in action_dist.keys() else 0 for i in range(self.size ** 2)]
 
 
@@ -180,15 +180,12 @@ if __name__ == "__main__":
     states = []
     state = game.new_state()
     actions = game.get_actions(state)
-    print(game.p1_to_move(state))
+    print(game.find_action(state, game.do_action(state, 24)))
     while len(actions) > 0:
         state = game.do_action(state, actions[random.randint(0, len(actions) - 1)])
         actions = game.get_actions(state)
     states.append(state)
     game.visualize([state])
-    print(game.winner(state))
-    print(game.p1_reward(state))
-    print(game.p1_to_move(state))
 
 
 
