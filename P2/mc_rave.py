@@ -6,7 +6,7 @@ from interfaces.world import SimWorld
 from search.treesearch import default_search
 from interfaces.Node import Node
 from interfaces.mcts import Mcts
-#TODO ikke nødvendigvis et problem, men nodes gir verdi til ulovlige actions, må lage en defaultdict wrapper tror jeg (fikser også lambda greiene)
+#TODO ikke nødvendigvis et problem, men nodes gir verdi til ulovlige actions
 
 class McRave(Mcts):
 
@@ -22,6 +22,7 @@ class McRave(Mcts):
         self.epsilon = mcts_cfg["epsilon"]
         self.epsilon_decay = mcts_cfg["epsilon_decay"]
         self.epsilon_min = mcts_cfg["epsilon_min"]
+        self.c = mcts_cfg["c"] #TODO eq (18) i paper, kan gjøre epsillon unødvendig
 
     def run_root(self, state: Any):
         now = time.time()
@@ -41,20 +42,18 @@ class McRave(Mcts):
 
     def simulate(self, state):
         nodes, actions = self.tree_search(state)
-        rollout_actions, z = self.rollout_sim(nodes[-1].state, len(actions))
+        rollout_actions, z = self.rollout_sim(nodes[-1].state)
         self.backup(nodes, actions + rollout_actions, z)
 
     def tree_search(self, state):
-        actions = []
-        node: Node = self.node_search(self.root, state)
-        nodes = []
+        node: Node = self.root
+        actions: List[int] = []
+        nodes: List[Node] = []
         while not self.state_manager.in_end_state(state):
             if node is None:
                 node = Node(state, self.node_heuristic)
+                self.insert_node(nodes[-1], node, actions[-1])
                 action = self.default_policy(node.state)
-                if len(actions) > 0:
-                    nodes[-1].child_actions.append(action)
-                    nodes[-1].children.append(node)
                 nodes.append(node)
                 actions.append(action)
                 return nodes, actions
@@ -66,18 +65,21 @@ class McRave(Mcts):
             if node is None:
                 node = self.node_search(self.root, state)
                 if node is not None:
-                    child_action = self.state_manager.find_action(nodes[-1].state, state)
-                    nodes[-1].children.append(node)
-                    nodes[-1].child_actions.append(child_action)
+                    self.insert_node(nodes[-1], node, self.state_manager.find_action(nodes[-1].state, state))
         return nodes, actions
 
-    def rollout_sim(self, state: Any, t: int):
+    def insert_node(self, parent_node: Node, child_node: Node, child_action: int):
+        parent_node.children.append(child_node)
+        parent_node.child_actions.append(child_action)
+
+    def rollout_sim(self, state: Any):
         actions = []
         while not self.state_manager.in_end_state(state):
             a = self.default_policy(state)
             actions.append(a)
             state = self.state_manager.do_action(state, a)
         return actions, self.state_manager.p1_reward(state)
+
 
     def backup(self, nodes: List[Node], actions: List[int], z):
         for t, node in enumerate(nodes):
