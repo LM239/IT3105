@@ -4,7 +4,7 @@ display:
 
 #SimWorld args:
 sim_world:
-  world: "hex_board"
+  world: "hex"
   size: 4
 
 mcts:

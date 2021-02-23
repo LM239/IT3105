@@ -1,10 +1,11 @@
 import getopt
 import sys
 import yaml
-from worlds.pegsol_world import PegSolitaire
-from actor_critic import ActorCritic
+from worlds.hex_world import HexWorld
+from worlds.nim_world import NimWorld
+from mc_rave import McRave
 from configs.validate_configs import validate_config
-from critics.table_critic import TableCritic
+
 
 if __name__ == "__main__":
     short_options = "h"
@@ -34,8 +35,8 @@ if __name__ == "__main__":
         exit(1)
 
     validate_config(configs)  # do an initial validation of the configs (not thorough)
-    actor_config = configs["actor"]
-    critic_config = configs["critic"]
+    mcts_config = configs["mcts"]
+    anet_config = configs["anet"]
     world_config = configs["sim_world"]
 
     if "display_episodes" in configs:  # create list of episodes to visualize
@@ -43,25 +44,17 @@ if __name__ == "__main__":
     else:
         display_episodes = []
 
-    if world_config["world"] == "peg_solitaire":  # create sim_world for the actor critic
-        world = PegSolitaire(world_config)
+    node_heuristic = None
+    if world_config["world"] == "hex":  # create sim_world for the actor critic
+        world_manager = HexWorld(world_config)
+        node_heuristic = (lambda state: (50 * sum(1 for t in state[:-1] if t[0] == t[1]) / (len(state) - 1) ))
+
+        mcts = McRave(mcts_config, world_manager, node_heuristic)
+    elif world_config["world"] == "nim":
+        world_manager = NimWorld(world_config)
+        mcts = McRave(mcts_config, world_manager, )
     else:
         print("Unknown world type: {} \n Exiting".format(world_config["world"]))
         exit(1)
-
-    if critic_config["type"] == "neural_net":  # create critic for actor critic
-        from critics.neural_critic import NeuralCritic
-        world_size = world.size**2 if world.type == "diamond" else int(world.size * (world.size + 1) / 2)  # input layer dim, given by board size
-        critic = NeuralCritic(critic_config, world_size)  # nn based
-    else:
-        critic = TableCritic(critic_config)   # table based
-
-    actor_critic = ActorCritic(actor_config, critic, world, configs["episodes"], display_episodes)  # make actor
-    actor_critic.fit()  # train actor
-
-    if "display_greedy" in configs and configs["display_greedy"]:
-        actor_critic.play_episode()  # visualize policy with epsilon=0
-        world.visualize_episode()
-    world.visualize_peg_count()  # show peg count
 
     exit(0)
