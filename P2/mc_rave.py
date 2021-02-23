@@ -6,7 +6,7 @@ from interfaces.world import SimWorld
 from search.treesearch import default_search
 from interfaces.Node import Node
 from interfaces.mcts import Mcts
-
+#TODO ikke nødvendigvis et problem, men nodes gir verdi til ulovlige actions, må lage en defaultdict wrapper tror jeg (fikser også lambda greiene)
 
 class McRave(Mcts):
 
@@ -112,6 +112,16 @@ class McRave(Mcts):
                     best = score
                     best_a = action
         return best_a
+
+    def root_distribution(self):
+        dist = {}
+        sum = 0
+        for action in self.state_manager.get_actions(self.root.state):
+            sum += self.root.N[action]
+            dist[action] = self.root.N[action]
+        for action in dist.keys():
+            dist[action] /= sum
+        return dist
 
     def default_policy(self, state: Any) -> int:  # 'reasonably explorative'
         legal = self.state_manager.get_actions(state)

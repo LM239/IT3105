@@ -27,11 +27,9 @@ class Actor:
                 D = self.state_manager.action_vector(self.mcts.root_distribution())
                 replay_buffer.append((D, actual_board))
 
-                if self.anet is not None:
-                    #D = argmax a: D
-                    pass
-                else:
-                    action = self.mcts.default_policy(actual_board)
+
+                action = self.mcts.default_policy(actual_board)
+                #action = argmax or random action from D
                 actual_board = self.state_manager.do_action(actual_board, action)
                 self.mcts.run_subtree(actual_board)
             wins += self.state_manager.p1_reward(actual_board)
