@@ -117,4 +117,5 @@ class McRave:
         return best_a
 
     def default_policy(self, state: Any):
-        pass
+        legal = self.state_manager.get_actions(state)
+        return legal[random.randint(0,len(legal)-1)]
