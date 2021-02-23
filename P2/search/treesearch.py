@@ -17,7 +17,7 @@ def default_search(root: Node, target):
 
 def hex_search(root: Node, target):
     for r1, t1 in zip(root.state[:-1], target[:-1]):
-        if r1 != t1:
+        if r1 != t1 and t1[0] == t1[1]:
             return None
     target_moves = len([t for t in target[:-1] if t[0] != t[1]])
     stack = [root]
