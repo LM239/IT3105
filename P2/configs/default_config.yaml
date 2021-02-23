@@ -9,7 +9,8 @@ sim_world:
 
 mcts:
   episodes: 100
-  search_games: 100
+  search_duration: 2
+  bias: 1
 
 anet:
   lr: 0.1
