@@ -22,14 +22,16 @@ class Actor:
             actual_board = self.state_manager.new_state()
             self.mcts.run_root(actual_board)
             while not self.state_manager.in_end_state(actual_board):
+                D = self.state_manager.action_vector(self.mcts.root_distribution())
+                replay_buffer.append((D, actual_board))
+
                 if self.anet is not None:
+                    #D = argmax a: D
                     pass
                 else:
                     action = self.mcts.default_policy(actual_board)
                 actual_board = self.state_manager.do_action(actual_board, action)
                 self.mcts.run_subtree(actual_board)
-                D = self.state_manager.action_vector(self.mcts.root_distribution())
-                replay_buffer.append((D, actual_board))
 
         if self.anet is not None and len(self.save_episodes) > 0:
             self.anet.save_params()

@@ -160,8 +160,8 @@ class HexWorld(SimWorld):
     def action_vector_mask(self, state):
         return [1 if state[i] == (0, 0) else 0 for i in range(self.size ** 2)]
 
-    def action_vector(self, actions):
-        return [1 if i in actions else 0 for i in range(self.size ** 2)]
+    def action_vector(self, action_dist):
+        return [action_dist[i] if i in action_dist.keys() else 0 for i in range(self.size ** 2)]
 
 if __name__ == "__main__":
     cfg = {
