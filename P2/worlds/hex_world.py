@@ -151,7 +151,7 @@ class HexWorld(SimWorld):
             plt.legend(handles=[green_patch, red_patch], prop={'size': 2 * min(40, self.size) + 2})
             plt.draw()  # finish figure
             plt.pause(self.display_rate)  # delay before continuing to next state in states
-            plt.clf()  # clear canvas#
+            plt.clf()  # clear canvas
         #plt.close()  # close window
 
     def vector(self, state: List[Tuple[int, int]]) -> List[int]:

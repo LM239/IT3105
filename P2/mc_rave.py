@@ -5,9 +5,10 @@ from collections import defaultdict
 from worlds.world import SimWorld
 from search.treesearch import default_search
 from Node import Node
+from mcts import Mcts
 
 
-class McRave:
+class McRave(Mcts):
 
     def __init__(self, mcts_cfg, state_manager, node_heuristic=lambda: 10, node_search=default_search):
         self.bias: float = mcts_cfg["bias"]
@@ -39,11 +40,11 @@ class McRave:
             self.simulate(self.root)
 
     def simulate(self, state):
-        nodes, actions = self.sim_tree(state)
-        rollout_actions, z = self.sim_default(nodes[-1].state, len(actions))
+        nodes, actions = self.tree_search(state)
+        rollout_actions, z = self.rollout_sim(nodes[-1].state, len(actions))
         self.backup(nodes, actions + rollout_actions, z)
 
-    def sim_tree(self, state):
+    def tree_search(self, state):
         actions = []
         node: Node = self.node_search(self.root, state)
         nodes = []
@@ -70,7 +71,7 @@ class McRave:
                     nodes[-1].child_actions.append(child_action)
         return nodes, actions
 
-    def sim_default(self, state: Any, t: int):
+    def rollout_sim(self, state: Any, t: int):
         actions = []
         while not self.state_manager.in_end_state(state):
             a = self.default_policy(state)
@@ -81,21 +82,21 @@ class McRave:
     def backup(self, nodes: List[Node], actions: List[int], z):
         for t, node in enumerate(nodes):
             node.N[actions[t]] += 1
-            self.Q[str(node.state)][actions[t]] += (z-self.Q[str(node.state)][actions[t]])/(node.N[actions[t]])
-            for u in range(t+2, len(actions), 2):
+            self.Q[str(node.state)][actions[t]] += (z - self.Q[str(node.state)][actions[t]]) / (node.N[actions[t]])
+            for u in range(t + 2, len(actions), 2):
                 node.amaf_N[actions[u]] += 1
                 self.amaf_Q[str(node.state)][actions[u]] += (z - self.amaf_Q[str(node.state)][actions[t]]) / (node.amaf_N[actions[t]])
 
     def evaluate(self, node, action):
-        beta = node.amaf_N[action]/(node.N[action]+node.amaf_N[action]+4*node.N[action]*node.amaf_N[action]*self.bias**2)
-        return (1-beta)*self.Q[str(node.state)][action]+beta*self.amaf_Q[str(node.state)][action]
+        beta = node.amaf_N[action] / (node.N[action] + node.amaf_N[action] + 4 * node.N[action] * node.amaf_N[action] * self.bias ** 2)
+        return (1 - beta) * self.Q[str(node.state)][action] + beta * self.amaf_Q[str(node.state)][action]
 
-    def tree_policy(self, node):
+    def tree_policy(self, node):  # 'highly explorative'
         legal = self.state_manager.get_actions(node.state)
         best_a = None
         p = random.random()
         if p < self.epsilon + self.epsilon_min:
-            return legal[random.randint(0, len(legal)-1)]
+            return legal[random.randint(0, len(legal) - 1)]
         if self.state_manager.p1_to_move(node.state):
             best = float("-inf")
             for action in legal:
@@ -112,6 +113,6 @@ class McRave:
                     best_a = action
         return best_a
 
-    def default_policy(self, state: Any):
+    def default_policy(self, state: Any):  # 'reasonably explorative'
         legal = self.state_manager.get_actions(state)
-        return legal[random.randint(0,len(legal)-1)]
+        return legal[random.randint(0, len(legal)-1)]

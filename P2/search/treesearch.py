@@ -1,5 +1,6 @@
 from Node import Node
 from collections import defaultdict
+
 def default_search(root: Node, target):
     stack = [root]
     visited = defaultdict(lambda: False)
@@ -18,15 +19,13 @@ def hex_search(root: Node, target):
     for r1, t1 in zip(root.state[:-1], target[:-1]):
         if r1 != t1:
             return None
-
     target_moves = len([t for t in target[:-1] if t[0] != t[1]])
     stack = [root]
     visited = defaultdict(lambda: False)
-    v_moves = defaultdict(lambda v: len([t for t in v.state[:-1] if t[0] != t[1]]))
     while len(stack) > 0:
         v = stack.pop()
         if not visited[v]:
-            if v_moves[v] == target_moves:
+            if len([t for t in v.state[:-1] if t[0] != t[1]]) == target_moves:
                 return v
             visited[v] = True
             for action, child in zip(v.child_actions, v.children):
