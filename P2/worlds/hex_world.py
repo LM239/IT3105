@@ -138,10 +138,10 @@ class HexWorld(SimWorld):
                     p2_nodes.append(i)
                 else:
                     empty_nodes.append(i)
-            nx.draw_networkx_nodes(G, pos, nodelist=p1_nodes, node_color="g", node_size=150)  # draw open nodes (green)
-            nx.draw_networkx_nodes(G, pos, nodelist=p2_nodes, node_color="r", node_size=150)  # draw closed nodes (red)
-            nx.draw_networkx_nodes(G, pos, nodelist=empty_nodes, node_color="y", node_size=150)  # draw closed nodes (red)
-            nx.draw_networkx_labels(G, pos, font_weight="bold")  # draw node names (their coordinate)
+            nx.draw_networkx_nodes(G, pos, nodelist=p1_nodes, node_color="g", node_size=10)  # draw open nodes (green)
+            nx.draw_networkx_nodes(G, pos, nodelist=p2_nodes, node_color="r", node_size=10)  # draw closed nodes (red)
+            nx.draw_networkx_nodes(G, pos, nodelist=empty_nodes, node_color="y", node_size=10)  # draw closed nodes (red)
+            #nx.draw_networkx_labels(G, pos, font_weight="bold")  # draw node names (their coordinate)
             nx.draw_networkx_edges(G, pos, width=edge_widths, edge_color=edge_colors)  # draw edges
             plt.legend(handles=[green_patch, red_patch], prop={'size': 2 * min(40, self.size) + 2})
             plt.draw()  # finish figure
@@ -158,7 +158,7 @@ class HexWorld(SimWorld):
 
 if __name__ == "__main__":
     cfg = {
-        "size": 20
+        "size": 300
     }
     game = HexWorld(cfg, 0.3)
 
