@@ -47,6 +47,12 @@ class HexWorld(SimWorld):
     def do_action(self, state, action):
         return state[0:action] + [state[-1]] + state[action + 1:-1] + [tuple(reversed(state[-1]))]
 
+    def find_action(self, parent_state, child_state):
+        for action, square1, square2 in enumerate(zip(parent_state[:-1], child_state[:-1])):
+            if square1 != square2:
+                return action
+        return None
+
     def from2D(self, y: int, x: int) -> int:  # find 1D list index for a given 2D coordinate
         return (y * self.size) + x
 
@@ -162,6 +168,8 @@ class HexWorld(SimWorld):
 
     def action_vector(self, action_dist):
         return [action_dist[i] if i in action_dist.keys() else 0 for i in range(self.size ** 2)]
+
+
 
 if __name__ == "__main__":
     cfg = {
