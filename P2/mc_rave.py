@@ -6,11 +6,12 @@ from interfaces.world import SimWorld
 from search.treesearch import default_search
 from interfaces.Node import Node
 from interfaces.mcts import Mcts
+from interfaces.actornet import ActorNet
 #TODO ikke nødvendigvis et problem, men nodes gir verdi til ulovlige actions
 
 class McRave(Mcts):
 
-    def __init__(self, mcts_cfg, state_manager, node_heuristic=lambda: 10, node_search=default_search):
+    def __init__(self, mcts_cfg, state_manager, anet, node_heuristic=lambda: 10, node_search=default_search):
         self.bias: float = mcts_cfg["bias"]
         self.Q = defaultdict(lambda: defaultdict(lambda: 0.5))
         self.amaf_Q = defaultdict(lambda: defaultdict(lambda: 0.5))
@@ -23,6 +24,7 @@ class McRave(Mcts):
         self.epsilon_decay = mcts_cfg["epsilon_decay"]
         self.epsilon_min = mcts_cfg["epsilon_min"]
         self.c = mcts_cfg["c"] #TODO eq (18) i paper, kan gjøre epsillon unødvendig
+        self.anet: ActorNet = anet
 
     def run_root(self, state: Any):
         now = time.time()

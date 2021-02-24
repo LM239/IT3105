@@ -5,11 +5,14 @@ display:
 #SimWorld args:
 sim_world:
   world: "nim"
-  size: 10
+  n: 10
+  k: 3
 
+actor:
+   episodes: 100
+   cache_m: 5
 
 mcts:
-  episodes: 100
   search_duration: 2
   bias: 1
   epsilon: 0.8
@@ -23,7 +26,3 @@ anet:
     - [50, "relu"]
     - [50, "tanh"]
     - [50, "sigmoid"]
-
-topp:
-  cache_m: 5
-  games_g: 20

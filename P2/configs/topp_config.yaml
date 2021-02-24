@@ -1,0 +1,6 @@
+topp:
+  games_g: 20
+  display_games:
+    - [File1, File2]
+    - [File3, *]
+  directories:

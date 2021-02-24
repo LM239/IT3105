@@ -1,7 +1,4 @@
 def validate_config(configs):
-    if "display" not in configs:
-        print("Missing required argument 'display' in config \n Exiting")
-        exit(1)
     if "sim_world" not in configs:
         print("Missing sim_world dict in config \n Exiting")
         exit(1)
@@ -11,10 +8,9 @@ def validate_config(configs):
     if "anet" not in configs:
         print("Missing anet dict in config \n Exiting")
         exit(1)
-    if "topp" not in configs:
-        print("Missing topp dict in config \n Exiting")
+    if "actor" not in configs:
+        print("Missing actor dict in config \n Exiting")
         exit(1)
-    return True
 
 def validate_nim(config):
     if "n" not in config:
@@ -28,15 +24,19 @@ def validate_hex_board(config):
     if "size" not in config:
         print("Missing required hex argument: 'size' \nExiting")
         exit(1)
-    elif config["size"] < 3 or config["size"] > 10:
+    elif config["size"] < 3:
         print("Size parameter outside of accepted range: [3,) \nExiting")
         exit(1)
 
-
-def validate_mcts(config):
+def validate_actor_config(config):
     if "episodes" not in config:
-        print("Missing required mcts argument: 'episodes' \nExiting")
+        print("Missing required actor argument: 'episodes' \nExiting")
         exit(1)
+    if "cache_m" not in config:
+        print("Missing required topp argument: 'cache_m' \nExiting")
+        exit(1)
+
+def validate_mcts_config(config):
     if "search_duration" not in config:
         print("Missing required actor_config argument: 'search_duration' \nExiting")
         exit(1)
@@ -45,7 +45,7 @@ def validate_mcts(config):
         exit(1)
 
 
-def validate_anet(config):
+def validate_anet_config(config):
     valid_activations = ["linear", "sigmoid", "tanh", "relu"]
     valid_optmizers = ["Adagrad", "SGD", "RMSProp", "Adam"]
     if "lr" not in config:
@@ -64,10 +64,10 @@ def validate_anet(config):
             print("ANET layer", i, "activation function is invalid. Valid options are:", valid_activations, "\nExiting")
 
 
-def validate_topp(config):
-    if "cache_m" not in config:
-        print("Missing required topp argument: 'cache_m' \nExiting")
-        exit(1)
+def validate_topp_config(config):
     if "games_g" not in config:
         print("Missing required topp argument: 'games_g' \nExiting")
+        exit(1)
+    if "directories" not in config:
+        print("Missing required topp argument: 'directories' \nExiting")
         exit(1)
