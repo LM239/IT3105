@@ -17,20 +17,26 @@ class Actor:
     def fit(self):
         wins = 0
         late_wins = 0
-        for episode in self.episodes:
+        for episode in range(self.episodes):
+            print(episode)
             replay_buffer = []
             if self.anet is not None and episode in self.save_episodes:
                 self.anet.save_params()
             actual_board = self.state_manager.new_state()
             self.mcts.run_root(actual_board)
-            while not self.state_manager.in_end_state(actual_board):
+            while True:
                 D = self.state_manager.complete_action_dist(self.mcts.root_distribution())
                 replay_buffer.append((D, actual_board))
 
-
-                action = self.mcts.default_policy(actual_board)
-                #action = argmax or random action from D
+                action = None
+                best = float("-inf")
+                for a, p in enumerate(D): # TODO: epsillon greedy
+                    if p > best:
+                        action = a
+                        best = p
                 actual_board = self.state_manager.do_action(actual_board, action)
+                if self.state_manager.in_end_state(actual_board):
+                    break
                 self.mcts.run_subtree(actual_board)
             wins += self.state_manager.p1_reward(actual_board)
             if episode > self.episodes / 2:

@@ -2,6 +2,9 @@ def validate_config(configs):
     if "sim_world" not in configs:
         print("Missing sim_world dict in config \n Exiting")
         exit(1)
+    if "world" not in configs["sim_world"]:
+        print("Missing required sim_world argument 'world' in world_config \n Exiting")
+        exit(1)
     if "mcts" not in configs:
         print("Missing mcts dict in config \n Exiting")
         exit(1)

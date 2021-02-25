@@ -41,6 +41,10 @@ class NimWorld(SimWorld):
     def find_action(self, parent_state, child_state):
         return parent_state[0] - child_state[0]
 
+    def complete_action_dist(self, action_dist):
+        return [action_dist[i] if i in action_dist.keys() else 0 for i in range(self.k)]
+
+
 
 if __name__ == "__main__":
     world = NimWorld({"n":10,"k":3})

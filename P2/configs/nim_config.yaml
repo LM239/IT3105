@@ -5,15 +5,15 @@ display:
 #SimWorld args:
 sim_world:
   world: "nim"
-  n: 10
-  k: 3
+  n: 8
+  k: 4
 
 actor:
-   episodes: 100
+   episodes: 50
    cache_m: 5
 
 mcts:
-  search_duration: 2
+  search_duration: 1
   bias: 1
   epsilon: 0.8
   epsilon_decay: 0.985

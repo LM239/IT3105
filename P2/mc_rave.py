@@ -38,9 +38,12 @@ class McRave(Mcts):
             if child.state == state:
                 self.root = child
                 break
+        else:
+            print("subtree not found in mcts.py run_subtree")
+            exit(1)
         now = time.time()
         while time.time() - now < self.search_duration:
-            self.simulate(self.root)
+            self.simulate(self.root.state)
 
     def simulate(self, state):
         nodes, actions = self.tree_search(state)
