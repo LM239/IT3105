@@ -1,3 +1,5 @@
+import random
+
 from interfaces.world import SimWorld
 from interfaces.mcts import Mcts
 import numpy as np
@@ -24,8 +26,8 @@ class Actor:
         late_wins = 0
         for episode in range(self.episodes):
             print(episode)
-            replay_features = np.array([])
-            replay_targets = np.array([])
+            replay_features = []
+            replay_targets = []
             if episode in self.save_episodes:
                 self.anet.save_params(episode)
             actual_board = self.state_manager.new_state()
@@ -36,8 +38,8 @@ class Actor:
                 replay_features.append(self.state_manager.vector(actual_board))
                 replay_targets.append(D)
 
-                if random.random() < self.epsilon + epsilon_min:
-                    action = root_distribution.keys()[random.randint(0, len(root_distribution.keys())-1)]
+                if random.random() < self.epsilon + self.epsilon_min:
+                    action = list(root_distribution.keys())[random.randint(0, len(root_distribution.keys())-1)]
                 else:
                     best = float("-inf")
                     for a, p in enumerate(D): # TODO: epsillon greedy

@@ -58,12 +58,11 @@ if __name__ == "__main__":
     display_rate = 0.1
 
     if world_config["world"] == "hex":  # create sim_world for the actor critic
-        file_structure = "anet/" + world_config["world"] + world_config["size"] + "/" +
 
         world_manager = HexWorld(world_config, display_rate)
 
         input_dim = (world_config["size"]**2 + 1) * 2
-        output_dim = world_config["size"]
+        output_dim = world_config["size"]**2
         anet = Anet(anet_config, input_dim, output_dim)
         node_heuristic = (lambda: 3)
         mcts = McRave(mcts_config, world_manager, anet, node_heuristic, hex_search)

@@ -9,20 +9,23 @@ sim_world:
 
 actor:
    episodes: 50
-   cache_m: 5
+   cache_m: 0
+   epsilon: 0.8
+   epsilon_decay: 0.985
+   epsilon_min: 0.1
 
 mcts:
   search_duration: 1
   bias: 1
-  epsilon: 0.8
-  epsilon_decay: 0.985
-  epsilon_min: 0.1
   c: 1
 
 anet:
   lr: 0.1
   optimizer: "SGD"
+  loss: "categorical_crossentropy"
+  file_structure: "anet/hex/"
+  output_activation: "softmax"
   hidden_layers:
-    - [50, "relu"]
     - [50, "tanh"]
-    - [50, "sigmoid"]
+    - [50, "tanh"]
+    - [50, "tanh"]

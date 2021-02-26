@@ -21,9 +21,6 @@ class McRave(Mcts):
         self.state_manager: SimWorld = state_manager
         self.node_heuristic = node_heuristic
         self.node_search = node_search
-        self.epsilon = mcts_cfg["epsilon"]
-        self.epsilon_decay = mcts_cfg["epsilon_decay"]
-        self.epsilon_min = mcts_cfg["epsilon_min"]
         self.c = mcts_cfg["c"] #TODO eq (18) i paper, kan gjøre epsillon unødvendig
         self.anet: ActorNet = anet
 
@@ -112,7 +109,7 @@ class McRave(Mcts):
         else:
             best = float("inf")
             for action in node.legal_actions:
-                score = self.evaluate(node, action, c)
+                score = self.evaluate(node, action, -c)
                 if score < best:
                     best = score
                     best_a = action
@@ -130,6 +127,8 @@ class McRave(Mcts):
 
     def default_policy(self, state: Any) -> int:  # 'reasonably explorative'
         mask = self.state_manager.action_vector_mask(state)
-        masked_out = np.multiply(self.anet.forward(self.state_manager.vector(state)), mask)
+        vector = self.state_manager.vector(state)
+        net_out = self.anet.forward(vector)[0]
+        masked_out = np.multiply(net_out, mask)
         masked_out = np.divide(masked_out, np.sum(masked_out))
         return np.random.choice(np.arange(len(masked_out)), p=masked_out)
