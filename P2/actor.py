@@ -20,8 +20,8 @@ class Actor:
         for episode in range(self.episodes):
             print(episode)
             replay_buffer = []
-            if self.anet is not None and episode in self.save_episodes:
-                self.anet.save_params()
+            if episode in self.save_episodes:
+                self.anet.save_params(episode)
             actual_board = self.state_manager.new_state()
             self.mcts.run_root(actual_board)
             while True:
@@ -41,7 +41,7 @@ class Actor:
             wins += self.state_manager.p1_reward(actual_board)
             if episode > self.episodes / 2:
                 late_wins += self.state_manager.p1_reward(actual_board)
-        if self.anet is not None and len(self.save_episodes) > 0:
-            self.anet.save_params()
+        if len(self.save_episodes) > 0:
+            self.anet.save_params(self.episodes)
         print("All episodes win percentage: ", wins / self.episodes)
         print("Last 50% episodes win percentage: ", 2 * late_wins / self.episodes)

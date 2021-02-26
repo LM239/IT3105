@@ -173,7 +173,7 @@ class HexWorld(SimWorld):
 
 if __name__ == "__main__":
     cfg = {
-        "size": 5
+        "size": 3
     }
     game = HexWorld(cfg, 0.3)
 
@@ -185,7 +185,7 @@ if __name__ == "__main__":
         state = game.do_action(state, actions[random.randint(0, len(actions) - 1)])
         actions = game.get_actions(state)
     states.append(state)
-    game.visualize([state])
+    game.visualize([[(1, 0), (0, 0), (0, 0), (0, 0), (0, 1), (1, 0), (0, 1), (1, 0), (0, 1), (1, 0)]])
 
 
 

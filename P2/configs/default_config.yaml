@@ -27,3 +27,5 @@ anet:
     - [50, "relu"]
     - [50, "tanh"]
     - [50, "sigmoid"]
+  output_activation: "linear"
+  loss: ""
