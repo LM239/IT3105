@@ -5,19 +5,19 @@ display:
 #SimWorld args:
 sim_world:
   world: "hex"
-  size: 3
+  size: 4
 
 actor:
-   episodes: 50
+   episodes: 40
    cache_m: 5
 
 mcts:
-  search_duration: 1
-  bias: 1
+  search_duration: 1.0
+  bias: 0.2
   epsilon: 0.8
   epsilon_decay: 0.985
   epsilon_min: 0.1
-  c: 1
+  c: 1.75
 
 anet:
   lr: 0.1

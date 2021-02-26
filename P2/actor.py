@@ -39,7 +39,7 @@ class Actor:
                     break
                 action = self.mcts.run_subtree(actual_board)
             wins += self.state_manager.p1_reward(actual_board)
-            if episode > self.episodes / 2:
+            if episode >= self.episodes // 2:
                 late_wins += self.state_manager.p1_reward(actual_board)
         if self.anet is not None and len(self.save_episodes) > 0:
             self.anet.save_params()

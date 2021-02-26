@@ -111,7 +111,7 @@ class McRave(Mcts):
         else:
             best = float("inf")
             for action in node.legal_actions:
-                score = self.evaluate(node, action, c)
+                score = self.evaluate(node, action, -c)
                 if score < best:
                     best = score
                     best_a = action
