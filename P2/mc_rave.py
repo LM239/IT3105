@@ -32,7 +32,6 @@ class McRave(Mcts):
         return self.tree_policy(self.root, 0)
 
     def run_subtree(self, state: Any):
-        print(self.root.sum_N)
         for child in self.root.children:
             if child.state == state:
                 self.root = child

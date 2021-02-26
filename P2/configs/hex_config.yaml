@@ -8,24 +8,25 @@ sim_world:
   size: 4
 
 actor:
-   episodes: 40
-   cache_m: 5
-   epsilon: 0.8
-   epsilon_decay: 0.985
+   episodes: 200
+   num_checkpoints: 5
+   epsilon: 0.6
+   epsilon_decay: 0.96
    epsilon_min: 0.1
 
 mcts:
-  search_duration: 2.5
-  bias: 0.2
-  c: 1.5
+  search_duration: 2.0
+  bias: 0.3
+  c: 0.15
 
 
 anet:
-  lr: 0.001
+  lr: 0.00015
   optimizer: "adam"
   loss: "categorical_crossentropy"
-  file_structure: "anet/hex/"
+  file_structure: "anet/hex/lowc/"
   output_activation: "softmax"
   hidden_layers:
+    - [40, "tanh"]
     - [30, "tanh"]
-    - [30, "tanh"]
+    - [20, "tanh"]
