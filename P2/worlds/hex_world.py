@@ -177,6 +177,7 @@ if __name__ == "__main__":
     }
     game = HexWorld(cfg, 0.3)
 
+
     states = []
     state = game.new_state()
     actions = game.get_actions(state)

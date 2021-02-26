@@ -7,11 +7,11 @@ from search.treesearch import default_search
 from interfaces.Node import Node
 from interfaces.mcts import Mcts
 from interfaces.actornet import ActorNet
-#TODO ikke nødvendigvis et problem, men nodes gir verdi til ulovlige actions
+from math import sqrt, log
 
 class McRave(Mcts):
 
-    def __init__(self, mcts_cfg, state_manager, anet, node_heuristic=lambda: 10, node_search=default_search):
+    def __init__(self, mcts_cfg, state_manager, anet, node_heuristic=lambda: 3, node_search=default_search):
         self.bias: float = mcts_cfg["bias"]
         self.Q = defaultdict(lambda: defaultdict(lambda: 0.5))
         self.amaf_Q = defaultdict(lambda: defaultdict(lambda: 0.5))
@@ -28,10 +28,10 @@ class McRave(Mcts):
 
     def run_root(self, state: Any):
         now = time.time()
-        self.root = Node(state, self.node_heuristic)
+        self.root = Node(state, self.state_manager.get_actions(state), self.node_heuristic)
         while time.time() - now < self.search_duration:
             self.simulate(self.root.state)
-        self.epsilon *= self.epsilon_decay
+        return self.tree_policy(self.root, 0)
 
     def run_subtree(self, state: Any):
         for child in self.root.children:
@@ -44,6 +44,7 @@ class McRave(Mcts):
         now = time.time()
         while time.time() - now < self.search_duration:
             self.simulate(self.root.state)
+        return self.tree_policy(self.root, 0)
 
     def simulate(self, state):
         nodes, actions = self.tree_search(state)
@@ -56,14 +57,14 @@ class McRave(Mcts):
         nodes: List[Node] = []
         while not self.state_manager.in_end_state(state):
             if node is None:
-                node = Node(state, self.node_heuristic)
+                node = Node(state, self.state_manager.get_actions(state), self.node_heuristic)
                 self.insert_node(nodes[-1], node, actions[-1])
                 action = self.default_policy(node.state)
                 nodes.append(node)
                 actions.append(action)
                 return nodes, actions
             nodes.append(node)
-            action = self.tree_policy(node)
+            action = self.tree_policy(node, self.c)
             node = node.children[node.child_actions.index(action)] if action in node.child_actions else None
             state = self.state_manager.do_action(state, action)
             actions.append(action)
@@ -85,36 +86,32 @@ class McRave(Mcts):
             state = self.state_manager.do_action(state, a)
         return actions, self.state_manager.p1_reward(state)
 
-
     def backup(self, nodes: List[Node], actions: List[int], z):
         for t, node in enumerate(nodes):
             node.N[actions[t]] += 1
+            node.sum_N += 1
             self.Q[str(node.state)][actions[t]] += (z - self.Q[str(node.state)][actions[t]]) / (node.N[actions[t]])
             for u in range(t + 2, len(actions), 2):
                 node.amaf_N[actions[u]] += 1
                 self.amaf_Q[str(node.state)][actions[u]] += (z - self.amaf_Q[str(node.state)][actions[t]]) / (node.amaf_N[actions[t]])
 
-    def evaluate(self, node, action):
+    def evaluate(self, node, action, c):
         beta = node.amaf_N[action] / (node.N[action] + node.amaf_N[action] + 4 * node.N[action] * node.amaf_N[action] * self.bias ** 2)
-        return (1 - beta) * self.Q[str(node.state)][action] + beta * self.amaf_Q[str(node.state)][action]
+        return (1 - beta) * self.Q[str(node.state)][action] + beta * self.amaf_Q[str(node.state)][action] + c * sqrt(log(node.sum_N) / node.N[action])
 
-    def tree_policy(self, node):  # 'highly explorative'
-        legal = self.state_manager.get_actions(node.state)
+    def tree_policy(self, node,  c):  # 'highly explorative'
         best_a = None
-        p = random.random()
-        if p < self.epsilon + self.epsilon_min:
-            return legal[random.randint(0, len(legal) - 1)]
         if self.state_manager.p1_to_move(node.state):
             best = float("-inf")
-            for action in legal:
-                score = self.evaluate(node, action)
+            for action in node.legal_actions:
+                score = self.evaluate(node, action, c)
                 if score > best:
                     best = score
                     best_a = action
         else:
             best = float("inf")
-            for action in legal:
-                score = self.evaluate(node, action)
+            for action in node.legal_actions:
+                score = self.evaluate(node, action, c)
                 if score < best:
                     best = score
                     best_a = action

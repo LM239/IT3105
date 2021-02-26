@@ -13,7 +13,11 @@
       <sourceFolder url="file://$MODULE_DIR$/P2/search" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/P2/interfaces" isTestSource="false" />
     </content>
+<<<<<<< HEAD
     <orderEntry type="jdk" jdkName="Python 3.8 (it3105)" jdkType="Python SDK" />
+=======
+    <orderEntry type="jdk" jdkName="Python 3.7.4 (C:\Users\larsm\Anaconda3\python.exe)" jdkType="Python SDK" />
+>>>>>>> 0fd30895891bd3cf938a6d28de3522c76f23e88f
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyNamespacePackagesService">

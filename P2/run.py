@@ -41,17 +41,23 @@ if __name__ == "__main__":
     world_config = configs["sim_world"]
     actor_config = configs["actor"]
 
+    display_config = configs["display"] if "display" in configs else None
+    display_rate = display_config["display_rate"] if "display_rate" in display_config else 0.2
+
     node_heuristic = None
     world_manager = None
     mcts = None
     anet = None
+
+    display_rate = 0.1
+
     if world_config["world"] == "hex":  # create sim_world for the actor critic
-        world_manager = HexWorld(world_config)
+        world_manager = HexWorld(world_config, display_rate)
 
         input_dim = (world_config["size"]**2 + 1) * 2
         output_dim = world_config["size"]
         anet = Anet(anet_config, input_dim, output_dim)
-        node_heuristic = (lambda state: (50 * sum(1 for t in state[:-1] if t[0] == t[1]) / (len(state) - 1) ))
+        node_heuristic = (lambda: 3)
         mcts = McRave(mcts_config, world_manager, anet, node_heuristic, hex_search)
     elif world_config["world"] == "nim":
         world_manager = NimWorld(world_config)
