@@ -117,12 +117,8 @@ class McRave(Mcts):
 
     def root_distribution(self):
         dist = {}
-        sum = 0
         for action in self.state_manager.get_actions(self.root.state):
-            sum += self.root.N[action]
-            dist[action] = self.root.N[action]
-        for action in dist.keys():
-            dist[action] /= sum
+            dist[action] = self.root.N[action] / self.root.sum_N
         return dist
 
     def default_policy(self, state: Any) -> int:  # 'reasonably explorative'

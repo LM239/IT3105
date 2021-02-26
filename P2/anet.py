@@ -3,13 +3,11 @@ from interfaces.actornet import ActorNet
 from keras.models import Sequential
 from keras.layers import Dense, Input
 import tensorflow as tf
-import os
 
 
 class Anet(ActorNet):
     def __init__(self, anet_cfg, input_dim: int, output_dim: int):
         validate_anet_config(anet_cfg)
-        os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
         self.size = anet_cfg["hidden_layers"]
         self.lr = anet_cfg["lr"]
 
