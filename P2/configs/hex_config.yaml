@@ -1,0 +1,28 @@
+---
+display:
+  display_rate: 0.55 # in seconds
+
+#SimWorld args:
+sim_world:
+  world: "hex"
+  size: 3
+
+actor:
+   episodes: 50
+   cache_m: 5
+
+mcts:
+  search_duration: 1
+  bias: 1
+  epsilon: 0.8
+  epsilon_decay: 0.985
+  epsilon_min: 0.1
+  c: 1
+
+anet:
+  lr: 0.1
+  optimizer: "SGD"
+  hidden_layers:
+    - [50, "relu"]
+    - [50, "tanh"]
+    - [50, "sigmoid"]
