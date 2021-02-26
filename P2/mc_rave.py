@@ -1,5 +1,6 @@
 import time
 import random
+import numpy as np
 from typing import List, Any
 from collections import defaultdict
 from interfaces.world import SimWorld
@@ -128,5 +129,7 @@ class McRave(Mcts):
         return dist
 
     def default_policy(self, state: Any) -> int:  # 'reasonably explorative'
-        legal = self.state_manager.get_actions(state)
-        return legal[random.randint(0, len(legal)-1)]
+        mask = self.state_manager.action_vector_mask(state)
+        masked_out = np.multiply(self.anet.forward(self.state_manager.vector(state)), mask)
+        masked_out = np.divide(masked_out, np.sum(masked_out))
+        return np.random.choice(np.arange(len(masked_out)), p=masked_out)

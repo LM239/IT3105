@@ -10,7 +10,7 @@ class Anet(ActorNet):
         self.size = anet_cfg["hidden_layers"]
         self.lr = anet_cfg["lr"]
 
-        self.file_structure =
+        self.file_structure = anet_cfg["file_structure"]
 
         # Build the network with first layer of input size, last layer with size 1,
         # and hidden layers with sizes from config
@@ -32,3 +32,5 @@ class Anet(ActorNet):
         return self.model.predict([input], batch_size=1)
 
     def save_params(self, episode: int):
+        file_name = self.file_structure + "checkpoint_" + episode
+        self.model.save(file_name)
