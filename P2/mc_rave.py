@@ -1,5 +1,6 @@
 import time
 import random
+import numpy as np
 from typing import List, Any
 from collections import defaultdict
 from interfaces.world import SimWorld
@@ -20,9 +21,6 @@ class McRave(Mcts):
         self.state_manager: SimWorld = state_manager
         self.node_heuristic = node_heuristic
         self.node_search = node_search
-        self.epsilon = mcts_cfg["epsilon"]
-        self.epsilon_decay = mcts_cfg["epsilon_decay"]
-        self.epsilon_min = mcts_cfg["epsilon_min"]
         self.c = mcts_cfg["c"] #TODO eq (18) i paper, kan gjøre epsillon unødvendig
         self.anet: ActorNet = anet
 
@@ -34,13 +32,13 @@ class McRave(Mcts):
         return self.tree_policy(self.root, 0)
 
     def run_subtree(self, state: Any):
+        print(self.root.sum_N)
         for child in self.root.children:
             if child.state == state:
                 self.root = child
                 break
         else:
-            print("subtree not found in mcts.py run_subtree")
-            exit(1)
+            self.root = Node(state, self.state_manager.get_actions(state), self.node_heuristic)
         now = time.time()
         while time.time() - now < self.search_duration:
             self.simulate(self.root.state)
@@ -128,5 +126,11 @@ class McRave(Mcts):
         return dist
 
     def default_policy(self, state: Any) -> int:  # 'reasonably explorative'
-        legal = self.state_manager.get_actions(state)
-        return legal[random.randint(0, len(legal)-1)]
+        mask = self.state_manager.action_vector_mask(state)
+        vector = self.state_manager.vector(state)
+        net_out = self.anet.forward(vector)[0][0]
+        masked_out = np.multiply(net_out, mask)
+        masked_out = np.divide(masked_out, np.sum(masked_out))
+        return np.random.choice(np.arange(len(masked_out)), p=masked_out)
+        #         actions = self.state_manager.get_actions(state)
+        #         return actions[random.randint(0, len(actions) - 1)]

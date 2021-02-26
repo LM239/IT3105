@@ -5,5 +5,5 @@ class ActorNet():
     def forward(self, input):
         pass
 
-    def save_params(self):
+    def save_params(self, episode: int):
         pass

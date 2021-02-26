@@ -8,6 +8,7 @@ from mc_rave import McRave
 from anet import Anet
 from configs.validate_configs import validate_config
 from actor import Actor
+from shutil import copyfile
 
 
 if __name__ == "__main__":
@@ -41,6 +42,11 @@ if __name__ == "__main__":
     world_config = configs["sim_world"]
     actor_config = configs["actor"]
 
+    try:
+        copyfile(sys.argv[1], anet_config["file_structure"]+"config.yaml")
+    except:
+        "Failed to copy file"
+
     display_config = configs["display"] if "display" in configs else None
     display_rate = display_config["display_rate"] if "display_rate" in display_config else 0.2
 
@@ -52,10 +58,11 @@ if __name__ == "__main__":
     display_rate = 0.1
 
     if world_config["world"] == "hex":  # create sim_world for the actor critic
+
         world_manager = HexWorld(world_config, display_rate)
 
         input_dim = (world_config["size"]**2 + 1) * 2
-        output_dim = world_config["size"]
+        output_dim = world_config["size"]**2
         anet = Anet(anet_config, input_dim, output_dim)
         node_heuristic = (lambda: 3)
         mcts = McRave(mcts_config, world_manager, anet, node_heuristic, hex_search)
