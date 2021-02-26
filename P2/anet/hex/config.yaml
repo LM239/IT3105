@@ -24,7 +24,7 @@ anet:
   lr: 0.00025
   optimizer: "adam"
   loss: "categorical_crossentropy"
-  file_structure: "anet/hex2/"
+  file_structure: "anet/hex/"
   output_activation: "softmax"
   hidden_layers:
     - [40, "tanh"]

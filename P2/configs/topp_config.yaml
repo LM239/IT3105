@@ -1,6 +1,12 @@
+display_rate: 0.1
+
 topp:
-  games_g: 20
+  games_g: 5
   display_games:
     - [File1, File2]
-    - [File3, *]
-  directories:
+    - [File3]
+  directory: "anet\\hex\\"
+
+sim_world:
+  world: "hex"
+  size: 4

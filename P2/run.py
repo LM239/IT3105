@@ -55,8 +55,6 @@ if __name__ == "__main__":
     mcts = None
     anet = None
 
-    display_rate = 0.1
-
     if world_config["world"] == "hex":  # create sim_world for the actor critic
 
         world_manager = HexWorld(world_config, display_rate)
@@ -72,7 +70,7 @@ if __name__ == "__main__":
     else:
         print("Unknown world type: {} \n Exiting".format(world_config["world"]))
         exit(1)
-    actor = Actor(actor_config, anet, mcts, world_manager)
+    actor = Actor(anet, world_manager, actor_config, mcts)
     actor.fit()
 
     exit(0)
