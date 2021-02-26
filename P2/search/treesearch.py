@@ -29,7 +29,7 @@ def hex_search(root: Node, target):
                 return v
             visited[v] = True
             for action, child in zip(v.child_actions, v.children):
-                if target[action] == child[action]:
+                if target[action] == child.state[action]:
                     stack.append(child)
     return None
 

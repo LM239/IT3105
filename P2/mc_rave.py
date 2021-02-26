@@ -11,7 +11,7 @@ from math import sqrt, log
 
 class McRave(Mcts):
 
-    def __init__(self, mcts_cfg, state_manager, anet, node_heuristic=lambda: 10, node_search=default_search):
+    def __init__(self, mcts_cfg, state_manager, anet, node_heuristic=lambda: 3, node_search=default_search):
         self.bias: float = mcts_cfg["bias"]
         self.Q = defaultdict(lambda: defaultdict(lambda: 0.5))
         self.amaf_Q = defaultdict(lambda: defaultdict(lambda: 0.5))

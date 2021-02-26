@@ -41,6 +41,9 @@ if __name__ == "__main__":
     world_config = configs["sim_world"]
     actor_config = configs["actor"]
 
+    display_config = configs["display"] if "display" in configs else None
+    display_rate = display_config["display_rate"] if "display_rate" in display_config else 0.2
+
     node_heuristic = None
     world_manager = None
     mcts = None
