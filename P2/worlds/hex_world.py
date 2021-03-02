@@ -5,7 +5,7 @@ from matplotlib import patches
 from interfaces.world import SimWorld
 from collections import defaultdict
 import random
-
+import numpy as np
 
 class HexWorld(SimWorld):
 
@@ -169,6 +169,13 @@ class HexWorld(SimWorld):
     def complete_action_dist(self, action_dist):
         return [action_dist[i] if i in action_dist.keys() else 0 for i in range(self.size ** 2)]
 
+    def to_array(self, state):
+        array = np.zeroes(size=(self.size * self.size))
+        for i in range(self.size):
+            for j in range(self.size):
+                t = state[self.from2D(i, j)]
+                array[i][j] += t[0] - t[1]
+        return array
 
 
 if __name__ == "__main__":
