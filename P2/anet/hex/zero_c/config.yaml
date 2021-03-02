@@ -27,7 +27,7 @@ anet:
   file_structure: "anet/hex/zero_c/"
   output_activation: "softmax"
   activation: "relu"
-  l1_filters: 64
-  l2_filters: 128
-  l3_filters: 256
+  l1_filters: 32
+  l2_filters: 64
+  l3_filters: 64
   dropout: 0.15
