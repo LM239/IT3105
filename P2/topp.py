@@ -7,6 +7,7 @@ from worlds.nim_world import NimWorld
 from anet import Anet
 from configs.validate_configs import validate_topp_config
 from actor import Actor
+from collections import defaultdict
 import glob
 import numpy as np
 
@@ -21,32 +22,28 @@ class Topp():
         if "display_games_pairs" in topp_cfg:
             self.display_games_pairs = topp_cfg["display_games_pairs"]
 
-        self.actors = []
         files = glob.glob(topp_cfg["directory"] + "*.h5")
         print(files)
-        for file in files:
-            anet_model = Anet(model_file=file)
-            self.actors.append(Actor(anet_model, self.state_manager))
+        self.actors = {file[file.rindex("\\")+1:]: Actor(Anet(model_file=file), self.state_manager) for file in files}
 
-        self.results = [[0 for i in range(len(self.actors))] for j in range(len(self.actors))]
-        self.total_wins = [0 for i in range(len(self.actors))]
+        self.total_wins = defaultdict(lambda: 0)
+
 
     def run_tour(self):
-        for i in range(len(self.actors)):
-            for j in range(i+1, len(self.actors)):
-                print(i, "is competing with", j)
-                self.compete(i, j)
-        print(np.array(self.results))
-        rankings = sorted(zip(self.total_wins, range(len(self.total_wins))), reverse=True)
+        for i, file1 in enumerate(list(self.actors.keys())):
+            for j, file2 in enumerate(list(self.actors.keys())[i+1:]):
+                print(file1, "is competing with", file2)
+                self.compete(file1, file2)
+        rankings = sorted([(self.total_wins[key], key) for key in self.total_wins.keys()], reverse=True)
         for i, rank in enumerate(rankings):
             losses = (len(self.actors)-1)*self.games_g-rank[0]
             print(str(i+1) + ".", "Checkpoint", rank[1], "with", rank[0], "wins and", losses, "losses")
 
-    def compete(self, actor1_index: int, actor2_index: int):
-        actor1, actor2 = (self.actors[actor1_index], self.actors[actor2_index])
+    def compete(self, actor1_key: str, actor2_key: str):
+        actor1, actor2 = (self.actors[actor1_key], self.actors[actor2_key])
         display_game = False
         for pair in self.display_games_pairs:
-            if actor1_index in pair and actor2_index in pair and self.display_games:
+            if actor1_key in pair and actor2_key in pair and self.display_games:
                 display_game = True
         for i in range(self.games_g):
             states = []
@@ -56,32 +53,26 @@ class Topp():
             while not self.state_manager.in_end_state(state):
                 if move % 2 == 0:
                     action = actor1.get_move(state)
-                    print(action)
                     state = self.state_manager.do_action(state, action)
                 else:
                     action = actor2.get_move(state)
-                    print(action)
                     state = self.state_manager.do_action(state, action)
                 states.append(state)
                 move += 1
             winner = self.state_manager.winner(state)
             if display_game:
-                print(actor1_index, actor2_index)
-                self.state_manager.visualize(states)
+                player_labels = (actor1_key, actor2_key) if i % 2 == 0 else (actor2_key, actor1_key)
+                self.state_manager.visualize(states, player_labels=player_labels)
             if i % 2 == 0:
                 if winner[0] == 1:
-                    self.results[actor1_index][actor2_index] += 1
-                    self.total_wins[actor1_index] += 1
+                    self.total_wins[actor1_key] += 1
                 else:
-                    self.results[actor2_index][actor1_index] += 1
-                    self.total_wins[actor2_index] += 1
+                    self.total_wins[actor2_key] += 1
             else:
                 if winner[0] == 1:
-                    self.results[actor2_index][actor1_index] += 1
-                    self.total_wins[actor2_index] += 1
+                    self.total_wins[actor2_key] += 1
                 else:
-                    self.results[actor1_index][actor2_index] += 1
-                    self.total_wins[actor1_index] += 1
+                    self.total_wins[actor1_key] += 1
 
 
 

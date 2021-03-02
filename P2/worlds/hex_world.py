@@ -109,7 +109,7 @@ class HexWorld(SimWorld):
     def p1_to_move(self, state):
         return state[-1][0] == 1
 
-    def visualize(self, states):  # visualize states (list of states)
+    def visualize(self, states, player_labels=("Player 1", "Player 2")):  # visualize states (list of states)
         G = nx.Graph()
         for i in range(self.size ** 2):
             y, x = self.from1D(i)
@@ -125,8 +125,8 @@ class HexWorld(SimWorld):
                 else:
                     G.add_edge(i, node, width=1, color="black")
         pos = nx.get_node_attributes(G, 'pos')  # extract node positions
-        red_patch = patches.Patch(color='red', label='Player 2')
-        green_patch = patches.Patch(color='green', label='Player 1')
+        red_patch = patches.Patch(color='red', label=player_labels[1])
+        green_patch = patches.Patch(color='green', label=player_labels[0])
         plt.figure(figsize=(min(41, self.size), int(1.5 * min(41, self.size))))  # set fig size
         edge_widths = list(nx.get_edge_attributes(G, 'width').values())
         edge_colors = list(nx.get_edge_attributes(G, 'color').values())

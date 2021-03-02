@@ -2,7 +2,7 @@ display_rate: 0.1
 
 topp:
   games_g: 6
-  display_games: false
+  display_games: true
   display_games_pairs:
     - [0, 5]
   directory: "anet\\hex2\\"

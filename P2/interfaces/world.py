@@ -15,7 +15,7 @@ class SimWorld:
     def in_end_state(self, state) -> bool:
         pass
 
-    def visualize(self, states):
+    def visualize(self, states, player_labels):
         pass
 
     def vector(self, state):
