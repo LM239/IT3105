@@ -88,7 +88,7 @@ class McRave(Mcts):
             self.Q[str(node.state)][actions[t]] += (z - self.Q[str(node.state)][actions[t]]) / (node.N[actions[t]])
             for u in range(t + 2, len(actions), 2):
                 node.amaf_N[actions[u]] += 1
-                self.amaf_Q[str(node.state)][actions[u]] += (z - self.amaf_Q[str(node.state)][actions[t]]) / (node.amaf_N[actions[t]])
+                self.amaf_Q[str(node.state)][actions[u]] += (z - self.amaf_Q[str(node.state)][actions[u]]) / (node.amaf_N[actions[u]])
 
     def evaluate(self, node, action, c):
         beta = node.amaf_N[action] / (node.N[action] + node.amaf_N[action] + 4 * node.N[action] * node.amaf_N[action] * self.bias ** 2)

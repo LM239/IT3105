@@ -5,7 +5,7 @@ topp:
   display_games:
     - [File1, File2]
     - [File3]
-  directory: "anet\\hex\\lowerc\\"
+  directory: "anet\\hex\\zero_c\\"
 
 sim_world:
   world: "hex"

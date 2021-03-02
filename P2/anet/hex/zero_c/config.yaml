@@ -16,12 +16,12 @@ actor:
 
 mcts:
   search_duration: 1.0
-  bias: 0.35
+  bias: 0.175
   c: 0
 
 
 anet:
-  lr: 0.00005
+  lr: 0.000035
   optimizer: "adam"
   loss: "categorical_crossentropy"
   file_structure: "anet/hex/zero_c/"
