@@ -22,7 +22,8 @@ class Anet(ActorNet):
             for layer in self.size:
                 self.model.add(Dense(layer[0], activation=layer[1]))
             self.model.add(Dense(output_dim, activation=anet_cfg["output_activation"]))
-            self.model.compile(optimizer=anet_cfg["optimizer"], loss=anet_cfg["loss"])
+            opt = type(tf.keras.optimizers.get(anet_cfg["optimizer"]))(learning_rate=anet_cfg["lr"])
+            self.model.compile(optimizer=opt, loss=anet_cfg["loss"])
         else:
             self.model = load_model(model_file)
 

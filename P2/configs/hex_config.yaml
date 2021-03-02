@@ -16,17 +16,17 @@ actor:
 
 mcts:
   search_duration: 1.0
-  bias: 0.175
+  bias: 0.1
   c: 0
 
 
 anet:
-  lr: 0.000035
+  lr: 0.0001
   optimizer: "adam"
   loss: "categorical_crossentropy"
   file_structure: "anet/hex/zero_c/"
   output_activation: "softmax"
   hidden_layers:
-    - [40, "linear"]
-    - [30, "linear"]
-    - [25, "linear"]
+    - [40, "tanh"]
+    - [30, "tanh"]
+    - [25, "tanh"]
