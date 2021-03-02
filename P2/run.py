@@ -6,6 +6,7 @@ from worlds.nim_world import NimWorld
 from search.treesearch import hex_search
 from mc_rave import McRave
 from anet import Anet
+from conv_anet import ConvNet
 from configs.validate_configs import validate_config
 from actor import Actor
 from shutil import copyfile
@@ -61,7 +62,7 @@ if __name__ == "__main__":
 
         input_dim = (world_config["size"]**2 + 1) * 2
         output_dim = world_config["size"]**2
-        anet = Anet(anet_config, input_dim, output_dim)
+        anet = ConvNet(anet_config, world_config["size"], output_dim)
         node_heuristic = (lambda: 3)
         mcts = McRave(mcts_config, world_manager, anet, node_heuristic, hex_search)
     elif world_config["world"] == "nim":

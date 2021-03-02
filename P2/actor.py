@@ -26,7 +26,7 @@ class Actor:
 
     def get_move(self, state: Any) -> int:
         mask = self.state_manager.action_vector_mask(state)
-        vector = self.state_manager.vector(state)
+        vector = self.state_manager.to_array(state)
         net_out = self.anet.forward(vector)[0]
         masked_out = np.multiply(net_out, mask)
         masked_out = np.divide(masked_out, np.sum(masked_out))
@@ -50,7 +50,7 @@ class Actor:
             while True:
                 root_distribution = self.mcts.root_distribution()
                 D = self.state_manager.complete_action_dist(root_distribution)
-                replay_features.append(self.state_manager.vector(actual_board))
+                replay_features.append(self.state_manager.to_array(actual_board))
                 replay_targets.append(D)
 
                 if random.random() < self.epsilon + self.epsilon_min:

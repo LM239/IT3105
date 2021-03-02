@@ -21,6 +21,9 @@ class SimWorld:
     def vector(self, state):
         pass
 
+    def to_array(self, state):
+        pass
+
     def complete_action_dist(self, actions):
         pass
 

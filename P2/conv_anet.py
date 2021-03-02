@@ -1,28 +1,84 @@
 from configs.validate_configs import validate_anet_config
 from interfaces.actornet import ActorNet
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+from torchvision import datasets, transforms
+from torch.autograd import Variable
+
+
+class ConvNet(nn.Module):
+    def __init__(self, anet_cfg=None, board_size: int = 0, output_dim: int = 0, model_file: str = None):
+        if model_file is None:
+            # game params
+            super(ConvNet, self).__init__()
+            self.board_x, self.board_y = board_size, board_size
+            self.conv1 = nn.Conv2d(1, anet_cfg["l1_filters"], 3, stride=1, padding=1)
+            self.conv2 = nn.Conv2d(anet_cfg["l1_filters"], anet_cfg["l2_filters"], 3, stride=1, padding=1)
+            self.conv3 = nn.Conv2d(anet_cfg["l2_filters"], anet_cfg["l3_filters"], 3, stride=1)
+
+            self.bn1 = nn.BatchNorm2d(anet_cfg["l1_filters"])
+            self.bn2 = nn.BatchNorm2d(anet_cfg["l2_filters"])
+            self.bn3 = nn.BatchNorm2d(anet_cfg["l3_filters"])
+
+            self.fc1 = nn.Linear(anet_cfg["l3_filters"] * (self.board_x-2)*(self.board_y-2), 1024)
+            self.fc_bn1 = nn.BatchNorm1d(1024)
+
+            self.fc2 = nn.Linear(1024, 512)
+            self.fc_bn2 = nn.BatchNorm1d(512)
+
+            self.fc3 = nn.Linear(512, output_dim)
+
+            self.fc4 = nn.Linear(512, 1)
+            self.dropout = anet_cfg["dropout"]
+            self.l3_filters = anet_cfg["l1_filters"]
+            self.file_structure = anet_cfg["file_structure"]
+        else:
+            #self.model = load_model(model_file)
+            pass
+
+    def forward(self, s):
+        #                                                           s: batch_size x board_x x board_y
+        s = torch.tensor(s, dtype=torch.float32)
+        s = s.view(-1, 1, self.board_x, self.board_y)                # batch_size x 1 x board_x x board_y
+        s = F.relu(self.bn1(self.conv1(s)))                          # batch_size x num_channels x board_x x board_y
+        s = F.relu(self.bn2(self.conv2(s)))                          # batch_size x num_channels x board_x x board_y
+        s = F.relu(self.bn3(self.conv3(s)))                           # batch_size x num_channels x (board_x-4) x (board_y-4)
+        s = s.view(-1, self.l3_filters*(self.board_x - 2)*(self.board_y - 2))
+
+        s = F.dropout(F.relu(self.fc_bn1(self.fc1(s))), p=self.dropout, training=self.training)  # batch_size x 1024
+        s = F.dropout(F.relu(self.fc_bn2(self.fc2(s))), p=self.dropout, training=self.training)  # batch_size x 512
+
+        pi = self.fc3(s)                                                                            # batch_size x 1
+
+        return F.log_softmax(pi, dim=1)
+
+    def save_params(self, episode: int):
+        file_name = self.file_structure + "checkpoint_" + str(episode) + ".h5"
+        torch.save(self, file_name)
+
+"""
 from keras.models import Sequential
 from keras.layers import Dense, Input
 from keras.models import *
 import tensorflow as tf
 from keras.layers import *
 
-class Anet(ActorNet):
+class ConvNet(ActorNet):
     def __init__(self, anet_cfg=None, board_size: int = 0, output_dim: int = 0, model_file: str = None):
         if model_file is None:
-            validate_anet_config(anet_cfg)
-            self.size = anet_cfg["hidden_layers"]
+            #validate_anet_config(anet_cfg)
             self.lr = anet_cfg["lr"]
 
             self.file_structure = anet_cfg["file_structure"]
 
-            # Build the network with first layer of input size
-            # and hidden layers with sizes from config
-
             #from https://github.com/suragnair/alpha-zero-general/blob/master/gobang/keras/GobangNNet.py
-            self.input_boards = Input(shape=(board_size, board_size))  # s: batch_size x board_x x board_y
+            self.input_boards = Input(shape=(board_size, board_size, 1))  # s: batch_size x board_x x board_y
 
-            x_image = Reshape((self.board_x, self.board_y, 1))(self.input_boards)  # batch_size  x board_x x board_y x 1
-            h_conv1 = Activation(anet_cfg["activation"])(BatchNormalization(axis=3)(Conv2D(anet_cfg["l1_filters"], 3, padding='same')(x_image)))  # batch_size  x board_x x board_y x num_channels
+            #x_image = Reshape((board_size, board_size, 1))(self.input_boards)  # batch_size  x board_x x board_y x 1
+            h_conv1 = Activation(anet_cfg["activation"])(BatchNormalization(axis=3)(Conv2D(anet_cfg["l1_filters"], 3, padding='same')(self.input_boards)))  # batch_size  x board_x x board_y x num_channels
             h_conv2 = Activation(anet_cfg["activation"])(BatchNormalization(axis=3)(Conv2D(anet_cfg["l2_filters"], 3, padding='same')(h_conv1)))  # batch_size  x board_x x board_y x num_channels
             h_conv3 = Activation(anet_cfg["activation"])(BatchNormalization(axis=3)(Conv2D(anet_cfg["l3_filters"], 3, padding='valid')(h_conv2)))  # batch_size  x (board_x-2) x (board_y-2) x num_channels
             h_conv3_flat = Flatten()(h_conv3)
@@ -46,9 +102,11 @@ class Anet(ActorNet):
         )
 
     def forward(self, input):
-        return self.model(tf.convert_to_tensor([input]), training=False)
+        print(input.shape)
+        return self.model([input], training=False)
 
     def save_params(self, episode: int):
         file_name = self.file_structure + "checkpoint_" + str(episode) + ".h5"
         self.model.save(file_name)
 
+"""
