@@ -36,6 +36,8 @@ class Actor:
     def fit(self):
         wins = 0
         late_wins = 0
+        all_replay_features = []
+        all_replay_targets = []
         for episode in range(self.episodes):
             print(episode)
             replay_features = []

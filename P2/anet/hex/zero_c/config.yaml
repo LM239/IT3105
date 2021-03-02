@@ -27,6 +27,6 @@ anet:
   file_structure: "anet/hex/zero_c/"
   output_activation: "softmax"
   hidden_layers:
-    - [40, "linear"]
-    - [30, "linear"]
-    - [25, "linear"]
+    - [40, "tanh"]
+    - [30, "tanh"]
+    - [25, "tanh"]
