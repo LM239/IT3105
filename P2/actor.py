@@ -1,25 +1,37 @@
 import random
+from typing import Any
 
 from interfaces.world import SimWorld
 from interfaces.mcts import Mcts
+from interfaces.actornet import ActorNet
 import numpy as np
 
 
 class Actor:
-    def __init__(self, actor_cfg, anet, mcts: Mcts, world: SimWorld):
-        self.episodes = actor_cfg["episodes"]
-        self.save_episodes = []
-        if "num_checkpoints" in actor_cfg and actor_cfg["num_checkpoints"] > 0:
-            self.save_episodes = [self.episodes]
-            if actor_cfg["num_checkpoints"] > 1:
-                self.save_episodes.extend([*range(0, self.episodes, self.episodes / (actor_cfg["num_checkpoints"] - 1))])
+    def __init__(self, anet: ActorNet, world: SimWorld, actor_cfg=None, mcts: Mcts = None):
         self.anet = anet
-        self.mcts: Mcts = mcts
         self.state_manager: SimWorld = world
+        self.mcts: Mcts = mcts
+        if actor_cfg is not None:
+            self.episodes = actor_cfg["episodes"]
+            self.save_episodes = []
+            if actor_cfg["num_checkpoints"] > 0:
+                self.save_episodes = [self.episodes]
+                if actor_cfg["num_checkpoints"] > 1:
+                    self.save_episodes.extend([*range(0, self.episodes, int(self.episodes / (actor_cfg["num_checkpoints"] - 1)))])
 
-        self.epsilon = actor_cfg["epsilon"]
-        self.epsilon_decay = actor_cfg["epsilon_decay"]
-        self.epsilon_min = actor_cfg["epsilon_min"]
+            self.epsilon = actor_cfg["epsilon"]
+            self.epsilon_decay = actor_cfg["epsilon_decay"]
+            self.epsilon_min = actor_cfg["epsilon_min"]
+
+    def get_move(self, state: Any) -> int:
+        mask = self.state_manager.action_vector_mask(state)
+        vector = self.state_manager.vector(state)
+        net_out = self.anet.forward(vector)[0]
+        masked_out = np.multiply(net_out, mask)
+        masked_out = np.divide(masked_out, np.sum(masked_out))
+        return np.argmax(masked_out)
+
 
     def fit(self):
         wins = 0
@@ -29,6 +41,7 @@ class Actor:
             replay_features = []
             replay_targets = []
             if episode in self.save_episodes:
+                print("-------------------------------------------------------------------------------------")
                 self.anet.save_params(episode)
             actual_board = self.state_manager.new_state()
             self.mcts.run_root(actual_board)
@@ -53,7 +66,7 @@ class Actor:
             wins += self.state_manager.p1_reward(actual_board)
             self.anet.train(replay_features, replay_targets)
             self.epsilon *= self.epsilon_decay
-            if episode > self.episodes / 2:
+            if episode >= self.episodes / 2:
                 late_wins += self.state_manager.p1_reward(actual_board)
         if len(self.save_episodes) > 0:
             self.anet.save_params(self.episodes)

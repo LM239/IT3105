@@ -9,22 +9,22 @@ sim_world:
 
 actor:
    episodes: 40
-   num_checkpoints: 3
-   epsilon: 0.6
-   epsilon_decay: 0.96
+   num_checkpoints: 6
+   epsilon: 0.4
+   epsilon_decay: 0.985
    epsilon_min: 0.1
 
 mcts:
-  search_duration: 1.0
-  bias: 0.35
-  c: 0
+  search_duration: 2.5
+  bias: 0.3
+  c: 1.5
 
 
 anet:
-  lr: 0.00005
+  lr: 0.00025
   optimizer: "adam"
   loss: "categorical_crossentropy"
-  file_structure: "anet/hex/zero_c/"
+  file_structure: "anet/hex2/"
   output_activation: "softmax"
   hidden_layers:
     - [40, "tanh"]

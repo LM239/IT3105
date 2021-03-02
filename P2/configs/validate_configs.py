@@ -35,8 +35,8 @@ def validate_actor_config(config):
     if "episodes" not in config:
         print("Missing required actor argument: 'episodes' \nExiting")
         exit(1)
-    if "cache_m" not in config:
-        print("Missing required topp argument: 'cache_m' \nExiting")
+    if "num_checkpoints" not in config:
+        print("Missing required topp argument: 'num_checkpoints' \nExiting")
         exit(1)
 
 def validate_mcts_config(config):
@@ -71,6 +71,6 @@ def validate_topp_config(config):
     if "games_g" not in config:
         print("Missing required topp argument: 'games_g' \nExiting")
         exit(1)
-    if "directories" not in config:
-        print("Missing required topp argument: 'directories' \nExiting")
+    if "directory" not in config:
+        print("Missing required topp argument: 'directory' \nExiting")
         exit(1)

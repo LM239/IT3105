@@ -29,7 +29,6 @@ class McRave(Mcts):
         self.root = Node(state, self.state_manager.get_actions(state), self.node_heuristic)
         while time.time() - now < self.search_duration:
             self.simulate(self.root.state)
-        return self.tree_policy(self.root, 0)
 
     def run_subtree(self, state: Any):
         for child in self.root.children:
@@ -41,7 +40,6 @@ class McRave(Mcts):
         now = time.time()
         while time.time() - now < self.search_duration:
             self.simulate(self.root.state)
-        return self.tree_policy(self.root, 0)
 
     def simulate(self, state):
         nodes, actions = self.tree_search(state)
@@ -115,15 +113,12 @@ class McRave(Mcts):
         return best_a
 
     def root_distribution(self):
-        dist = {}
-        for action in self.state_manager.get_actions(self.root.state):
-            dist[action] = self.root.N[action] / self.root.sum_N
-        return dist
+        return {action : self.root.N[action] / self.root.sum_N for action in self.root.legal_actions}
 
     def default_policy(self, state: Any) -> int:  # 'reasonably explorative'
         mask = self.state_manager.action_vector_mask(state)
         vector = self.state_manager.vector(state)
-        net_out = self.anet.forward(vector)[0][0]
+        net_out = self.anet.forward(vector)[0]
         masked_out = np.multiply(net_out, mask)
         masked_out = np.divide(masked_out, np.sum(masked_out))
         return np.random.choice(np.arange(len(masked_out)), p=masked_out)
