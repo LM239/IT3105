@@ -15,10 +15,11 @@ class Topp():
     def __init__(self, topp_cfg, state_manager: SimWorld):
         validate_topp_config(topp_cfg)
         self.games_g = topp_cfg["games_g"]
-        self.display_games = []
+        self.display_games_pairs = []
         self.state_manager = state_manager
-        if "display_games" in topp_cfg:
-            self.display_games = topp_cfg["display_games"]
+        self.display_games = topp_cfg["display_games"]
+        if "display_games_pairs" in topp_cfg:
+            self.display_games_pairs = topp_cfg["display_games_pairs"]
 
         self.actors = []
         files = glob.glob(topp_cfg["directory"] + "*.h5")
@@ -28,6 +29,7 @@ class Topp():
             self.actors.append(Actor(anet_model, self.state_manager))
 
         self.results = [[0 for i in range(len(self.actors))] for j in range(len(self.actors))]
+        self.total_wins = [0 for i in range(len(self.actors))]
 
     def run_tour(self):
         for i in range(len(self.actors)):
@@ -35,11 +37,21 @@ class Topp():
                 print(i, "is competing with", j)
                 self.compete(i, j)
         print(np.array(self.results))
+        rankings = sorted(zip(self.total_wins, range(len(self.total_wins))), reverse=True)
+        for i, rank in enumerate(rankings):
+            losses = (len(self.actors)-1)*self.games_g-rank[0]
+            print(str(i+1) + ".", "Checkpoint", rank[1], "with", rank[0], "wins and", losses, "losses")
 
     def compete(self, actor1_index: int, actor2_index: int):
         actor1, actor2 = (self.actors[actor1_index], self.actors[actor2_index])
+        display_game = False
+        for pair in self.display_games_pairs:
+            if actor1_index in pair and actor2_index in pair and self.display_games:
+                display_game = True
         for i in range(self.games_g):
+            states = []
             state = self.state_manager.new_state()
+            states.append(state)
             move = i % 2
             while not self.state_manager.in_end_state(state):
                 if move % 2 == 0:
@@ -50,18 +62,26 @@ class Topp():
                     action = actor2.get_move(state)
                     print(action)
                     state = self.state_manager.do_action(state, action)
+                states.append(state)
                 move += 1
             winner = self.state_manager.winner(state)
+            if display_game:
+                print(actor1_index, actor2_index)
+                self.state_manager.visualize(states)
             if i % 2 == 0:
                 if winner[0] == 1:
                     self.results[actor1_index][actor2_index] += 1
+                    self.total_wins[actor1_index] += 1
                 else:
                     self.results[actor2_index][actor1_index] += 1
+                    self.total_wins[actor2_index] += 1
             else:
                 if winner[0] == 1:
                     self.results[actor2_index][actor1_index] += 1
+                    self.total_wins[actor2_index] += 1
                 else:
                     self.results[actor1_index][actor2_index] += 1
+                    self.total_wins[actor1_index] += 1
 
 
 

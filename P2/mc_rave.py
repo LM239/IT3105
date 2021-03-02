@@ -124,7 +124,7 @@ class McRave(Mcts):
     def default_policy(self, state: Any) -> int:  # 'reasonably explorative'
         mask = self.state_manager.action_vector_mask(state)
         vector = self.state_manager.vector(state)
-        net_out = self.anet.forward(vector)[0][0]
+        net_out = self.anet.forward(vector)[0]
         masked_out = np.multiply(net_out, mask)
         masked_out = np.divide(masked_out, np.sum(masked_out))
         return np.random.choice(np.arange(len(masked_out)), p=masked_out)

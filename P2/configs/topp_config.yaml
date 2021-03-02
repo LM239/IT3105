@@ -1,11 +1,11 @@
 display_rate: 0.1
 
 topp:
-  games_g: 5
-  display_games:
-    - [File1, File2]
-    - [File3]
-  directory: "anet\\hex\\"
+  games_g: 6
+  display_games: false
+  display_games_pairs:
+    - [0, 5]
+  directory: "anet\\hex2\\"
 
 sim_world:
   world: "hex"

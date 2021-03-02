@@ -27,7 +27,7 @@ class Actor:
     def get_move(self, state: Any) -> int:
         mask = self.state_manager.action_vector_mask(state)
         vector = self.state_manager.vector(state)
-        net_out = self.anet.forward(vector)[0][0]
+        net_out = self.anet.forward(vector)[0]
         masked_out = np.multiply(net_out, mask)
         masked_out = np.divide(masked_out, np.sum(masked_out))
         return np.argmax(masked_out)
@@ -66,7 +66,7 @@ class Actor:
             wins += self.state_manager.p1_reward(actual_board)
             self.anet.train(replay_features, replay_targets)
             self.epsilon *= self.epsilon_decay
-            if episode > self.episodes / 2:
+            if episode >= self.episodes / 2:
                 late_wins += self.state_manager.p1_reward(actual_board)
         if len(self.save_episodes) > 0:
             self.anet.save_params(self.episodes)
