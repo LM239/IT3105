@@ -9,7 +9,7 @@ from configs.validate_configs import validate_topp_config
 from actor import Actor
 from collections import defaultdict
 import glob
-import numpy as np
+import os
 
 
 class Topp():
@@ -19,6 +19,7 @@ class Topp():
         self.display_games_pairs = []
         self.state_manager = state_manager
         self.display_games = topp_cfg["display_games"]
+        os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
         if "display_games_pairs" in topp_cfg:
             self.display_games_pairs = topp_cfg["display_games_pairs"]
 

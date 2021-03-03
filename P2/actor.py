@@ -27,7 +27,10 @@ class Actor:
     def get_move(self, state: Any) -> int:
         mask = self.state_manager.action_vector_mask(state)
         vector = self.state_manager.to_array(state)
-        net_out = self.anet.forward(vector)[0]
+        try:
+            net_out = self.anet.forward(vector)[0]
+        except ValueError:
+            net_out = self.anet.forward(self.state_manager.vector(state))[0]
         masked_out = np.multiply(net_out, mask)
         masked_out = np.divide(masked_out, np.sum(masked_out))
         return np.argmax(masked_out)
