@@ -16,7 +16,7 @@ actor:
 
 mcts:
   search_duration: 1.0
-  bias: 0.225
+  bias: 0.1
   c: 0
 
 
