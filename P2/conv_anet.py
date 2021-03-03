@@ -52,6 +52,7 @@ class ConvNet(ActorNet):
 
     def save_params(self, episode: int):
         file_name = self.file_structure + "checkpoint_" + str(episode) + ".h5"
+        print("-" * 20, "Saving anet to ", file_name, "-" * 20)
         self.model.save(file_name)
 
 
