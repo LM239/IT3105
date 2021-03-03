@@ -1,16 +1,16 @@
 import random
 from typing import Any
 
-from interfaces.world import SimWorld
+from interfaces.world import AdvancedSimWorld
 from interfaces.mcts import Mcts
 from interfaces.actornet import ActorNet
 import numpy as np
 
 
 class Actor:
-    def __init__(self, anet: ActorNet, world: SimWorld, actor_cfg=None, mcts: Mcts = None):
+    def __init__(self, anet: ActorNet, world: AdvancedSimWorld, actor_cfg=None, mcts: Mcts = None):
         self.anet = anet
-        self.state_manager: SimWorld = world
+        self.state_manager: AdvancedSimWorld = world
         self.mcts: Mcts = mcts
         if actor_cfg is not None:
             self.episodes = actor_cfg["episodes"]
@@ -31,9 +31,9 @@ class Actor:
             net_out = self.anet.forward(vector)[0]
         except ValueError:
             net_out = self.anet.forward(self.state_manager.vector(state))[0]
-        masked_out = np.multiply(net_out, mask)
+        masked_out = np.multiply(net_out, mask) ** 2
         masked_out = np.divide(masked_out, np.sum(masked_out))
-        return np.argmax(masked_out)
+        return np.random.choice(np.arange(len(masked_out)), p=masked_out)
 
 
     def fit(self):
@@ -52,8 +52,9 @@ class Actor:
             while True:
                 root_distribution = self.mcts.root_distribution()
                 D = self.state_manager.complete_action_dist(root_distribution)
-                replay_features.append(self.state_manager.to_array(actual_board))
-                replay_targets.append(D)
+                augmented_boards, augmented_Ds = self.state_manager.augment_training_data(self.state_manager.to_array(actual_board), D)
+                replay_features.extend(augmented_boards)
+                replay_targets.extend(augmented_Ds)
 
                 if random.random() < self.epsilon + self.epsilon_min:
                     action = list(root_distribution.keys())[random.randint(0, len(root_distribution.keys())-1)]

@@ -1,10 +1,10 @@
 display_rate: 0.1
 
 topp:
-  games_g: 10
+  games_g: 20
   display_games: true
   display_games_pairs:
-    - [checkpoint_100.h5,  checkpoint_24.h5]
+    - [0,  1]
   directory: "anet\\hex\\conv\\"
 
 sim_world:

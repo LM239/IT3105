@@ -8,20 +8,20 @@ sim_world:
   size: 4
 
 actor:
-   episodes: 200
-   num_checkpoints: 11
-   epsilon: 0.6
-   epsilon_decay: 0.96
-   epsilon_min: 0.1
+   episodes: 1000
+   num_checkpoints: 20
+   epsilon: 0.8
+   epsilon_decay: 0.985
+   epsilon_min: 0.15
 
 mcts:
-  search_duration: 1.0
-  bias: 0.225
+  search_duration: 1.1
+  bias: 0.215
   c: 0
 
 
 anet:
-  lr: 0.00025
+  lr: 0.0002
   optimizer: "adam"
   loss: "categorical_crossentropy"
   file_structure: "anet/hex/conv/"
@@ -31,5 +31,5 @@ anet:
   l3_filters: 96
   fc1_width: 512
   fc2_width: 256
-  dropout: 0.15
+  dropout: 0.2
   allow_cuda: False

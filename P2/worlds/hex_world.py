@@ -2,12 +2,12 @@ from typing import List, Tuple
 import networkx as nx
 from matplotlib import pyplot as plt
 from matplotlib import patches
-from interfaces.world import SimWorld
+from interfaces.world import AdvancedSimWorld
 from collections import defaultdict
 import random
 import numpy as np
 
-class HexWorld(SimWorld):
+class HexWorld(AdvancedSimWorld):
 
     def __init__(self, hex_cfg, display_rate):
         self.size = hex_cfg["size"]
@@ -177,25 +177,47 @@ class HexWorld(SimWorld):
                 array[i][j][0] += t[0] - t[1]
         return array
 
+    def augment_training_data(self, state_array, action_dist):
+        states = [state_array, np.flip(state_array)]
+        dists = [action_dist, action_dist[::-1]]
+        return states, dists
+
+    def array_to_state(self, array):
+        count = 0
+        state = [None] * self.size ** 2
+        print(array)
+        for y in range(self.size):
+            for x in range(self.size):
+                val = [0, 0]
+                if array[y][x][0] != 0:
+                    count += 1
+                    val[0 if int(array[y][x][0]) == 1 else 1] = 1
+                state[self.from2D(y, x)] = tuple(val)
+        state.append((1, 0) if count % 2 == 0 else (0, 1))
+        return state
 
 if __name__ == "__main__":
     cfg = {
-        "size": 3
+        "size": 4
     }
     game = HexWorld(cfg, 0.3)
 
     states = []
     state = game.new_state()
     actions = game.get_actions(state)
-    print(game.find_action(state, game.do_action(state, 24)))
     while len(actions) > 0:
         state = game.do_action(state, actions[random.randint(0, len(actions) - 1)])
         actions = game.get_actions(state)
-    states.append(state)
+        states.append(state)
 
-    print(game.vector(state))
-    print(game.to_array(state))
+    array = game.to_array(states[-2])
 
+    boards, ds = game.augment_training_data(array, [*range(game.size**2)])
+    boards = [game.array_to_state(board) for board in boards]
+
+    game.visualize(boards)
+
+    print(ds)
 
 
 

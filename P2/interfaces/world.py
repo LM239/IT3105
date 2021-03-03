@@ -1,6 +1,5 @@
 from typing import List
 
-
 class SimWorld:
 
     def new_state(self):
@@ -13,21 +12,6 @@ class SimWorld:
         pass
 
     def in_end_state(self, state) -> bool:
-        pass
-
-    def visualize(self, states, player_labels):
-        pass
-
-    def vector(self, state):
-        pass
-
-    def to_array(self, state):
-        pass
-
-    def complete_action_dist(self, actions):
-        pass
-
-    def action_vector_mask(self, state):
         pass
 
     def winner(self, state):
@@ -45,3 +29,23 @@ class SimWorld:
     def find_action(self, parent_state, child_state):
         pass
 
+
+class AdvancedSimWorld(SimWorld):
+
+    def visualize(self, states, player_labels):
+        pass
+
+    def vector(self, state):
+        pass
+
+    def to_array(self, state):
+        pass
+
+    def complete_action_dist(self, actions):
+        pass
+
+    def action_vector_mask(self, state):
+        pass
+
+    def augment_training_data(self, state, action_dist):
+        pass
