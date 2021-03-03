@@ -113,7 +113,7 @@ class McRave(Mcts):
         return best_a
 
     def root_distribution(self):
-        return {action : self.root.N[action] / self.root.sum_N for action in self.root.legal_actions}
+        return {action: self.root.N[action] / self.root.sum_N for action in self.root.legal_actions}
 
     def default_policy(self, state: Any) -> int:  # 'reasonably explorative'
         mask = self.state_manager.action_vector_mask(state)

@@ -27,6 +27,8 @@ class Topp():
         print(files)
         self.actors = {file[file.rindex("\\")+1:]: Actor(Anet(model_file=file), self.state_manager) for file in files}
 
+        self.p2_wins = defaultdict(lambda: 0)
+        self.p1_losses = defaultdict(lambda: 0)
         self.total_wins = defaultdict(lambda: 0)
 
 
@@ -37,8 +39,10 @@ class Topp():
                 self.compete(file1, file2)
         rankings = sorted([(self.total_wins[key], key) for key in self.total_wins.keys()], reverse=True)
         for i, rank in enumerate(rankings):
-            losses = (len(self.actors)-1)*self.games_g-rank[0]
-            print(str(i+1) + ".", "Checkpoint", rank[1], "with", rank[0], "wins and", losses, "losses")
+            losses = (len(self.actors)-1)*self.games_g - rank[0]
+            print(str(i+1) + ".", "Checkpoint", rank[1], "with", rank[0], "wins and", losses, "losses",
+                  "P1 (win / loss): ", "({} / {}) ".format((len(self.actors)-1)*self.games_g / 2 - self.p1_losses[rank[1]], self.p1_losses[rank[1]]),
+                  "P2 (win / loss): ", "({} / {})".format(self.p2_wins[rank[1]], (len(self.actors)-1)*self.games_g / 2 - self.p2_wins[rank[1]]))
 
     def compete(self, actor1_key: str, actor2_key: str):
         actor1, actor2 = (self.actors[actor1_key], self.actors[actor2_key])
@@ -68,12 +72,17 @@ class Topp():
                 if winner[0] == 1:
                     self.total_wins[actor1_key] += 1
                 else:
+                    self.p1_losses[actor1_key] += 1
+                    self.p2_wins[actor2_key] += 1
                     self.total_wins[actor2_key] += 1
             else:
                 if winner[0] == 1:
                     self.total_wins[actor2_key] += 1
                 else:
+                    self.p1_losses[actor2_key] += 1
+                    self.p2_wins[actor1_key] += 1
                     self.total_wins[actor1_key] += 1
+
 
 
 

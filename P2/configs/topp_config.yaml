@@ -4,8 +4,8 @@ topp:
   games_g: 6
   display_games: true
   display_games_pairs:
-    - [0, 5]
-  directory: "anet\\hex\\zero_c\\"
+    - [0, 4]
+  directory: "anet\\hex\\conv\\"
 
 sim_world:
   world: "hex"

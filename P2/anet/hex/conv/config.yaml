@@ -9,7 +9,7 @@ sim_world:
 
 actor:
    episodes: 50
-   num_checkpoints: 6
+   num_checkpoints: 5
    epsilon: 0.6
    epsilon_decay: 0.96
    epsilon_min: 0.1

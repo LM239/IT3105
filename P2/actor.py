@@ -33,7 +33,7 @@ class Actor:
             net_out = self.anet.forward(self.state_manager.vector(state))[0]
         masked_out = np.multiply(net_out, mask)
         masked_out = np.divide(masked_out, np.sum(masked_out))
-        return np.argmax(masked_out)
+        return np.argmax(masked_out)[0]
 
 
     def fit(self):
