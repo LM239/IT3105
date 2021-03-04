@@ -36,7 +36,16 @@ def validate_actor_config(config):
         print("Missing required actor argument: 'episodes' \nExiting")
         exit(1)
     if "num_checkpoints" not in config:
-        print("Missing required topp argument: 'num_checkpoints' \nExiting")
+        print("Missing required actor argument: 'num_checkpoints' \nExiting")
+        exit(1)
+    if "train_ex_size" not in config:
+        print("Missing required actor argument: 'train_ex_size' \nExiting")
+        exit(1)
+    if "competition_games" not in config:
+        print("Missing required actor argument: 'competition games' \nExiting")
+        exit(1)
+    if "file_structure" not in config:
+        print("Missing required anet argument: 'file_structure' \nExiting")
         exit(1)
 
 def validate_mcts_config(config):
@@ -75,9 +84,6 @@ def validate_anet_config(config):
         exit(1)
     if "l3_filters" not in config:
         print("Missing required anet argument: 'l3_filters' \nExiting")
-        exit(1)
-    if "file_structure" not in config:
-        print("Missing required anet argument: 'file_structure' \nExiting")
         exit(1)
     if "fc1_width" not in config:
         print("Missing required anet argument: 'fc1_width' \nExiting")

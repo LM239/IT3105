@@ -6,10 +6,9 @@ from worlds.hex_world import HexWorld
 from worlds.nim_world import NimWorld
 from anet import Anet
 from configs.validate_configs import validate_topp_config
-from actor import Actor
+from players import GreedyPlayer, ProbabilisticPlayer, Player
 from collections import defaultdict
 import glob
-import os
 
 
 class Topp():
@@ -19,74 +18,62 @@ class Topp():
         self.display_games_pairs = []
         self.state_manager = state_manager
         self.display_games = topp_cfg["display_games"]
-        os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+
+        self.player_type = GreedyPlayer if topp_cfg["player_type"] == "greedy" else ProbabilisticPlayer
         if "display_games_pairs" in topp_cfg:
             self.display_games_pairs = topp_cfg["display_games_pairs"]
 
         files = glob.glob(topp_cfg["directory"] + "*.h5")
         print(files)
-        self.actors = {file[file.rindex("\\")+1:]: Actor(Anet(model_file=file), self.state_manager) for file in files}
+        self.players = {file[file.rindex("\\") + 1:]: self.player_type.__class__(Anet(model_file=file), self.state_manager, file[file.rindex("\\") + 1:]) for file in files}
 
-        self.p2_wins = defaultdict(lambda: 0)
-        self.p1_losses = defaultdict(lambda: 0)
         self.total_wins = defaultdict(lambda: 0)
 
-
     def run_tour(self):
-        for i, file1 in enumerate(list(self.actors.keys())):
-            for j, file2 in enumerate(list(self.actors.keys())[i+1:]):
-                print(file1, "is competing with", file2)
-                self.compete(file1, file2)
+        for i, player1 in enumerate(self.players.values()):
+            for j, player2 in enumerate(list(self.players.keys())[i + 1:]):
+                print(player1.name, "is competing with", player2.name)
+                player1_wins, player2_wins = compete(player1, player2, self.games_g, self.state_manager, (player1.name, player2.name) in self.display_games)
+                self.total_wins[player1.name] += player1_wins
+                self.total_wins[player2.name] += player2_wins
         rankings = sorted([(self.total_wins[key], key) for key in self.total_wins.keys()], reverse=True)
         for i, rank in enumerate(rankings):
-            losses = (len(self.actors)-1)*self.games_g - rank[0]
-            print(str(i+1) + ".", "Checkpoint", rank[1], "with", rank[0], "wins and", losses, "losses",
-                  "P1 (win / loss): ", "({} / {}) ".format((len(self.actors)-1)*self.games_g / 2 - self.p1_losses[rank[1]], self.p1_losses[rank[1]]),
-                  "P2 (win / loss): ", "({} / {})".format(self.p2_wins[rank[1]], (len(self.actors)-1)*self.games_g / 2 - self.p2_wins[rank[1]]))
+            losses = (len(self.players) - 1) * self.games_g - rank[0]
+            print(str(i+1) + ".", "Checkpoint", rank[1], "with", rank[0], "wins and", losses, "losses")
 
-    def compete(self, actor1_key: str, actor2_key: str):
-        actor1, actor2 = (self.actors[actor1_key], self.actors[actor2_key])
-        display_game = False
-        for pair in self.display_games_pairs:
-            if actor1_key in pair and actor2_key in pair and self.display_games:
-                display_game = True
-        for i in range(self.games_g):
-            states = []
-            state = self.state_manager.new_state()
-            states.append(state)
-            move = i % 2
-            while not self.state_manager.in_end_state(state):
-                if move % 2 == 0:
-                    action = actor1.get_move(state)
-                    state = self.state_manager.do_action(state, action)
-                else:
-                    action = actor2.get_move(state)
-                    state = self.state_manager.do_action(state, action)
-                states.append(state)
-                move += 1
-            winner = self.state_manager.winner(state)
-            if display_game:
-                player_labels = (actor1_key, actor2_key) if i % 2 == 0 else (actor2_key, actor1_key)
-                self.state_manager.visualize(states, player_labels=player_labels)
-            if i % 2 == 0:
-                if winner[0] == 1:
-                    self.total_wins[actor1_key] += 1
-                else:
-                    self.p1_losses[actor1_key] += 1
-                    self.p2_wins[actor2_key] += 1
-                    self.total_wins[actor2_key] += 1
+
+def compete(player1: Player, player2: Player, num_games: int, state_manager: SimWorld, display_game=False):
+    player1_wins = 0
+    player2_wins = 0
+    for i in range(num_games):
+        states = []
+        state = state_manager.new_state()
+        states.append(state)
+        move = i % 2
+        while not state_manager.in_end_state(state):
+            if move % 2 == 0:
+                action = player1.play(state)
+                state = state_manager.do_action(state, action)
             else:
-                if winner[0] == 1:
-                    self.total_wins[actor2_key] += 1
-                else:
-                    self.p1_losses[actor2_key] += 1
-                    self.p2_wins[actor1_key] += 1
-                    self.total_wins[actor1_key] += 1
-
-
-
-
-
+                action = player2.play(state)
+                state = state_manager.do_action(state, action)
+            states.append(state)
+            move += 1
+        winner = state_manager.winner(state, known_endstate=True)
+        if display_game:
+            player_labels = (player1.name, player2.name) if i % 2 == 0 else (player2.name, player1.name)
+            state_manager.visualize(states, player_labels=player_labels)
+        if i % 2 == 0:
+            if winner[0] == 1:
+                player1_wins += 1
+            else:
+                player2_wins += 1
+        else:
+            if winner[0] == 1:
+                player2_wins += 1
+            else:
+                player1_wins += 1
+    return player1_wins, player2_wins
 
 
 if __name__ == "__main__":
@@ -125,6 +112,14 @@ if __name__ == "__main__":
 
     if "display_rate" not in topp_config:
         print("Missing required config value 'display_rate' \nExiting")
+        exit(1)
+
+    if "player_type" not in topp_config:
+        print("Missing required config value 'player_type' \nExiting")
+        exit(1)
+
+    if topp_config["player_type"] not in ["probabilistic", "greedy"]:
+        print("Unknown player type {}, valid types are: {} \nExiting".format(topp_config["player_type"], ["probabilistic", "greedy"]))
         exit(1)
 
     world_config = topp_config["sim_world"]

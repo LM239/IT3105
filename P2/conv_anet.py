@@ -9,10 +9,10 @@ import os
 
 class ConvNet(ActorNet):
     def __init__(self, anet_cfg=None, board_size: int = 0, output_dim: int = 0, model_file: str = None):
+        self.model = None
         if anet_cfg is not None:
             validate_anet_config(anet_cfg)
             self.lr = anet_cfg["lr"]
-            self.file_structure = anet_cfg["file_structure"]
 
             if "allow_cuda" in anet_cfg and not anet_cfg["allow_cuda"]:
                 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
@@ -40,27 +40,28 @@ class ConvNet(ActorNet):
 
                 self.model = Model(inputs=self.input_boards, outputs=self.pi)
                 self.model.compile(optimizer=opt, loss=anet_cfg["loss"])
+                self.batch_size = anet_cfg["batch_size"]
         else:
-            self.model = load_model(model_file)
+            self.load_params(model_file)
 
     def train(self, features, targets):
         self.model.fit(
             tf.convert_to_tensor(features),  # training data
             tf.convert_to_tensor(targets),  # training targets
-            epochs=1
+            epochs=1,
+            batch_size=self.batch_size
         )
 
     def forward(self, input):
         input = tf.convert_to_tensor([input])
         return self.model(input, training=False)
 
-    def save_params(self, episode: int):
-        file_name = self.file_structure + "checkpoint_" + str(episode) + ".h5"
-        print("-" * 20, "Saving anet to ", file_name, "-" * 20)
-        self.model.save(file_name)
+    def save_params(self, path, file_name=None):
+        print("-" * 20, "Saving anet to", path + file_name, "-" * 20)
+        self.model.save(path + file_name)
 
-
-
+    def load_params(self, model_file):
+        self.model = load_model(model_file)
 
 
 """

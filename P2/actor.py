@@ -1,5 +1,6 @@
 import random
-from typing import Any
+from topp import compete
+from players import GreedyPlayer
 
 from interfaces.world import AdvancedSimWorld
 from interfaces.mcts import Mcts
@@ -12,68 +13,64 @@ class Actor:
         self.anet = anet
         self.state_manager: AdvancedSimWorld = world
         self.mcts: Mcts = mcts
-        if actor_cfg is not None:
-            self.episodes = actor_cfg["episodes"]
-            self.save_episodes = []
-            if actor_cfg["num_checkpoints"] > 0:
-                self.save_episodes = [self.episodes]
-                if actor_cfg["num_checkpoints"] > 1:
-                    self.save_episodes.extend([*range(0, self.episodes, int(self.episodes / (actor_cfg["num_checkpoints"] - 1)))])
+        self.save_dir = actor_cfg["file_structure"]
+        self.competition_games = actor_cfg["competition_games"]
+        self.train_ex_size = actor_cfg["train_ex_size"]
+        self.episodes = actor_cfg["episodes"]
+        self.epsilon = actor_cfg["epsilon"]
+        self.epsilon_min = actor_cfg["epsilon_min"]
+        self.epsilon_decay = actor_cfg["epsilon_decay"]
 
-            self.epsilon = actor_cfg["epsilon"]
-            self.epsilon_decay = actor_cfg["epsilon_decay"]
-            self.epsilon_min = actor_cfg["epsilon_min"]
+        self.save_episodes = []
+        if actor_cfg["num_checkpoints"] > 0:
+            self.save_episodes = [self.episodes]
+            if actor_cfg["num_checkpoints"] > 1:
+                self.save_episodes.extend([*range(0, self.episodes, int(self.episodes / (actor_cfg["num_checkpoints"] - 1)))])
 
-    def get_move(self, state: Any) -> int:
-        mask = self.state_manager.action_vector_mask(state)
-        vector = self.state_manager.to_array(state)
-        try:
-            net_out = self.anet.forward(vector)[0]
-        except ValueError:
-            net_out = self.anet.forward(self.state_manager.vector(state))[0]
-        masked_out = np.multiply(net_out, mask) ** 2
-        masked_out = np.divide(masked_out, np.sum(masked_out))
-        return np.random.choice(np.arange(len(masked_out)), p=masked_out)
+    def generate_examples(self):
+        replay_features = []
+        replay_targets = []
+        actual_board = self.state_manager.new_state()
+        self.mcts.run_root(actual_board)
+        while len(replay_targets) < self.train_ex_size:
+            print("Currently on {} of {} training examples".format(len(replay_targets), self.train_ex_size), end="\r")
+            root_distribution: dict = self.mcts.root_distribution()
+            D = self.state_manager.complete_action_dist(root_distribution)
+            augmented_boards, augmented_Ds = self.state_manager.augment_training_data(self.state_manager.to_array(actual_board), D)
+            replay_features.extend(augmented_boards)
+            replay_targets.extend(augmented_Ds)
 
+            if random.random() < self.epsilon + self.epsilon_min:
+                action = list(root_distribution.keys())[random.randint(0, len(root_distribution.keys())-1)]
+            else:
+                action = np.random.choice(list(root_distribution.keys()), p=list(root_distribution.values()))
+            actual_board = self.state_manager.do_action(actual_board, action)
+            if self.state_manager.in_end_state(actual_board):
+                actual_board = self.state_manager.new_state()
+            self.mcts.run_subtree(actual_board)
+        print("\n")
+        return replay_features, replay_targets
 
     def fit(self):
-        wins = 0
-        late_wins = 0
-        all_replay_features = []
-        all_replay_targets = []
         for episode in range(self.episodes):
             print(episode)
-            replay_features = []
-            replay_targets = []
+            train_features, train_targets = self.generate_examples()
             if episode in self.save_episodes:
-                self.anet.save_params(episode)
-            actual_board = self.state_manager.new_state()
-            self.mcts.run_root(actual_board)
-            while True:
-                root_distribution = self.mcts.root_distribution()
-                D = self.state_manager.complete_action_dist(root_distribution)
-                augmented_boards, augmented_Ds = self.state_manager.augment_training_data(self.state_manager.to_array(actual_board), D)
-                replay_features.extend(augmented_boards)
-                replay_targets.extend(augmented_Ds)
+                self.anet.save_params(self.save_dir, "checkpoint_" + str(episode) + ".h5")
 
-                if random.random() < self.epsilon + self.epsilon_min:
-                    action = list(root_distribution.keys())[random.randint(0, len(root_distribution.keys())-1)]
-                else:
-                    best = float("-inf")
-                    for a, p in enumerate(D):
-                        if p > best:
-                            action = a
-                            best = p
-                actual_board = self.state_manager.do_action(actual_board, action)
-                if self.state_manager.in_end_state(actual_board):
-                    break
-                self.mcts.run_subtree(actual_board)
-            wins += self.state_manager.p1_reward(actual_board)
-            self.anet.train(replay_features, replay_targets)
+            self.anet.save_params(self.save_dir, "temp.h5")
+            self.anet.train(train_features, train_targets)
+
+            untrained_competitor = GreedyPlayer(self.anet.__class__(model_file=(self.save_dir + "temp.h5")), self.state_manager)
+            trained_competitor = GreedyPlayer(self.anet, self.state_manager)
+            print("Running competition with {} games".format(self.competition_games))
+            trained_wins, untrained_wins = compete(trained_competitor, untrained_competitor, self.competition_games, self.state_manager)
+
+            if trained_wins < untrained_wins:
+                self.anet.load_params(self.save_dir + "temp.h5")
+            print("New model won {} of {} games ({}%)".format(trained_wins, self.competition_games, trained_wins * 100 / self.competition_games))
             self.epsilon *= self.epsilon_decay
-            if episode >= self.episodes / 2:
-                late_wins += self.state_manager.p1_reward(actual_board)
+
         if len(self.save_episodes) > 0:
-            self.anet.save_params(self.episodes)
-        print("All episodes win percentage: ", wins / self.episodes)
-        print("Last 50% episodes win percentage: ", 2 * late_wins / self.episodes)
+            self.anet.save_params(self.save_dir, "checkpoint_" + str(self.episodes) + ".h5")
+        self.anet.save_params(self.save_dir, "best.h5")

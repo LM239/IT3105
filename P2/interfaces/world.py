@@ -14,7 +14,7 @@ class SimWorld:
     def in_end_state(self, state) -> bool:
         pass
 
-    def winner(self, state):
+    def winner(self, state, known_endstate=False):
         pass
 
     def child_states(self, state):
@@ -29,11 +29,12 @@ class SimWorld:
     def find_action(self, parent_state, child_state):
         pass
 
+    def visualize(self, states, player_labels):
+        pass
+
 
 class AdvancedSimWorld(SimWorld):
 
-    def visualize(self, states, player_labels):
-        pass
 
     def vector(self, state):
         pass

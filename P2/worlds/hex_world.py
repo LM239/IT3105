@@ -100,8 +100,8 @@ class HexWorld(AdvancedSimWorld):
                     queue.append(c)
         return []
 
-    def winner(self, state):
-        return tuple(reversed(state[-1])) if self.in_end_state(state) else None
+    def winner(self, state, known_endstate=False):
+        return tuple(reversed(state[-1])) if known_endstate or self.in_end_state(state) else None
 
     def p1_reward(self, state):
         return state[-1][1] if self.in_end_state(state) else None
@@ -178,7 +178,7 @@ class HexWorld(AdvancedSimWorld):
         return array
 
     def augment_training_data(self, state_array, action_dist):
-        states = [state_array, np.flip(state_array)]
+        states = [state_array, np.flip(state_array, axis=[0, 1])]
         dists = [action_dist, action_dist[::-1]]
         return states, dists
 
