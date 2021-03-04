@@ -1,4 +1,6 @@
 import random
+from typing import Any
+
 from topp import compete
 from players import ProbabilisticPlayer
 from interfaces.world import AdvancedSimWorld
@@ -73,5 +75,59 @@ class TourActor:
         if len(self.save_episodes) > 0:
             self.anet.save_params(self.save_dir, "checkpoint_" + str(self.episodes) + ".h5")
         self.anet.save_params(self.save_dir, "best.h5")
+
+
+class StandardActor:
+    def __init__(self, anet: ActorNet, world: AdvancedSimWorld, actor_cfg=None, mcts: Mcts = None):
+        self.anet = anet
+        self.state_manager: AdvancedSimWorld = world
+        self.mcts: Mcts = mcts
+        self.episodes = actor_cfg["episodes"]
+        self.save_episodes = []
+        self.save_dir = actor_cfg["file_structure"]
+        if actor_cfg["num_checkpoints"] > 0:
+            self.save_episodes = [self.episodes]
+            if actor_cfg["num_checkpoints"] > 1:
+                self.save_episodes.extend([*range(0, self.episodes, int(self.episodes / (actor_cfg["num_checkpoints"] - 1)))])
+
+        self.epsilon = actor_cfg["epsilon"]
+        self.epsilon_decay = actor_cfg["epsilon_decay"]
+        self.epsilon_min = actor_cfg["epsilon_min"]
+
+    def fit(self):
+        wins = 0
+        late_wins = 0
+        for episode in range(self.episodes):
+            print(episode)
+            replay_features = []
+            replay_targets = []
+            if episode in self.save_episodes:
+                self.anet.save_params(self.save_dir, "checkpoint_" + str(episode) + ".h5")
+            actual_board = self.state_manager.new_state()
+            self.mcts.run_root(actual_board)
+            while True:
+                root_distribution = self.mcts.root_distribution()
+                D = self.state_manager.complete_action_dist(root_distribution)
+                augmented_boards, augmented_Ds = self.state_manager.augment_training_data(self.state_manager.to_array(actual_board), D)
+                replay_features.extend(augmented_boards)
+                replay_targets.extend(augmented_Ds)
+
+                if random.random() < self.epsilon + self.epsilon_min:
+                    action = list(root_distribution.keys())[random.randint(0, len(root_distribution.keys())-1)]
+                else:
+                    action = np.random.choice(list(root_distribution.keys()), p=list(root_distribution.values()))
+                actual_board = self.state_manager.do_action(actual_board, action)
+                if self.state_manager.in_end_state(actual_board):
+                    break
+                self.mcts.run_subtree(actual_board)
+            wins += self.state_manager.p1_reward(actual_board)
+            self.anet.train(replay_features, replay_targets)
+            self.epsilon *= self.epsilon_decay
+            if episode >= self.episodes / 2:
+                late_wins += self.state_manager.p1_reward(actual_board)
+        if len(self.save_episodes) > 0:
+            self.anet.save_params(self.save_dir, "checkpoint_" + str(self.episodes) + ".h5")
+        print("All episodes win percentage: ", wins / self.episodes)
+        print("Last 50% episodes win percentage: ", 2 * late_wins / self.episodes)
 
 

@@ -5,10 +5,9 @@ from worlds.hex_world import HexWorld
 from worlds.nim_world import NimWorld
 from search.treesearch import hex_search
 from mc_rave import McRave
-from anet import Anet
 from conv_anet import ConvNet
 from configs.validate_configs import validate_config
-from actor import Actor
+from actor import StandardActor, TourActor
 from shutil import copyfile
 
 
@@ -71,7 +70,10 @@ if __name__ == "__main__":
     else:
         print("Unknown world type: {} \n Exiting".format(world_config["world"]))
         exit(1)
-    actor = Actor(anet, world_manager, actor_config, mcts)
-    actor.fit()
 
+    if actor_config["type"] == "tour":
+        actor = TourActor(anet, world_manager, actor_config, mcts)
+    elif actor_config["type"] == "standard":
+        actor = StandardActor(anet, world_manager, actor_config, mcts)
+    actor.fit()
     exit(0)

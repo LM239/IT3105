@@ -14,6 +14,10 @@ def validate_config(configs):
     if "actor" not in configs:
         print("Missing actor dict in config \n Exiting")
         exit(1)
+    if "type" not in configs["actor"]:
+        print("Missing required actor argument 'type' in world_config \n Exiting")
+        exit(1)
+
 
 def validate_nim(config):
     if "n" not in config:
