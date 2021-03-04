@@ -40,7 +40,7 @@ class ConvNet(ActorNet):
 
                 self.model = Model(inputs=self.input_boards, outputs=self.pi)
                 self.model.compile(optimizer=opt, loss=anet_cfg["loss"])
-                self.batch_size = anet_cfg["batch_size"]
+            self.batch_size = anet_cfg["batch_size"]
         else:
             self.load_params(model_file)
 

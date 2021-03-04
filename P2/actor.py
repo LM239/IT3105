@@ -1,6 +1,6 @@
 import random
 from topp import compete
-from players import GreedyPlayer
+from players import ProbabilisticPlayer
 
 from interfaces.world import AdvancedSimWorld
 from interfaces.mcts import Mcts
@@ -61,8 +61,8 @@ class Actor:
             self.anet.save_params(self.save_dir, "temp.h5")
             self.anet.train(train_features, train_targets)
 
-            untrained_competitor = GreedyPlayer(self.anet.__class__(model_file=(self.save_dir + "temp.h5")), self.state_manager)
-            trained_competitor = GreedyPlayer(self.anet, self.state_manager)
+            untrained_competitor = ProbabilisticPlayer(self.anet.__class__(model_file=(self.save_dir + "temp.h5")), self.state_manager)
+            trained_competitor = ProbabilisticPlayer(self.anet, self.state_manager)
             print("Running competition with {} games".format(self.competition_games))
             trained_wins, untrained_wins = compete(trained_competitor, untrained_competitor, self.competition_games, self.state_manager)
 
