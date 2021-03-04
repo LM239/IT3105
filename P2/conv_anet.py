@@ -23,7 +23,7 @@ class ConvNet(ActorNet):
 
             if "model_file" in anet_cfg:
                 self.model = load_model(anet_cfg["model_file"])
-                print("Loaded model from ", anet_cfg["model_file"])
+                print("Loaded model from", anet_cfg["model_file"])
             else:
                 #from https://github.com/suragnair/alpha-zero-general/blob/master/gobang/keras/GobangNNet.py
                 self.input_boards = Input(shape=(board_size, board_size, 1))  # s: batch_size x board_x x board_y

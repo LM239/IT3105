@@ -10,8 +10,8 @@ sim_world:
 actor:
   episodes: 100
   num_checkpoints: 3
-  train_ex_size: 128
-  competition_games: 100
+  train_ex_size: 256
+  competition_games: 0
   file_structure: "anet/hex/conv2/"
   epsilon: 0.7
   epsilon_decay: 0.98
@@ -27,7 +27,7 @@ anet:
   lr: 0.0003
   optimizer: "adam"
   loss: "categorical_crossentropy"
-  #model_file: "anet/hex/conv2/checkpoint_15.h5"
+  model_file: "anet/hex/conv2/temp.h5"
   activation: "relu"
   l1_filters: 64
   l2_filters: 128

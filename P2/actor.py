@@ -1,14 +1,13 @@
 import random
 from topp import compete
 from players import ProbabilisticPlayer
-
 from interfaces.world import AdvancedSimWorld
 from interfaces.mcts import Mcts
 from interfaces.actornet import ActorNet
 import numpy as np
 
 
-class Actor:
+class TourActor:
     def __init__(self, anet: ActorNet, world: AdvancedSimWorld, actor_cfg=None, mcts: Mcts = None):
         self.anet = anet
         self.state_manager: AdvancedSimWorld = world
@@ -68,9 +67,11 @@ class Actor:
 
             if trained_wins < untrained_wins:
                 self.anet.load_params(self.save_dir + "temp.h5")
-            print("New model won {} of {} games ({}%)".format(trained_wins, self.competition_games, trained_wins * 100 / self.competition_games))
+            print("New model won {} of {} games ({}%)".format(trained_wins, self.competition_games, trained_wins * 100 / self.competition_games if self.competition_games > 0 else 0))
             self.epsilon *= self.epsilon_decay
 
         if len(self.save_episodes) > 0:
             self.anet.save_params(self.save_dir, "checkpoint_" + str(self.episodes) + ".h5")
         self.anet.save_params(self.save_dir, "best.h5")
+
+
