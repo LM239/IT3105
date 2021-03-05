@@ -11,16 +11,16 @@ actor:
   type: "tour" # standard
   episodes: 200
   num_checkpoints: 6
-  train_ex_size: 256
+  train_ex_size: 6
   competition_games: 200
-  file_structure: "anets/local/hex/b_0.3/"
+  file_structure: "anets/local/hex/b_0.4/"
   epsilon: 0.7
   epsilon_decay: 0.98
   epsilon_min: 0.1
 
 mcts:
-  search_duration: 1.5
-  bias: 0.3
+  search_duration: 1.25
+  bias: 0.4
   c: 0
   min_h_confidence: 5
   max_h_confidence: 50
@@ -28,15 +28,15 @@ mcts:
 
 
 anet:
-  lr: 0.0005
+  lr: 0.0003
   optimizer: "adam"
   loss: "categorical_crossentropy"
-  model_file: "anets/local/hex/conv4/temp.h5"
+  model_file: "anets/local/hex/b_0.4/temp.h5"
   activation: "relu"
   cnn_filters: # depth, dropout, padding
-    - [196, 0.0, "same"]
-    - [196, 0.0, "same"]
-    - [256, 0.1, "valid"]
+    - [196, 0.1, "same"]
+    - [196, 0.1, "same"]
+    - [196, 0.1, "same"]
   dense_layers: # depth, dropout
     - [512, 0.2]
     - [256, 0.2]

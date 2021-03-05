@@ -37,3 +37,20 @@ class ProbabilisticPlayer(Player):
         masked_out = super().get_action_dist(state) ** 2
         masked_out = np.divide(masked_out, np.sum(masked_out))
         return np.random.choice(np.arange(len(masked_out)), p=masked_out)
+
+class HumanPlayer():
+    def __init__(self, sim_world):
+        self.name = input("What is your 1337gamer-tag?")
+        self.state_manager = sim_world
+
+    def play(self, state):
+        player_tags = (self.name, "Terminator") if self.state_manager.p1_to_move(state) else ("Terminator", self.name)
+        self.state_manager.visualize([state], player_tags)
+        actions = self.state_manager.get_actions(state)
+        while True:
+            action = int(input("Choose one valid action: {}".format(actions)))
+            if action in actions:
+                break
+        return action
+
+

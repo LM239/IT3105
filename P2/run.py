@@ -7,7 +7,7 @@ from search.treesearch import hex_search
 from mc_rave import McRave
 from conv_anet import ConvNet
 from configs.validate_configs import validate_config
-from actor import StandardActor, TourActor
+from actor import TourActor
 from shutil import copyfile
 
 
@@ -69,9 +69,6 @@ if __name__ == "__main__":
         print("Unknown world type: {} \n Exiting".format(world_config["world"]))
         exit(1)
 
-    if actor_config["type"] == "tour":
-        actor = TourActor(anet, world_manager, actor_config, mcts)
-    elif actor_config["type"] == "standard":
-        actor = StandardActor(anet, world_manager, actor_config, mcts)
+    actor = TourActor(anet, world_manager, actor_config, mcts)
     actor.fit()
     exit(0)

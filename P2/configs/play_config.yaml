@@ -1,0 +1,8 @@
+---
+opponent: "anets/local/hex/b_0.3/temp.h5"
+play_as: 2 # 1 or 2
+allow_cuda: False
+
+sim_world:
+  world: "hex"
+  size: 5

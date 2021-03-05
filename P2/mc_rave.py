@@ -42,7 +42,6 @@ class McRave(Mcts):
         now = time.time()
         while time.time() - now < self.search_duration:
             self.simulate(self.root.state)
-        print(self.root.sum_N)
 
     def simulate(self, state):
         nodes, actions = self.tree_search(state)
