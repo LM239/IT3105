@@ -13,7 +13,7 @@ actor:
   num_checkpoints: 11
   train_ex_size: 256
   competition_games: 0
-  file_structure: "anets/local/hex/conv4/"
+  file_structure: "anets/local/hex/conv1/"
   epsilon: 0.7
   epsilon_decay: 0.98
   epsilon_min: 0.1
@@ -28,15 +28,15 @@ mcts:
 
 
 anet:
-  lr: 0.0003
+  lr: 0.0005
   optimizer: "adam"
   loss: "categorical_crossentropy"
-  model_file: "anets/best/hex/5x5/temp.h5"
-  activation: "relu"
+  #model_file: "anets/best/hex/5x5/temp.h5"
+  activation: "selu"
   cnn_filters: # depth, dropout, padding
-    - [196, 0.1, "same"]
-    - [196, 0.1, "same"]
-    - [196, 0.1, "same"]
+    - [196, 0.0, "same"]
+    - [196, 0.0, "same"]
+    - [256, 0.1, "valid"]
   dense_layers: # depth, dropout
     - [512, 0.2]
     - [256, 0.2]

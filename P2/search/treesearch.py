@@ -29,7 +29,7 @@ def hex_search(root: Node, target):
     visited = defaultdict(lambda: False)
     while len(stack) > 0:
         v, v_moves = stack.pop()
-        if not visited[str(v.state)]:
+        if not visited[v]:
             if v_moves == target_moves:
                 return v
             visited[v] = True

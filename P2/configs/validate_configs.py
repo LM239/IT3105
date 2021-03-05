@@ -62,7 +62,7 @@ def validate_mcts_config(config):
 
 
 def validate_anet_config(config):
-    valid_activations = ["linear", "sigmoid", "tanh", "relu"]
+    valid_activations = ["linear", "sigmoid", "tanh", "relu", "selu"]
     valid_optmizers = ["Adagrad", "SGD", "RMSProp", "adam"]
     if "lr" not in config:
         print("Missing required anet argument: 'lr' \nExiting")
