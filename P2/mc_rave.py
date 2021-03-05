@@ -24,7 +24,7 @@ class McRave(Mcts):
         self.root: Node | None = None
         self.state_manager: SimWorld = state_manager
         self.node_search = node_search
-        self.c = mcts_cfg["c"] #TODO eq (18) i paper, kan gjøre epsillon unødvendig
+        self.c = mcts_cfg["c"]
         self.anet: ActorNet = anet
 
     def run_root(self, state: Any):
@@ -32,6 +32,7 @@ class McRave(Mcts):
         now = time.time()
         while time.time() - now < self.search_duration:
             self.simulate(self.root.state)
+        return self.root.sum_N
 
     def run_subtree(self, state: Any):
         action = self.state_manager.find_action(self.root.state, state)
@@ -42,6 +43,7 @@ class McRave(Mcts):
         now = time.time()
         while time.time() - now < self.search_duration:
             self.simulate(self.root.state)
+        return self.root.sum_N
 
     def simulate(self, state):
         nodes, actions = self.tree_search(state)
@@ -91,8 +93,7 @@ class McRave(Mcts):
 
     def backup(self, nodes: List[Node], actions: List[int], z):
         if len(nodes) > len(actions):
-            nodes = nodes[:-1]
-
+            nodes.pop()
         for t, node in enumerate(nodes):
             node.N[actions[t]] += 1
             node.sum_N += 1
