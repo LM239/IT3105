@@ -91,7 +91,7 @@ class McRave(Mcts):
             node.N[actions[t]] += 1
             node.sum_N += 1
             self.Q[str(node.state)][actions[t]] += (z - self.Q[str(node.state)][actions[t]]) / (node.N[actions[t]])
-            if self.global_N[str(node.state)][actions[t]] < self.max_confidence:
+            if self.global_N[str(node.state)] < self.max_confidence:
                 self.global_N[str(node.state)] += 1
             for u in range(t + 2, len(actions), 2):
                 node.amaf_N[actions[u]] += 1

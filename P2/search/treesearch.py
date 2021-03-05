@@ -31,7 +31,7 @@ def hex_search(root: Node, target):
     while len(stack) > 0:
         v = stack.pop()
         v_moves = all_v_moves.pop()
-        if not visited[v]:
+        if not visited[str(v.state)]:
             if v_moves == target_moves:
                 return v
             visited[v] = True

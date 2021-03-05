@@ -9,7 +9,7 @@ sim_world:
 
 actor:
   type: "tour" # standard
-  episodes: 500
+  episodes: 200
   num_checkpoints: 11
   train_ex_size: 256
   competition_games: 0
