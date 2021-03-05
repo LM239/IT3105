@@ -27,8 +27,9 @@ class McRave(Mcts):
         self.anet: ActorNet = anet
 
     def run_root(self, state: Any):
-        confidence = self.global_N[str(state)]
-        self.root = Node(state, self.state_manager.get_actions(state), confidence, self.amaf_confidence_scalar * confidence)
+        actions = self.state_manager.get_actions(state)
+        confidence = self.global_N[str(state)] // len(actions)
+        self.root = Node(state, actions, confidence, self.amaf_confidence_scalar * confidence)
         now = time.time()
         while time.time() - now < self.search_duration:
             self.simulate(self.root.state)
@@ -39,8 +40,9 @@ class McRave(Mcts):
                 self.root = child
                 break
         else:
-            confidence = self.global_N[str(state)]
-            self.root = Node(state, self.state_manager.get_actions(state), confidence, self.amaf_confidence_scalar * confidence)
+            actions = self.state_manager.get_actions(state)
+            confidence = self.global_N[str(state)] // len(actions)
+            self.root = Node(state, actions, confidence, self.amaf_confidence_scalar * confidence)
         now = time.time()
         while time.time() - now < self.search_duration:
             self.simulate(self.root.state)
@@ -56,8 +58,9 @@ class McRave(Mcts):
         nodes: List[Node] = []
         while not self.state_manager.in_end_state(state):
             if node is None:
-                confidence = self.global_N[str(state)]
-                node = Node(state, self.state_manager.get_actions(state), confidence, self.amaf_confidence_scalar * confidence)
+                node_actions = self.state_manager.get_actions(state)
+                confidence = self.global_N[str(state)] // len(node_actions)
+                node = Node(state, node_actions, confidence, self.amaf_confidence_scalar * confidence)
                 self.insert_node(nodes[-1], node, actions[-1])
                 action = self.default_policy(node.state)
                 nodes.append(node)
@@ -91,7 +94,7 @@ class McRave(Mcts):
             node.N[actions[t]] += 1
             node.sum_N += 1
             self.Q[str(node.state)][actions[t]] += (z - self.Q[str(node.state)][actions[t]]) / (node.N[actions[t]])
-            if self.global_N[str(node.state)] < self.max_confidence:
+            if self.global_N[str(node.state)] < self.max_confidence * len(node.legal_actions):
                 self.global_N[str(node.state)] += 1
             for u in range(t + 2, len(actions), 2):
                 node.amaf_N[actions[u]] += 1
