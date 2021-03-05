@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any, List, Callable
+from typing import Any, List
 
 
 class Node:

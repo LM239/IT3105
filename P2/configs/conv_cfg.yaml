@@ -28,15 +28,15 @@ mcts:
 
 
 anet:
-  lr: 0.0003
+  lr: 0.0005
   optimizer: "adam"
   loss: "categorical_crossentropy"
   model_file: "anets/local/hex/conv4/temp.h5"
   activation: "relu"
   cnn_filters: # depth, dropout, padding
-    - [196, 0.1, "same"]
-    - [196, 0.1, "same"]
-    - [196, 0.1, "same"]
+    - [196, 0.0, "same"]
+    - [196, 0.0, "same"]
+    - [256, 0.1, "valid"]
   dense_layers: # depth, dropout
     - [512, 0.2]
     - [256, 0.2]
