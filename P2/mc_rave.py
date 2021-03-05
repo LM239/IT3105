@@ -74,7 +74,6 @@ class McRave(Mcts):
             if node is None:
                 node = self.node_search(self.root, state)
                 if node is not None:
-                    print("Tree search succesfully reconnected parent and child")
                     self.insert_node(nodes[-1], node, self.state_manager.find_action(nodes[-1].state, state))
         return nodes, actions
 
