@@ -5,7 +5,7 @@ topp:
   display_games: true
   display_games_pairs:
     - [0,  1]
-  directory: "anet\\hex\\conv2\\"
+  directory: "anets\\hex\\conv2\\"
 
 sim_world:
   world: "hex"

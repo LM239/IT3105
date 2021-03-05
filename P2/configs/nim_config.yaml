@@ -23,7 +23,7 @@ anet:
   lr: 0.1
   optimizer: "SGD"
   loss: "categorical_crossentropy"
-  file_structure: "anet/nim/"
+  file_structure: "anets/nim/"
   hidden_layers:
     - [50, "relu"]
     - [50, "tanh"]

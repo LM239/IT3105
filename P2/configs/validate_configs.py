@@ -70,9 +70,6 @@ def validate_anet_config(config):
     if "optimizer" not in config:
         print("Missing required anet argument: 'optimizer' \nExiting")
         exit(1)
-    if "dropout" not in config:
-        print("Missing required anet argument: 'dropout' \nExiting")
-        exit(1)
     if config["optimizer"] not in valid_optmizers:
         print("ANET optimizer invalid. Valid options are:", valid_optmizers, "\nExiting")
     if "activation" not in config:
@@ -80,20 +77,11 @@ def validate_anet_config(config):
         exit(1)
     if config["activation"] not in valid_activations:
         print("Activation function {} is invalid. Valid options are: {}\nExiting".format(config["activation"], valid_activations))
-    if "l1_filters" not in config:
-        print("Missing required anet argument: 'l1_filters' \nExiting")
+    if "cnn_filters" not in config:
+        print("Missing required anet argument: 'cnn_filters' \nExiting")
         exit(1)
-    if "l2_filters" not in config:
-        print("Missing required anet argument: 'l2_filters' \nExiting")
-        exit(1)
-    if "l3_filters" not in config:
-        print("Missing required anet argument: 'l3_filters' \nExiting")
-        exit(1)
-    if "fc1_width" not in config:
-        print("Missing required anet argument: 'fc1_width' \nExiting")
-        exit(1)
-    if "fc2_width" not in config:
-        print("Missing required anet argument: 'fc2_width' \nExiting")
+    if "dense_layers" not in config:
+        print("Missing required anet argument: 'dense_layers' \nExiting")
         exit(1)
 
 

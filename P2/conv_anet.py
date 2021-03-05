@@ -25,16 +25,15 @@ class ConvNet(ActorNet):
                 self.model = load_model(anet_cfg["model_file"])
                 print("Loaded model from", anet_cfg["model_file"])
             else:
-                #from https://github.com/suragnair/alpha-zero-general/blob/master/gobang/keras/GobangNNet.py
                 self.input_boards = Input(shape=(board_size, board_size, 1))  # s: batch_size x board_x x board_y
+                prev_layer = self.input_boards
+                for depth, dropout, padding in anet_cfg["cnn_filters"]:
+                    prev_layer = Dropout(dropout)(Activation(anet_cfg["activation"])(BatchNormalization(axis=3)(Conv2D(depth, 3, padding=padding)(prev_layer))))  # batch_size  x board_x x board_y x num_channels
+                prev_layer = Reshape((-1,))(prev_layer)
 
-                h_conv1 = Activation(anet_cfg["activation"])(BatchNormalization(axis=3)(Conv2D(anet_cfg["l1_filters"], 3, padding='same')(self.input_boards)))  # batch_size  x board_x x board_y x num_channels
-                h_conv2 = Activation(anet_cfg["activation"])(BatchNormalization(axis=3)(Conv2D(anet_cfg["l2_filters"], 3, padding='same')(h_conv1)))  # batch_size  x board_x x board_y x num_channels
-                h_conv3 = Activation(anet_cfg["activation"])(BatchNormalization(axis=3)(Conv2D(anet_cfg["l3_filters"], 3, padding='same')(h_conv2)))  # batch_size  x (board_x-2) x (board_y-2) x num_channels
-                h_conv3_flat = Reshape((-1,))(h_conv3)
-                s_fc1 = Dropout(anet_cfg["dropout"])(Activation(anet_cfg["activation"])(BatchNormalization(axis=1)(Dense(anet_cfg["fc1_width"])(h_conv3_flat))))  # batch_size x 1024
-                s_fc2 = Dropout(anet_cfg["dropout"])(Activation(anet_cfg["activation"])(BatchNormalization(axis=1)(Dense(anet_cfg["fc2_width"])(s_fc1))))  # batch_size x 1024
-                self.pi = Dense(output_dim, activation='softmax', name='pi')(s_fc2)  # batch_size x self.action_size
+                for layer_size, dropout in anet_cfg["dense_layers"]:
+                    prev_layer = Dropout(dropout)(Activation(anet_cfg["activation"])(BatchNormalization(axis=1)(Dense(layer_size)(prev_layer))))
+                self.pi = Dense(output_dim, activation='softmax', name='pi')(prev_layer)  # batch_size x self.action_size
 
                 opt = type(tf.keras.optimizers.get(anet_cfg["optimizer"]))(learning_rate=anet_cfg["lr"])
 
@@ -57,7 +56,7 @@ class ConvNet(ActorNet):
         return self.model(input, training=False)
 
     def save_params(self, path, file_name=None):
-        print("-" * 20, "Saving anet to", path + file_name, "-" * 20)
+        print("-" * 20, "Saving anets to", path + file_name, "-" * 20)
         self.model.save(path + file_name)
 
     def load_params(self, model_file):
