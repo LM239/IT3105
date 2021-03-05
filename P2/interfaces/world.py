@@ -20,7 +20,7 @@ class SimWorld:
     def child_states(self, state):
         return [self.do_action(state, action) for action in self.get_actions(state)]
 
-    def p1_reward(self, state):
+    def p1_reward(self, state, known_endstate=False):
         pass
 
     def p1_to_move(self, state):

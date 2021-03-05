@@ -12,21 +12,24 @@ from math import sqrt, log
 
 class McRave(Mcts):
 
-    def __init__(self, mcts_cfg, state_manager, anet, node_heuristic=lambda: 3, node_search=default_search):
+    def __init__(self, mcts_cfg, state_manager, anet, node_search=default_search):
         self.bias: float = mcts_cfg["bias"]
         self.Q = defaultdict(lambda: defaultdict(lambda: 0.5))
         self.amaf_Q = defaultdict(lambda: defaultdict(lambda: 0.5))
+        self.global_N = defaultdict(lambda: mcts_cfg["min_h_confidence"])
+        self.max_confidence = mcts_cfg["max_h_confidence"]
+        self.amaf_confidence_scalar = mcts_cfg["amaf_conf_scalar"]
         self.search_duration = mcts_cfg["search_duration"]
         self.root: Node | None = None
         self.state_manager: SimWorld = state_manager
-        self.node_heuristic = node_heuristic
         self.node_search = node_search
         self.c = mcts_cfg["c"] #TODO eq (18) i paper, kan gjøre epsillon unødvendig
         self.anet: ActorNet = anet
 
     def run_root(self, state: Any):
+        confidence = self.global_N[str(state)]
+        self.root = Node(state, self.state_manager.get_actions(state), confidence, self.amaf_confidence_scalar * confidence)
         now = time.time()
-        self.root = Node(state, self.state_manager.get_actions(state), self.node_heuristic)
         while time.time() - now < self.search_duration:
             self.simulate(self.root.state)
 
@@ -36,7 +39,8 @@ class McRave(Mcts):
                 self.root = child
                 break
         else:
-            self.root = Node(state, self.state_manager.get_actions(state), self.node_heuristic)
+            confidence = self.global_N[str(state)]
+            self.root = Node(state, self.state_manager.get_actions(state), confidence, self.amaf_confidence_scalar * confidence)
         now = time.time()
         while time.time() - now < self.search_duration:
             self.simulate(self.root.state)
@@ -52,7 +56,8 @@ class McRave(Mcts):
         nodes: List[Node] = []
         while not self.state_manager.in_end_state(state):
             if node is None:
-                node = Node(state, self.state_manager.get_actions(state), self.node_heuristic)
+                confidence = self.global_N[str(state)]
+                node = Node(state, self.state_manager.get_actions(state), confidence, self.amaf_confidence_scalar * confidence)
                 self.insert_node(nodes[-1], node, actions[-1])
                 action = self.default_policy(node.state)
                 nodes.append(node)
@@ -79,13 +84,15 @@ class McRave(Mcts):
             a = self.default_policy(state)
             actions.append(a)
             state = self.state_manager.do_action(state, a)
-        return actions, self.state_manager.p1_reward(state)
+        return actions, self.state_manager.p1_reward(state, True)
 
     def backup(self, nodes: List[Node], actions: List[int], z):
         for t, node in enumerate(nodes):
             node.N[actions[t]] += 1
             node.sum_N += 1
             self.Q[str(node.state)][actions[t]] += (z - self.Q[str(node.state)][actions[t]]) / (node.N[actions[t]])
+            if self.global_N[str(node.state)][actions[t]] < self.max_confidence:
+                self.global_N[str(node.state)] += 1
             for u in range(t + 2, len(actions), 2):
                 node.amaf_N[actions[u]] += 1
                 self.amaf_Q[str(node.state)][actions[u]] += (z - self.amaf_Q[str(node.state)][actions[u]]) / (node.amaf_N[actions[u]])

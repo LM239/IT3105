@@ -50,7 +50,6 @@ if __name__ == "__main__":
     display_config = configs["display"] if "display" in configs else None
     display_rate = display_config["display_rate"] if "display_rate" in display_config else 0.2
 
-    node_heuristic = None
     world_manager = None
     mcts = None
     anet = None
@@ -62,8 +61,7 @@ if __name__ == "__main__":
         input_dim = (world_config["size"]**2 + 1) * 2
         output_dim = world_config["size"]**2
         anet = ConvNet(anet_config, world_config["size"], output_dim)
-        node_heuristic = (lambda: 3)
-        mcts = McRave(mcts_config, world_manager, anet, node_heuristic, hex_search)
+        mcts = McRave(mcts_config, world_manager, anet, hex_search)
     elif world_config["world"] == "nim":
         world_manager = NimWorld(world_config)
         mcts = McRave(mcts_config, world_manager, anet)

@@ -4,10 +4,10 @@ import yaml
 from interfaces.world import SimWorld
 from worlds.hex_world import HexWorld
 from worlds.nim_world import NimWorld
-from anet import Anet
 from configs.validate_configs import validate_topp_config
 from players import GreedyPlayer, ProbabilisticPlayer, Player
 from collections import defaultdict
+from conv_anet import ConvNet
 import glob
 
 
@@ -25,7 +25,7 @@ class Topp():
 
         files = glob.glob(topp_cfg["directory"] + "*.h5")
         print(files)
-        self.players = {file[file.rindex("\\") + 1:]: self.player_type.__class__(Anet(model_file=file), self.state_manager, file[file.rindex("\\") + 1:]) for file in files}
+        self.players = {file[file.rindex("\\") + 1:]: self.player_type.__class__(ConvNet(model_file=file), self.state_manager, file[file.rindex("\\") + 1:]) for file in files}
 
         self.total_wins = defaultdict(lambda: 0)
 

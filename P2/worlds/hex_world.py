@@ -2,6 +2,8 @@ from typing import List, Tuple
 import networkx as nx
 from matplotlib import pyplot as plt
 from matplotlib import patches
+from numpy import float32
+
 from interfaces.world import AdvancedSimWorld
 from collections import defaultdict
 import random
@@ -103,8 +105,8 @@ class HexWorld(AdvancedSimWorld):
     def winner(self, state, known_endstate=False):
         return tuple(reversed(state[-1])) if known_endstate or self.in_end_state(state) else None
 
-    def p1_reward(self, state):
-        return state[-1][1] if self.in_end_state(state) else None
+    def p1_reward(self, state, known_endstate=False):
+        return state[-1][1] if known_endstate or self.in_end_state(state) else None
 
     def p1_to_move(self, state):
         return state[-1][0] == 1
@@ -170,7 +172,7 @@ class HexWorld(AdvancedSimWorld):
         return [action_dist[i] if i in action_dist.keys() else 0 for i in range(self.size ** 2)]
 
     def to_array(self, state):
-        array = np.zeros(shape=(self.size, self.size, 1))
+        array = np.zeros(shape=(self.size, self.size, 1), dtype=float32)
         for i in range(self.size):
             for j in range(self.size):
                 t = state[self.from2D(i, j)]
