@@ -16,8 +16,9 @@ class McRave(Mcts):
         self.bias: float = mcts_cfg["bias"]
         self.Q = defaultdict(lambda: defaultdict(lambda: 0.5))
         self.amaf_Q = defaultdict(lambda: defaultdict(lambda: 0.5))
-        self.global_N = defaultdict(lambda: mcts_cfg["min_h_confidence"])
+        self.global_N = defaultdict(lambda: 0)
         self.max_confidence = mcts_cfg["max_h_confidence"]
+        self.min_confidence = mcts_cfg["min_h_confidence"]
         self.amaf_confidence_scalar = mcts_cfg["amaf_conf_scalar"]
         self.search_duration = mcts_cfg["search_duration"]
         self.root: Node | None = None
@@ -28,7 +29,7 @@ class McRave(Mcts):
 
     def run_root(self, state: Any):
         actions = self.state_manager.get_actions(state)
-        confidence = self.global_N[str(state)] // len(actions)
+        confidence = self.min_confidence + self.global_N[str(state)] // len(actions)
         self.root = Node(state, actions, confidence, self.amaf_confidence_scalar * confidence)
         now = time.time()
         while time.time() - now < self.search_duration:
@@ -40,7 +41,7 @@ class McRave(Mcts):
             self.root = self.root.children[self.root.child_actions.index(action)]
         else:
             actions = self.state_manager.get_actions(state)
-            confidence = self.global_N[str(state)] // len(actions)
+            confidence = self.min_confidence + self.global_N[str(state)] // len(actions)
             self.root = Node(state, actions, confidence, self.amaf_confidence_scalar * confidence)
         now = time.time()
         while time.time() - now < self.search_duration:
@@ -58,7 +59,7 @@ class McRave(Mcts):
         while not self.state_manager.in_end_state(state):
             if node is None:
                 node_actions = self.state_manager.get_actions(state)
-                confidence = self.global_N[str(state)] // len(node_actions)
+                confidence = self.min_confidence + self.global_N[str(state)] // len(node_actions)
                 node = Node(state, node_actions, confidence, self.amaf_confidence_scalar * confidence)
                 self.insert_node(nodes[-1], node, actions[-1])
                 action = self.default_policy(node.state)
@@ -93,7 +94,7 @@ class McRave(Mcts):
             node.N[actions[t]] += 1
             node.sum_N += 1
             self.Q[str(node.state)][actions[t]] += (z - self.Q[str(node.state)][actions[t]]) / (node.N[actions[t]])
-            if self.global_N[str(node.state)] // len(node.legal_actions) < self.max_confidence:
+            if self.min_confidence + self.global_N[str(node.state)] // len(node.legal_actions) < self.max_confidence:
                 self.global_N[str(node.state)] += 1
             for u in range(t + 2, len(actions), 2):
                 node.amaf_N[actions[u]] += 1
