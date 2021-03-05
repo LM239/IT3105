@@ -35,10 +35,9 @@ class McRave(Mcts):
             self.simulate(self.root.state)
 
     def run_subtree(self, state: Any):
-        for child in self.root.children:
-            if child.state == state:
-                self.root = child
-                break
+        action = self.state_manager.find_action(self.root.state, state)
+        if action in self.root.child_actions:
+            self.root = self.root.children[self.root.child_actions.index(action)]
         else:
             actions = self.state_manager.get_actions(state)
             confidence = self.global_N[str(state)] // len(actions)
@@ -94,7 +93,7 @@ class McRave(Mcts):
             node.N[actions[t]] += 1
             node.sum_N += 1
             self.Q[str(node.state)][actions[t]] += (z - self.Q[str(node.state)][actions[t]]) / (node.N[actions[t]])
-            if self.global_N[str(node.state)] < self.max_confidence * len(node.legal_actions):
+            if self.global_N[str(node.state)] // len(node.legal_actions) < self.max_confidence:
                 self.global_N[str(node.state)] += 1
             for u in range(t + 2, len(actions), 2):
                 node.amaf_N[actions[u]] += 1

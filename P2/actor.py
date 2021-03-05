@@ -48,6 +48,8 @@ class TourActor:
             actual_board = self.state_manager.do_action(actual_board, action)
             if self.state_manager.in_end_state(actual_board):
                 actual_board = self.state_manager.new_state()
+                self.mcts.run_root(actual_board)
+                continue
             self.mcts.run_subtree(actual_board)
         print("\n")
         return replay_features, replay_targets
