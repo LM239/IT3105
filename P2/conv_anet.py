@@ -8,7 +8,7 @@ from keras.layers import *
 import os
 
 class ConvNet(ActorNet):
-    def __init__(self, anet_cfg=None, board_size: int = 0, output_dim: int = 0, model_file: str = None):
+    def __init__(self, anet_cfg=None, board_size: int = 0, output_dim: int = 0, input_depth: int = 0, model_file: str = None):
         self.model = None
         self.file_type = ".h5"
         if anet_cfg is not None:
@@ -26,7 +26,7 @@ class ConvNet(ActorNet):
                 self.model = load_model(anet_cfg["model_file"])
                 print("Loaded model from", anet_cfg["model_file"])
             else:
-                self.input_boards = Input(shape=(board_size, board_size, 1))  # s: batch_size x board_x x board_y
+                self.input_boards = Input(shape=(board_size, board_size, input_depth))  # s: batch_size x board_x x board_y
                 prev_layer = self.input_boards
                 for depth, dropout, padding in anet_cfg["cnn_filters"]:
                     prev_layer = Dropout(dropout)(Activation(anet_cfg["activation"])(BatchNormalization(axis=3)(Conv2D(depth, 3, padding=padding)(prev_layer))))  # batch_size  x board_x x board_y x num_channels
