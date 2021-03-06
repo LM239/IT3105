@@ -337,7 +337,7 @@ class HexWorld(AdvancedSimWorld):
                                 in_move_kill_bridge[path2_y + 1][path2_x + 1] = 1
                             # else: # not in move owns end, origin, and path1 -> nothing to do
                             #    pass
-        return np.array([
+        arrays = np.array([
             empty_array,
             player1_array,
             player2_array,
@@ -353,6 +353,7 @@ class HexWorld(AdvancedSimWorld):
             in_move_kill_bridge,
             in_move_kill_unbuilt_bridge,
         ])
+        return np.transpose(arrays, axes=[1, 2, 0])
 
 
 
@@ -377,7 +378,7 @@ class HexWorld(AdvancedSimWorld):
 
 if __name__ == "__main__":
     cfg = {
-        "size": 4
+        "size": 5
     }
     game = HexWorld(cfg, 0.3)
 

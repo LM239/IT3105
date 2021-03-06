@@ -59,7 +59,7 @@ if __name__ == "__main__":
         world_manager = HexWorld(world_config, display_rate)
 
         output_dim = world_config["size"]**2
-        anet = ConvNet(anet_config, world_config["size"] + 2, output_dim, 12)
+        anet = ConvNet(anet_config, world_config["size"] + 2, output_dim, 14)
         mcts = McRave(mcts_config, world_manager, anet, hex_search)
     elif world_config["world"] == "nim":
         world_manager = NimWorld(world_config)
