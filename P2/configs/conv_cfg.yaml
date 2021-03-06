@@ -9,11 +9,11 @@ sim_world:
 
 actor:
   type: "tour" # standard
-  episodes: 250
-  num_checkpoints: 6
-  train_ex_size: 128
+  episodes: 300
+  num_checkpoints: 7
+  train_ex_size: 256
   competition_games: 0
-  file_structure: "anets/local/hex/4x4/"
+  file_structure: "anets/local/hex/4x4_wo_dense/"
   epsilon: 0.7
   epsilon_decay: 0.98
   epsilon_min: 0.1
@@ -31,14 +31,16 @@ anet:
   lr: 0.000275
   optimizer: "adam"
   loss: "categorical_crossentropy"
-  #model_file: "anets/local/hex/b_0.4/temp.h5"
+  model_file: "anets/local/hex/4x4_wo_dense/temp.h5"
   activation: "selu"
-  cnn_filters: # depth, dropout, padding
-    - [128, 0.0, "same"]
-    - [128, 0.0, "same"]
-    - [128, 0.1, "valid"]
+  cnn_filters: # depth, filter_size, dropout, padding
+    - [128, 3, 0.0, "valid"]
+    - [128, 3, 0.0, "same"]
+    - [128, 3, 0.0, "same"]
+    - [128, 3, 0.1, "same"]
+    - [1, 1, 0.1, "same"]
   dense_layers: # depth, dropout
-    - [512, 0.2]
-    - [256, 0.2]
+  #  - [512, 0.2]
+  #  - [256, 0.2]
   batch_size: 32
   allow_cuda: False

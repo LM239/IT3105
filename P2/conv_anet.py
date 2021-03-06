@@ -28,11 +28,11 @@ class ConvNet(ActorNet):
             else:
                 self.input_boards = Input(shape=(board_size, board_size, input_depth))  # s: batch_size x board_x x board_y
                 prev_layer = self.input_boards
-                for depth, dropout, padding in anet_cfg["cnn_filters"]:
-                    prev_layer = Dropout(dropout)(Activation(anet_cfg["activation"])(BatchNormalization(axis=3)(Conv2D(depth, 3, padding=padding)(prev_layer))))  # batch_size  x board_x x board_y x num_channels
+                for depth, filter_size, dropout, padding in anet_cfg["cnn_filters"]:
+                    prev_layer = Dropout(dropout)(Activation(anet_cfg["activation"])(BatchNormalization(axis=3)(Conv2D(depth, filter_size, padding=padding)(prev_layer))))  # batch_size  x board_x x board_y x num_channels
                 prev_layer = Reshape((-1,))(prev_layer)
-
-                for layer_size, dropout in anet_cfg["dense_layers"]:
+                dense_layers = anet_cfg["dense_layers"] if anet_cfg["dense_layers"] is not None else []
+                for layer_size, dropout in dense_layers:
                     prev_layer = Dropout(dropout)(Activation(anet_cfg["activation"])(BatchNormalization(axis=1)(Dense(layer_size)(prev_layer))))
                 self.pi = Dense(output_dim, activation='softmax', name='pi')(prev_layer)  # batch_size x self.action_size
 
