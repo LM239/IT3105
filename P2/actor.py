@@ -34,7 +34,7 @@ class TourActor:
         actual_board = self.state_manager.new_state()
         visits = self.mcts.run_root(actual_board)
         while len(replay_targets) < self.train_ex_size:
-            print("Currently on {} of {} training examples and {} rollouts (aggregated + incl. heuristic)   ".format(len(replay_targets), self.train_ex_size, visits), end="\r")
+            print("Currently on {} of {} training examples and {} rollouts    ".format(len(replay_targets), self.train_ex_size, visits), end="\r")
             root_distribution: dict = self.mcts.root_distribution()
             D = self.state_manager.complete_action_dist(root_distribution)
             augmented_boards, augmented_Ds = self.state_manager.augment_training_data(self.state_manager.to_array(actual_board), D)

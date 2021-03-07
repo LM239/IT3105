@@ -244,7 +244,7 @@ class HexWorld(AdvancedSimWorld):
                         end_owner[0] = int(player1_array[padding_coord_y][padding_coord_x])
                         end_owner[1] = int(player2_array[padding_coord_y][padding_coord_x])
                         end_owner = tuple(end_owner)
-                    if not (end_owner == in_move or end_owner == (0, 0)):
+                    if not (end_owner == state[start_i] or end_owner == (0, 0) or t == (0, 0)):
                         continue
                     if t == (0, 0):  # bridge origin empty
                         if end_owner == (0, 0):  # bridge dest and origin empty -> nothing to do
@@ -385,7 +385,7 @@ if __name__ == "__main__":
     states = []
     state = game.new_state()
     actions = game.get_actions(state)
-    print(game.to_array(state))
+    print(np.transpose(game.to_array(state), axes=[2, 0, 1]))
     while len(actions) > 0:
         state = game.do_action(state, actions[random.randint(0, len(actions) - 1)])
         actions = game.get_actions(state)

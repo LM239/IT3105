@@ -21,6 +21,7 @@ class McRave(Mcts):
         self.min_confidence = mcts_cfg["min_h_confidence"]
         self.amaf_confidence_scalar = mcts_cfg["amaf_conf_scalar"]
         self.search_duration = mcts_cfg["search_duration"]
+        self.max_rollouts = mcts_cfg["max_rollouts"]
         self.root: Node | None = None
         self.og_root: Node | None = None
         self.state_manager: SimWorld = state_manager
@@ -34,15 +35,7 @@ class McRave(Mcts):
         else:
             self.root = self.new_node(state)
             self.og_root = self.root
-        now = time.time()
-        while time.time() - now < self.search_duration:
-            self.simulate(self.root.state)
-        if not (self.best_policy_action(self.root) == self.most_visited_child_action(self.root)):
-            print("\nExtending search")
-            now = time.time()
-            while time.time() - now < self.search_duration / 2:
-                self.simulate(self.root.state)
-        return self.root.sum_N
+        return self.simulate(self.root.state, self.search_duration)
 
     def run_subtree(self, state: Any):
         action = self.state_manager.find_action(self.root.state, state)
@@ -50,15 +43,24 @@ class McRave(Mcts):
             self.root = self.root.children[self.root.child_actions.index(action)]
         else:
             self.root = self.new_node(state)
-        now = time.time()
-        while time.time() - now < self.search_duration:
-            self.simulate(self.root.state)
-        return self.root.sum_N
+        return self.simulate(self.root.state, self.search_duration)
 
-    def simulate(self, state):
-        nodes, actions = self.tree_search(state)
-        rollout_actions, z = self.rollout_sim(nodes[-1].state)
-        self.backup(nodes, actions + rollout_actions, z)
+    def simulate(self, state, search_duration, extended=False):
+        rollouts = 0
+        now = time.time()
+        while time.time() - now < search_duration:
+            nodes, actions = self.tree_search(state)
+            rollout_actions, z = self.rollout_sim(nodes[-1].state)
+            self.backup(nodes, actions + rollout_actions, z)
+            rollouts += 1
+            if rollouts >= self.max_rollouts:
+                if not extended:
+                    print("\nQuit search at max rollouts")
+                break
+        if not (extended or self.best_policy_action(self.root) == self.most_visited_child_action(self.root)):
+            print("\nExtending search")
+            return rollouts + self.simulate(state, search_duration / 2, True)
+        return rollouts
 
     def tree_search(self, state):
         node: Node = self.root
