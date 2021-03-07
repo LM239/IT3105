@@ -32,9 +32,11 @@ class TourActor:
         replay_features = []
         replay_targets = []
         actual_board = self.state_manager.new_state()
-        visits = self.mcts.run_root(actual_board)
+        extended_searches = 0
+        visits, extended = self.mcts.run_root(actual_board)
         while len(replay_targets) < self.train_ex_size:
-            print("Currently on {} of {} training examples and {} rollouts    ".format(len(replay_targets), self.train_ex_size, visits), end="\r")
+            extended_searches += extended
+            print("Currently on {} of {} training examples and {} rollouts, {} extended searches   ".format(len(replay_targets), self.train_ex_size, visits, extended_searches), end="\r")
             root_distribution: dict = self.mcts.root_distribution()
             D = self.state_manager.complete_action_dist(root_distribution)
             augmented_boards, augmented_Ds = self.state_manager.augment_training_data(self.state_manager.to_array(actual_board), D)
@@ -48,9 +50,9 @@ class TourActor:
             actual_board = self.state_manager.do_action(actual_board, action)
             if self.state_manager.in_end_state(actual_board):
                 actual_board = self.state_manager.new_state()
-                visits = self.mcts.run_root(actual_board, True)
+                visits, extended = self.mcts.run_root(actual_board, True)
                 continue
-            visits = self.mcts.run_subtree(actual_board)
+            visits, extended = self.mcts.run_subtree(actual_board)
         print("\n")
         return replay_features, replay_targets
 

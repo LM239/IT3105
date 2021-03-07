@@ -54,13 +54,10 @@ class McRave(Mcts):
             self.backup(nodes, actions + rollout_actions, z)
             rollouts += 1
             if rollouts >= self.max_rollouts:
-                if not extended:
-                    print("\nQuit search at max rollouts")
                 break
         if not (extended or self.best_policy_action(self.root) == self.most_visited_child_action(self.root)):
-            print("\nExtending search")
-            return rollouts + self.simulate(state, search_duration / 2, True)
-        return rollouts
+            return rollouts + self.simulate(state, search_duration / 2, True)[0], 1
+        return rollouts, 0
 
     def tree_search(self, state):
         node: Node = self.root

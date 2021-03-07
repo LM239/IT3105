@@ -21,20 +21,30 @@ class ConvNet(ActorNet):
                     print('GPU found')
                 else:
                     print("No GPU found")
-
+            else:
+                os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices'
             if "model_file" in anet_cfg:
                 self.model = load_model(anet_cfg["model_file"])
                 print("Loaded model from", anet_cfg["model_file"])
             else:
                 self.input_boards = Input(shape=(board_size, board_size, input_depth))  # s: batch_size x board_x x board_y
-                prev_layer = self.input_boards
-                for depth, filter_size, dropout, padding in anet_cfg["cnn_filters"]:
-                    prev_layer = Dropout(dropout)(Activation(anet_cfg["activation"])(BatchNormalization(axis=3)(Conv2D(depth, filter_size, padding=padding)(prev_layer))))  # batch_size  x board_x x board_y x num_channels
-                prev_layer = Reshape((-1,))(prev_layer)
                 dense_layers = anet_cfg["dense_layers"] if anet_cfg["dense_layers"] is not None else []
-                for layer_size, dropout in dense_layers:
-                    prev_layer = Dropout(dropout)(Activation(anet_cfg["activation"])(BatchNormalization(axis=1)(Dense(layer_size)(prev_layer))))
-                self.pi = Dense(output_dim, activation='softmax', name='pi')(prev_layer)  # batch_size x self.action_size
+                prev_layer = self.input_boards
+                for depth, filter_size, dropout, padding in anet_cfg["cnn_filters"][:-1]:
+                    prev_layer = Dropout(dropout)(Activation(anet_cfg["activation"])(BatchNormalization(axis=3)(Conv2D(depth, filter_size, padding=padding)(prev_layer))))  # batch_size  x board_x x board_y x num_channels
+                if len(dense_layers) == 0:
+                    depth, filter_size, dropout, padding = anet_cfg["cnn_filters"][-1]
+                    prev_layer = Dropout(dropout)(Activation("softmax")(
+                        Conv2D(depth, filter_size, padding=padding)(prev_layer)))
+                    self.pi = Reshape((-1,))(prev_layer)
+                else:
+                    depth, filter_size, dropout, padding = anet_cfg["cnn_filters"][-1]
+                    prev_layer = Dropout(dropout)(Activation(anet_cfg["activation"])(
+                        BatchNormalization(axis=3)(Conv2D(depth, filter_size, padding=padding)(prev_layer))))
+                    prev_layer = Reshape((-1,))(prev_layer)
+                    for layer_size, dropout in dense_layers:
+                        prev_layer = Dropout(dropout)(Activation(anet_cfg["activation"])(BatchNormalization(axis=1)(Dense(layer_size)(prev_layer))))
+                    self.pi = Dense(output_dim, activation='softmax', name='pi')(prev_layer)  # batch_size x self.action_size
 
                 opt = type(tf.keras.optimizers.get(anet_cfg["optimizer"]))(learning_rate=anet_cfg["lr"])
 
