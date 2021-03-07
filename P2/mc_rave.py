@@ -22,16 +22,26 @@ class McRave(Mcts):
         self.amaf_confidence_scalar = mcts_cfg["amaf_conf_scalar"]
         self.search_duration = mcts_cfg["search_duration"]
         self.root: Node | None = None
+        self.og_root: Node | None = None
         self.state_manager: SimWorld = state_manager
         self.node_search = node_search
         self.c = mcts_cfg["c"]
         self.anet: ActorNet = anet
 
-    def run_root(self, state: Any):
-        self.root = self.new_node(state)
+    def run_root(self, state: Any, use_og_root=False):
+        if use_og_root:
+            self.root = self.og_root
+        else:
+            self.root = self.new_node(state)
+            self.og_root = self.root
         now = time.time()
         while time.time() - now < self.search_duration:
             self.simulate(self.root.state)
+        if not (self.best_policy_action(self.root) == self.most_visited_child_action(self.root)):
+            print("\nExtending search")
+            now = time.time()
+            while time.time() - now < self.search_duration / 2:
+                self.simulate(self.root.state)
         return self.root.sum_N
 
     def run_subtree(self, state: Any):
@@ -142,3 +152,30 @@ class McRave(Mcts):
         return np.random.choice(np.arange(len(masked_out)), p=masked_out)
         #         actions = self.state_manager.get_actions(state)
         #         return actions[random.randint(0, len(actions) - 1)]
+
+    def best_policy_action(self, node):
+        best_a = None
+        if self.state_manager.p1_to_move(node.state):
+            best = float("-inf")
+            for action in node.legal_actions:
+                score = self.Q[node][action]
+                if score > best:
+                    best_a = action
+                    best = score
+        else:
+            best = float("inf")
+            for action in node.legal_actions:
+                score = self.Q[node][action]
+                if score < best:
+                    best_a = action
+                    best = score
+        return best_a
+
+    def most_visited_child_action(self, node):
+        best_a = None
+        best_n = 0
+        for action in node.child_actions:
+            if node.N[action] > best_n:
+                best_a = action
+                best_n = node.N[action]
+        return best_a

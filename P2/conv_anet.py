@@ -41,6 +41,7 @@ class ConvNet(ActorNet):
                 self.model = Model(inputs=self.input_boards, outputs=self.pi)
                 self.model.compile(optimizer=opt, loss=anet_cfg["loss"])
             self.batch_size = anet_cfg["batch_size"]
+            print(self.model.summary())
         else:
             model_file = model_file if model_file.endswith(self.file_type) else model_file + self.file_type
             self.load_params(model_file)

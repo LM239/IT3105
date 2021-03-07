@@ -31,14 +31,14 @@ anet:
   lr: 0.000275
   optimizer: "adam"
   loss: "categorical_crossentropy"
-  model_file: "anets/local/hex/4x4_wo_dense/temp.h5"
+  #model_file: "anets/local/hex/4x4_wo_dense/temp.h5"
   activation: "selu"
-  cnn_filters: # depth, filter_size, dropout, padding
+  cnn_filters: # depth, filter_size, dropout (on layer output!!), padding
     - [128, 3, 0.0, "valid"]
     - [128, 3, 0.0, "same"]
     - [128, 3, 0.0, "same"]
     - [128, 3, 0.1, "same"]
-    - [1, 1, 0.1, "same"]
+    - [1, 1, 0.0, "same"]
   dense_layers: # depth, dropout
   #  - [512, 0.2]
   #  - [256, 0.2]
