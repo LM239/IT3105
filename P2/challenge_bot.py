@@ -4,7 +4,7 @@ import yaml
 from interfaces.world import SimWorld
 from worlds.hex_world import HexWorld
 from worlds.nim_world import NimWorld
-from players import ProbabilisticPlayer, HumanPlayer
+from players import ProbabilisticPlayer, HumanPlayer, GreedyPlayer
 from conv_anet import ConvNet
 import os
 
@@ -54,7 +54,7 @@ if __name__ == "__main__":
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
     player1 = HumanPlayer(state_manager)
-    player2 = ProbabilisticPlayer(ConvNet(model_file=challenge_cfg["opponent"]), state_manager, "Terminator")
+    player2 = GreedyPlayer(ConvNet(model_file=challenge_cfg["opponent"]), state_manager, "Terminator")
 
     state = state_manager.new_state()
     move = (challenge_cfg["play_as"] - 1) % 2

@@ -35,8 +35,6 @@ class McRave(Mcts):
         else:
             self.root = self.new_node(state)
             self.og_root = self.root
-            self.Q = defaultdict(lambda: defaultdict(lambda: 0.5))
-            self.amaf_Q = defaultdict(lambda: defaultdict(lambda: 0.5))
         return self.simulate(self.root.state, self.search_duration)
 
     def run_subtree(self, state: Any):
@@ -85,7 +83,7 @@ class McRave(Mcts):
         return nodes, actions
 
     def new_node(self, state, end_state: bool = False):
-        node_actions = [] if end_state else self.state_manager.get_actions(state)
+        node_actions = [] if end_state else self.state_manager.get_actions(state, known_not_endstate=not end_state)
         confidence = 0 if end_state else self.min_confidence
         node = Node(state, node_actions, confidence)
         return node

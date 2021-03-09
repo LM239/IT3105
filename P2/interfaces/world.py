@@ -5,7 +5,7 @@ class SimWorld:
     def new_state(self):
         pass
 
-    def get_actions(self, state) -> List:
+    def get_actions(self, state, known_not_endstate=False) -> List:
         pass
 
     def do_action(self, state, action):

@@ -74,8 +74,8 @@ class HexWorld(AdvancedSimWorld):
     def new_state(self):
         return [(0, 0) for i in range(self.size ** 2)] + [(1, 0)]
 
-    def get_actions(self, state):
-        return [i for i, t in enumerate(state[:-1]) if t[0] == t[1]] if not self.in_end_state(state) else []
+    def get_actions(self, state, known_not_endstate=False):
+        return [i for i, t in enumerate(state[:-1]) if t[0] == t[1]] if known_not_endstate or not self.in_end_state(state) else []
 
     def do_action(self, state, action):
         return state[0:action] + [state[-1]] + state[action + 1:-1] + [tuple(reversed(state[-1]))]
@@ -93,11 +93,17 @@ class HexWorld(AdvancedSimWorld):
         return divmod(index, self.size)
 
     def in_end_state(self, state):
-        stack = [x for x in range(0, self.size ** 2, self.size) if state[x][1] == 1] if state[-1][0] == 1 else [x for x in range(self.size) if state[x][0] == 1]
         visits = defaultdict(lambda: False)
-        goal_test = (lambda x: x % self.size == self.size - 1) if state[-1][0] == 1 else (lambda x: x >= self.size * (self.size - 1))
-        c_index = 1 if state[-1][0] == 1 else 0
-        e = self.adjacencies_xsort if state[-1][0] == 1 else self.adjacencies_ysort
+        if state[-1][0] == 1:
+            stack = [x for x in range(0, self.size ** 2, self.size) if state[x][1] == 1]
+            goal_test = (lambda x: x % self.size == self.size - 1)
+            e = self.adjacencies_xsort
+            c_index = 1
+        else:
+            stack = [x for x in range(self.size) if state[x][0] == 1]
+            goal_test = (lambda x: x >= self.size * (self.size - 1))
+            e = self.adjacencies_ysort
+            c_index = 0
         while len(stack) > 0:
             v = stack.pop()
             if not visits[v]:
@@ -110,12 +116,18 @@ class HexWorld(AdvancedSimWorld):
         return False
 
     def bfs(self, state):
-        queue = [x for x in range(0, self.size ** 2, self.size) if state[x][1] == 1] if state[-1][0] == 1 else [x for x in range(self.size) if state[x][0] == 1]
         found = defaultdict(lambda: False)
         parents = defaultdict(lambda: -1)
-        goal_test = (lambda x: x % self.size == self.size - 1) if state[-1][0] == 1 else (lambda x: x >= self.size * (self.size - 1))
-        c_index = 1 if state[-1][0] == 1 else 0
-        e = self.adjacencies_xsort if state[-1][0] == 1 else self.adjacencies_ysort
+        if state[-1][0] == 1:
+            queue = [x for x in range(0, self.size ** 2, self.size) if state[x][1] == 1]
+            goal_test = (lambda x: x % self.size == self.size - 1)
+            e = self.adjacencies_xsort
+            c_index = 1
+        else:
+            queue = [x for x in range(self.size) if state[x][0] == 1]
+            goal_test = (lambda x: x >= self.size * (self.size - 1))
+            e = self.adjacencies_ysort
+            c_index = 0
         for v in queue:
             found[v] = True
         while len(queue) > 0:
