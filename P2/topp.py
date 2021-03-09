@@ -8,6 +8,7 @@ from configs.validate_configs import validate_topp_config
 from players import GreedyPlayer, ProbabilisticPlayer, Player
 from collections import defaultdict
 from conv_anet import ConvNet
+import os
 import glob
 
 
@@ -139,6 +140,10 @@ if __name__ == "__main__":
     else:
         print("Unknown world type: {} \n Exiting".format(world_config["world"]))
         exit(1)
+
+    if "allow_cuda" in topp_config and not topp_config["allow_cuda"]:
+        print("Disable cuda")
+        os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
     topp = Topp(topp_config["topp"], world_manager)
     topp.run_tour()

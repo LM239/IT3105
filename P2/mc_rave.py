@@ -16,7 +16,7 @@ class McRave(Mcts):
         self.bias: float = mcts_cfg["bias"]
         self.Q = defaultdict(lambda: defaultdict(lambda: 0.5))
         self.amaf_Q = defaultdict(lambda: defaultdict(lambda: 0.5))
-        self.global_N = defaultdict(lambda: 0)
+
         self.max_confidence = mcts_cfg["max_h_confidence"]
         self.min_confidence = mcts_cfg["min_h_confidence"]
         self.amaf_confidence_scalar = mcts_cfg["amaf_conf_scalar"]
@@ -35,6 +35,8 @@ class McRave(Mcts):
         else:
             self.root = self.new_node(state)
             self.og_root = self.root
+            self.Q = defaultdict(lambda: defaultdict(lambda: 0.5))
+            self.amaf_Q = defaultdict(lambda: defaultdict(lambda: 0.5))
         return self.simulate(self.root.state, self.search_duration)
 
     def run_subtree(self, state: Any):
@@ -63,7 +65,7 @@ class McRave(Mcts):
         node: Node = self.root
         actions: List[int] = []
         nodes: List[Node] = []
-        while True: # Stops if game is over
+        while True:  # Stops if game is over
             if node is None:
                 node = self.new_node(state, self.state_manager.in_end_state(state))
                 self.insert_node(nodes[-1], node, actions[-1])
@@ -84,8 +86,8 @@ class McRave(Mcts):
 
     def new_node(self, state, end_state: bool = False):
         node_actions = [] if end_state else self.state_manager.get_actions(state)
-        confidence = 0 if end_state else self.min_confidence + self.global_N[str(state)] // len(node_actions)
-        node = Node(state, node_actions, confidence, self.amaf_confidence_scalar * confidence)
+        confidence = 0 if end_state else self.min_confidence
+        node = Node(state, node_actions, confidence)
         return node
 
     def insert_node(self, parent_node: Node, child_node: Node, child_action: int):
@@ -107,8 +109,6 @@ class McRave(Mcts):
             node.N[actions[t]] += 1
             node.sum_N += 1
             self.Q[node][actions[t]] += (z - self.Q[node][actions[t]]) / (node.N[actions[t]])
-            if self.min_confidence + self.global_N[node] // len(node.legal_actions) < self.max_confidence:
-                self.global_N[node] += 1
             for u in range(t + 2, len(actions), 2):
                 node.amaf_N[actions[u]] += 1
                 self.amaf_Q[node][actions[u]] += (z - self.amaf_Q[node][actions[u]]) / (node.amaf_N[actions[u]])

@@ -10,38 +10,39 @@ sim_world:
 actor:
   episodes: 300
   num_checkpoints: 7
-  train_ex_size: 320
-  competition_games: 0
-  file_structure: "anets/local/hex/5x5_conv_out_layer/"
-  epsilon: 0.7
+  train_ex_size: 384
+  competition_games: 300
+  file_structure: "anets/local/hex/5x5_small_dense/"
+  epsilon: 0.15
   epsilon_decay: 0.98
   epsilon_min: 0.1
 
 mcts:
   search_duration: 2.0
-  bias: 0.4
+  bias: 0.75
   c: 0
-  min_h_confidence: 5
-  max_h_confidence: 60
-  amaf_conf_scalar: 2
+  min_h_confidence: 4
+  max_h_confidence: 8
+  amaf_conf_scalar: 1
   max_rollouts: 10000
 
 
 anet:
-  lr: 0.00025
+  lr: 0.001
   optimizer: "adam"
   loss: "categorical_crossentropy"
-  #model_file: "anets/local/hex/5x5_conv_out_layer/temp.h5"
+  model_file: "anets/local/hex/5x5_small_dense/temp.h5"
   activation: "selu"
   cnn_filters: # depth, filter_size, dropout (on layer output!!), padding
-    - [256, 3, 0.0, "valid"]
-    - [128, 3, 0.0, "same"]
-    - [128, 3, 0.0, "same"]
-    - [128, 3, 0.1, "same"]
-    - [128, 3, 0.1, "same"]
-    - [1, 1, 0.0, "same"]
+    - [160, 3, 0.0, "valid"]
+    - [160, 3, 0.0, "same"]
+    - [160, 3, 0.0, "same"]
+    - [160, 3, 0.0, "same"]
+    - [160, 3, 0.0, "same"]
+    - [4, 1, 0.1, "same"]
   dense_layers: # depth, dropout
+    - [64, 0.01]
   #  - [512, 0.2]
   #  - [256, 0.2]
   batch_size: 32
-  #allow_cuda: False
+  allow_cuda: False
