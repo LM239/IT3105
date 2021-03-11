@@ -10,7 +10,7 @@ sim_world:
 actor:
   episodes: 300
   num_checkpoints: 7
-  train_ex_size: 256
+  train_ex_size: 320
   competition_games: 0
   file_structure: "anets/local/hex/5x5_sgd/"
   epsilon: 0.6
@@ -28,7 +28,7 @@ mcts:
 
 
 anet:
-  lr: 0.001
+  lr: 0.0004
   optimizer: "sgd"
   loss: "categorical_crossentropy"
   #model_file: "anets/local/hex/5x5_sgd/temp.h5"

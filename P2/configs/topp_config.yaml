@@ -1,11 +1,11 @@
 display_rate: 0.1
 allow_cuda: false
 topp:
-  games_g: 400
+  games_g: 500
   display_games: true
   display_games_pairs:
     - [0,  1]
-  directory: "anets\\local\\hex\\5x5_dense_out_layer\\"
+  directory: "anets\\local\\hex\\5x5_small_dense\\"
   player_type: "probabilistic"
 
 sim_world:

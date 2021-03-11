@@ -1,5 +1,3 @@
-from tensorflow import float32
-
 from configs.validate_configs import validate_anet_config
 from interfaces.actornet import ActorNet
 from keras.models import *
@@ -27,6 +25,7 @@ class ConvNet(ActorNet):
                 os.environ["TF_CPP_VMODULE"] = "asm_compiler=2"
             if "model_file" in anet_cfg:
                 self.model = load_model(anet_cfg["model_file"])
+                self.model.optimizer.lr.assign(anet_cfg["lr"])
                 print("Loaded model from", anet_cfg["model_file"])
             else:
                 self.input_boards = Input(shape=(board_size, board_size, input_depth))  # s: batch_size x board_x x board_y

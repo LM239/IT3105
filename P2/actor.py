@@ -36,12 +36,13 @@ class TourActor:
         visits, extended = self.mcts.run_root(actual_board)
         while True:
             extended_searches += extended
-            print("Currently on {} of {} training examples and {} rollouts, {} extended searches   ".format(len(replay_targets), self.train_ex_size, visits, extended_searches), end="\r")
             root_distribution: dict = self.mcts.root_distribution()
             D = self.state_manager.complete_action_dist(root_distribution)
             augmented_boards, augmented_Ds = self.state_manager.augment_training_data(self.state_manager.to_array(actual_board), D)
             replay_features.extend(augmented_boards)
             replay_targets.extend(augmented_Ds)
+            print("Currently on {} of {} training examples and {} rollouts, {} extended searches   ".format(
+                len(replay_targets), self.train_ex_size, visits, extended_searches), end="\r")
 
             if len(replay_targets) == self.train_ex_size:
                 break

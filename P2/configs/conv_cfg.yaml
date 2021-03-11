@@ -8,27 +8,28 @@ sim_world:
   size: 5
 
 actor:
-  episodes: 300
-  num_checkpoints: 7
-  train_ex_size: 384
-  competition_games: 300
+  episodes: 50
+  num_checkpoints: 6
+  train_ex_size: 320
+  competition_games: 600
   file_structure: "anets/local/hex/5x5_small_dense/"
-  epsilon: 0.15
-  epsilon_decay: 0.98
+  epsilon: 0.10
+  epsilon_decay: 0.96
   epsilon_min: 0.1
 
 mcts:
-  search_duration: 2.0
-  bias: 0.5
-  c: 0.2
-  min_h_confidence: 3
-  max_h_confidence: 8
+  search_duration: 3.0
+  bias: 0.4
+  c: 0.1
+  min_h_confidence: 5
+  max_h_confidence: 15
   amaf_conf_scalar: 1
-  max_rollouts: 10000
+  max_rollouts: 20000
+  search_games: 500
 
 
 anet:
-  lr: 0.001
+  lr: 0.00035
   optimizer: "adam"
   loss: "categorical_crossentropy"
   model_file: "anets/local/hex/5x5_small_dense/temp.h5"

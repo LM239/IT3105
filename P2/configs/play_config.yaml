@@ -1,8 +1,8 @@
 ---
-opponent: "anets/local/hex/4x4_wo_dense/temp.h5"
+opponent: "anets/local/hex/5x5_small_dense/temp.h5"
 play_as: 2 # 1 or 2
 allow_cuda: False
 
 sim_world:
   world: "hex"
-  size: 4
+  size: 5

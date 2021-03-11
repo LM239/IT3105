@@ -17,7 +17,7 @@ class McRave(Mcts):
         self.Q = defaultdict(lambda: defaultdict(lambda: 0.5))
         self.amaf_Q = defaultdict(lambda: defaultdict(lambda: 0.5))
 
-        self.max_confidence = mcts_cfg["max_h_confidence"]
+        self.search_games = mcts_cfg["search_games"]
         self.min_confidence = mcts_cfg["min_h_confidence"]
         self.amaf_confidence_scalar = mcts_cfg["amaf_conf_scalar"]
         self.search_duration = mcts_cfg["search_duration"]
@@ -35,7 +35,7 @@ class McRave(Mcts):
         else:
             self.root = self.new_node(state)
             self.og_root = self.root
-        return self.simulate(self.root.state, self.search_duration)
+        return self.simulate(self.root.state, self.search_duration, self.search_games)
 
     def run_subtree(self, state: Any):
         action = self.state_manager.find_action(self.root.state, state)
@@ -43,20 +43,25 @@ class McRave(Mcts):
             self.root = self.root.children[self.root.child_actions.index(action)]
         else:
             self.root = self.new_node(state)
-        return self.simulate(self.root.state, self.search_duration)
+        return self.simulate(self.root.state, self.search_duration, self.search_games)
 
-    def simulate(self, state, search_duration, extended=False):
+    def simulate(self, state, search_duration, num_searches, extended=False):
         rollouts = 0
         now = time.time()
-        while time.time() - now < search_duration:
+        while True:
             nodes, actions = self.tree_search(state)
             rollout_actions, z = self.rollout_sim(nodes[-1].state)
             self.backup(nodes, actions + rollout_actions, z)
             rollouts += 1
+            if time.time() - now > self.search_duration:
+                if rollouts < num_searches:
+                    now = time.time()
+                else:
+                    break
             if rollouts >= self.max_rollouts:
                 break
         if not (extended or self.best_policy_action(self.root) == self.most_visited_child_action(self.root)):
-            return rollouts + self.simulate(state, search_duration / 2, True)[0], 1
+            return rollouts + self.simulate(state, search_duration / 2, int(num_searches / 2), True)[0], 1
         return rollouts, 0
 
     def tree_search(self, state):
@@ -103,13 +108,16 @@ class McRave(Mcts):
     def backup(self, nodes: List[Node], actions: List[int], z):
         if len(nodes) > len(actions):
             nodes.pop()
+            self.Q[nodes[-1]][actions[-1]] = z
+            self.amaf_Q[nodes[-1]][actions[-1]] = z
         for t, node in enumerate(nodes):
             node.N[actions[t]] += 1
             node.sum_N += 1
-            self.Q[node][actions[t]] += (z - self.Q[node][actions[t]]) / (node.N[actions[t]])
+            self.Q[node][actions[t]] += (z - self.Q[node][actions[t]]) / node.N[actions[t]]
             for u in range(t + 2, len(actions), 2):
                 node.amaf_N[actions[u]] += 1
-                self.amaf_Q[node][actions[u]] += (z - self.amaf_Q[node][actions[u]]) / (node.amaf_N[actions[u]])
+                self.amaf_Q[node][actions[u]] += (z - self.amaf_Q[node][actions[u]]) / node.amaf_N[actions[u]]
+
 
     def evaluate(self, node, action, c):
         beta = node.amaf_N[action] / (node.N[action] + node.amaf_N[action] + 4 * node.N[action] * node.amaf_N[action] * self.bias ** 2)

@@ -154,7 +154,7 @@ class HexWorld(AdvancedSimWorld):
     def p1_to_move(self, state):
         return state[-1][0] == 1
 
-    def visualize(self, states, player_labels=("Player 1", "Player 2")):  # visualize states (list of states)
+    def visualize(self, states, player_labels=("Player 1", "Player 2"), use_board_labels=False):  # visualize states (list of states)
         G = nx.Graph()
         for i in range(self.size ** 2):
             y, x = self.from1D(i)
@@ -197,7 +197,8 @@ class HexWorld(AdvancedSimWorld):
             nx.draw_networkx_nodes(G, pos, nodelist=p1_nodes, node_color="g", node_size=150)  # draw open nodes (green)
             nx.draw_networkx_nodes(G, pos, nodelist=p2_nodes, node_color="r", node_size=150)  # draw closed nodes (red)
             nx.draw_networkx_nodes(G, pos, nodelist=empty_nodes, node_color="y", node_size=150)  # draw closed nodes (red)
-            #nx.draw_networkx_labels(G, pos, font_weight="bold")  # draw node names (their coordinate)
+            if use_board_labels:
+                nx.draw_networkx_labels(G, pos, font_weight="bold")  # draw node names (their coordinate)
             nx.draw_networkx_edges(G, pos, width=edge_widths, edge_color=edge_colors)  # draw edges
             plt.legend(handles=[green_patch, red_patch], prop={'size': 2 * min(40, self.size) + 2})
             plt.draw()  # finish figure
@@ -219,10 +220,13 @@ class HexWorld(AdvancedSimWorld):
 
     def to_array(self, state):
         shape = (self.size + 2, self.size + 2)
-        empty_array = np.zeros(shape=shape, dtype=float32)
         player1_array = np.zeros(shape=shape, dtype=float32)
         player1_array[0] = np.ones(shape=(self.size + 2))
+        player1_array[0][0] = 0
+        player1_array[0][self.size + 1] = 0
         player1_array[self.size + 1] = np.ones(shape=(self.size + 2))
+        player1_array[self.size + 1][0] = 0
+        player1_array[self.size + 1][self.size + 1] = 0
         player2_array = np.transpose(np.copy(player1_array))
         p1_to_move_array = np.zeros(shape=shape, dtype=float32) if state[-1][0] == 0 else np.ones(shape=shape, dtype=float32)
         p2_to_move_array = np.zeros(shape=shape, dtype=float32) if state[-1][0] == 1 else np.ones(shape=shape, dtype=float32)
@@ -239,10 +243,9 @@ class HexWorld(AdvancedSimWorld):
         for i in range(1, self.size + 1):
             for j in range(1, self.size + 1):
                 index = self.from2D(i - 1, j - 1)
-                t = state[index]
-                empty_array[i][j] = 1 - (t[0] + t[1])
-                player1_array[i][j] = t[0]
-                player2_array[i][j] = t[1]
+                start_tuple = state[index]
+                player1_array[i][j] = start_tuple[0]
+                player2_array[i][j] = start_tuple[1]
                 for (start_y, start_x, start_i), (path1_y, path1_x, path1_i),\
                     (path2_y, path2_x, path2_i), (end_y, end_x, end_i) in self.bridges[index]:
                     if not (state[path1_i] == (0, 0) or state[path2_i] == (0, 0)):  # both paths taken -> nothing to do
@@ -256,9 +259,9 @@ class HexWorld(AdvancedSimWorld):
                         end_owner[0] = int(player1_array[padding_coord_y][padding_coord_x])
                         end_owner[1] = int(player2_array[padding_coord_y][padding_coord_x])
                         end_owner = tuple(end_owner)
-                    if not (end_owner == state[start_i] or end_owner == (0, 0) or t == (0, 0)):
+                    if not (end_owner == state[start_i] or end_owner == (0, 0) or start_tuple == (0, 0)):
                         continue
-                    if t == (0, 0):  # bridge origin empty
+                    if start_tuple == (0, 0):  # bridge origin empty
                         if end_owner == (0, 0):  # bridge dest and origin empty -> nothing to do
                             continue
                         if end_owner == in_move:  # in move has end, origin empty
@@ -282,7 +285,7 @@ class HexWorld(AdvancedSimWorld):
                                 in_move_kill_unbuilt_bridge[path2_y + 1][path2_x + 1] = 1
                             # else:  # not in move owns end and path1, origin empty -> nothing to do
                             #    pass
-                    elif t == in_move: # in_move owns bridge origin
+                    elif start_tuple == in_move: # in_move owns bridge origin
                         if end_owner == (0, 0):
                             if state[path1_i] == (0, 0):
                                 if state[path2_i] == (0, 0) or state[path2_i] == in_move: # in move owns origin, no blocked paths, and end open -> create bridge at end
@@ -301,9 +304,9 @@ class HexWorld(AdvancedSimWorld):
                                 p2_bridge_ends[end_y + 1][end_x + 1] = 1
                             if state[path1_i] == (0, 0): # in move has origin, end and path1 open -> complete bridge at path1
                                 in_move_complete_bridge[path1_y + 1][path1_x + 1] = 1
-                                if state[path2_i] == (0, 0): # in move has origin, end and path2 open -> complete bridge at path1
+                                if state[path2_i] == (0, 0) or state[path2_i] == in_move: # in move has origin, end and path2 open -> complete bridge at path2
                                     in_move_complete_bridge[path2_y + 1][path2_x + 1] = 1
-                                elif not state[path2_i] == in_move:  # in move has origin, end and path1 open but path2 closed -> save bridge at path1
+                                else: # in move has origin and end, and path1 open but path2 closed -> save bridge at path1
                                     in_move_save_bridge[path1_y + 1][path1_x + 1] = 1
                             elif state[path1_i] == in_move: # in move has origin, end and path 1
                                 # path 2 must be open -> complete bridge at path 2
@@ -342,13 +345,18 @@ class HexWorld(AdvancedSimWorld):
                                     in_move_hurt_bridge[path1_y + 1][path1_x + 1] = 1
                                     in_move_hurt_bridge[path2_y + 1][path2_x + 1] = 1
                                 elif state[path2_i] == in_move: # not in move owns end and origin, path 2 owned by in move -> kill bridge at path 1
+                                    in_move_hurt_bridge[path1_y + 1][path1_x + 1] = 1
                                     in_move_kill_bridge[path1_y + 1][path1_x + 1] = 1
                                 # else: not in move owns end origin and path 2 -> nothing to do
                                 #    pass
                             elif state[path1_i] == in_move: # not in move owns end and origin, path1 owned by in move -> kill bridge at path2
+                                in_move_hurt_bridge[path2_y + 1][path2_x + 1] = 1
                                 in_move_kill_bridge[path2_y + 1][path2_x + 1] = 1
                             # else: # not in move owns end, origin, and path1 -> nothing to do
                             #    pass
+        empty_array = np.ones(shape=(self.size + 2)) - player1_array - player2_array
+        empty_array[0] = np.zeros(shape=(self.size + 2))
+        empty_array[self.size + 1] = np.zeros(shape=(self.size + 2))
         arrays = np.array([
             empty_array,
             player1_array,
@@ -366,7 +374,6 @@ class HexWorld(AdvancedSimWorld):
             in_move_kill_unbuilt_bridge,
         ])
         return np.transpose(arrays, axes=[1, 2, 0])
-
 
 
     def augment_training_data(self, state_array, action_dist):

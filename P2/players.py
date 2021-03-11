@@ -45,7 +45,7 @@ class HumanPlayer():
 
     def play(self, state):
         player_tags = (self.name, "Terminator") if self.state_manager.p1_to_move(state) else ("Terminator", self.name)
-        self.state_manager.visualize([state], player_tags)
+        self.state_manager.visualize([state], player_tags, True)
         actions = self.state_manager.get_actions(state)
         while True:
             action = int(input("Choose one valid action: {}".format(actions)))
