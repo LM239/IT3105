@@ -118,7 +118,6 @@ class McRave(Mcts):
                 node.amaf_N[actions[u]] += 1
                 self.amaf_Q[node][actions[u]] += (z - self.amaf_Q[node][actions[u]]) / node.amaf_N[actions[u]]
 
-
     def evaluate(self, node, action, c):
         beta = node.amaf_N[action] / (node.N[action] + node.amaf_N[action] + 4 * node.N[action] * node.amaf_N[action] * self.bias ** 2)
         return (1 - beta) * self.Q[node][action] + beta * self.amaf_Q[node][action] + c * sqrt(log(node.sum_N) / node.N[action])
@@ -143,7 +142,7 @@ class McRave(Mcts):
                         best_a = []
                     best_a.append(action)
                     best = score
-        return best_a[random.randint(0, len(best_a)-1)] if len(best_a) > 0 else None
+        return best_a[random.randint(0, len(best_a) - 1)] if len(best_a) > 0 else None
 
     def root_distribution(self):
         return {action: self.root.N[action] / self.root.sum_N for action in self.root.legal_actions}
