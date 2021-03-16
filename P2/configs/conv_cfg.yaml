@@ -8,41 +8,41 @@ sim_world:
   size: 5
 
 actor:
-  episodes: 50
+  episodes: 100
   num_checkpoints: 6
   train_ex_size: 320
-  competition_games: 600
-  file_structure: "anets/local/hex/5x5_small_dense/"
-  epsilon: 0.10
+  competition_games: 0
+  file_structure: "anets/local/hex/conv1/"
+  epsilon: 0.80
   epsilon_decay: 0.96
   epsilon_min: 0.1
 
 mcts:
   search_duration: 3.0
-  bias: 0.4
-  c: 0.1
-  min_h_confidence: 5
+  bias: 0.3
+  c: 0.2
+  min_h_confidence: 3
   max_h_confidence: 15
   amaf_conf_scalar: 1
-  max_rollouts: 20000
-  search_games: 500
+  max_rollouts: 10000
+  search_games: 100
 
 
 anet:
-  lr: 0.00035
+  lr: 0.001
   optimizer: "adam"
   loss: "categorical_crossentropy"
-  model_file: "anets/local/hex/5x5_small_dense/temp.h5"
+  model_file: "anets/local/hex/conv1/temp.h5"
   activation: "selu"
   cnn_filters: # depth, filter_size, dropout (on layer output!!), padding
-    - [160, 3, 0.0, "valid"]
-    - [160, 3, 0.0, "same"]
-    - [160, 3, 0.0, "same"]
-    - [160, 3, 0.0, "same"]
-    - [160, 3, 0.0, "same"]
-    - [4, 1, 0.1, "same"]
+    - [148, 3, 0.0, "valid"]
+    - [148, 3, 0.0, "same"]
+    - [148, 3, 0.0, "same"]
+    - [148, 3, 0.0, "same"]
+    - [148, 3, 0.0, "same"]
+    - [12, 1, 0.0, "same"]
   dense_layers: # depth, dropout
-    - [64, 0.01]
+    - [64, 0.0]
   #  - [512, 0.2]
   #  - [256, 0.2]
   batch_size: 32
