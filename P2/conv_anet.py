@@ -20,7 +20,6 @@ class ConvNet(ActorNet):
                 else:
                     print("No GPU found")
             else:
-                os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices'
                 os.environ['CUDA_CACHE_MAXSIZE'] = "2147483648"
                 os.environ["TF_CPP_VMODULE"] = "asm_compiler=2"
             if "model_file" in anet_cfg:

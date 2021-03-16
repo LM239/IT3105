@@ -1,5 +1,5 @@
 ---
-opponent: "anets/local/hex/5x5_small_dense/temp.h5"
+opponent: "anets/best/hex/5x5/temp.h5"
 play_as: 2 # 1 or 2
 allow_cuda: False
 

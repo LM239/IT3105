@@ -1,6 +1,4 @@
 import random
-from typing import Any
-
 from topp import compete
 from players import ProbabilisticPlayer
 from interfaces.world import AdvancedSimWorld

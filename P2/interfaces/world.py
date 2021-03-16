@@ -35,7 +35,6 @@ class SimWorld:
 
 class AdvancedSimWorld(SimWorld):
 
-
     def vector(self, state):
         pass
 
