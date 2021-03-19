@@ -19,13 +19,13 @@ actor:
 
 mcts:
   search_duration: 3.0
-  bias: 0.3
+  bias: 0.4
   c: 0.2
   min_h_confidence: 3
   max_h_confidence: 15
   amaf_conf_scalar: 1
   max_rollouts: 10000
-  search_games: 300
+  search_games: 800
 
 
 anet:
