@@ -14,7 +14,7 @@ class TourActor:
         self.mcts: Mcts = mcts
         self.save_dir = actor_cfg["file_structure"]
         self.competition_games = actor_cfg["competition_games"]
-        self.train_ex_size = actor_cfg["train_ex_size"]
+        self.train_games = actor_cfg["train_games"]
         self.episodes = actor_cfg["episodes"]
         self.epsilon = actor_cfg["epsilon"]
         self.epsilon_min = actor_cfg["epsilon_min"]
@@ -35,14 +35,14 @@ class TourActor:
         states = [actual_board]
         extended_searches = 0
         visits, extended = self.mcts.run_root(actual_board)
-        while games < self.train_ex_size:
+        while games < self.train_games:
             extended_searches += extended
             root_distribution: dict = self.mcts.root_distribution()
             D = self.state_manager.complete_action_dist(root_distribution)
             augmented_boards, augmented_Ds = self.state_manager.augment_training_data(self.state_manager.to_array(actual_board), D)
             replay_features.extend(augmented_boards)
             replay_targets.extend(augmented_Ds)
-            print(f"Currently on {len(replay_targets)} training examples, {games} of {self.train_ex_size} games, and {visits} rollouts, {extended_searches} extended searches            ", end="\r")
+            print(f"Currently on {len(replay_targets)} training examples, {games} of {self.train_games} games, and {visits} rollouts, {extended_searches} extended searches            ", end="\r")
 
             if random.random() < self.epsilon + self.epsilon_min:
                 action = list(root_distribution.keys())[random.randint(0, len(root_distribution.keys())-1)]
@@ -51,7 +51,7 @@ class TourActor:
             actual_board = self.state_manager.do_action(actual_board, action)
             states.append(actual_board)
             if self.state_manager.in_end_state(actual_board):
-                if games + self.train_ex_size * episode in self.display_games:
+                if games + self.train_games * episode in self.display_games:
                     self.state_manager.visualize(states)
                 games += 1
                 actual_board = self.state_manager.new_state()

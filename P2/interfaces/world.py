@@ -29,7 +29,7 @@ class SimWorld:
     def find_action(self, parent_state, child_state):
         pass
 
-    def visualize(self, states, player_labels, use_board_labels=False):
+    def visualize(self, states, player_labels=("player1, player2"), use_board_labels=False):
         pass
 
 

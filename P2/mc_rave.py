@@ -18,8 +18,7 @@ class McRave(Mcts):
         self.amaf_Q = defaultdict(lambda: defaultdict(lambda: 0.5))
 
         self.search_games = mcts_cfg["search_games"]
-        self.min_confidence = mcts_cfg["min_h_confidence"]
-        self.amaf_confidence_scalar = mcts_cfg["amaf_conf_scalar"]
+        self.min_confidence = mcts_cfg["h_confidence"]
         self.search_duration = mcts_cfg["search_duration"]
         self.max_rollouts = mcts_cfg["max_rollouts"]
         self.root: Node | None = None

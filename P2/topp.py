@@ -93,12 +93,10 @@ if __name__ == "__main__":
                 print("Usage: python {} <path-to-config>".format(sys.argv[0]))  # print help
                 exit(0)
 
-        if not len(sys.argv) == 2:
-            print("Error: Expected 1 argument <path-to-config>, but received {} argument(s)\nExiting".format(
-                len(sys.argv) - 1))
-            exit(1)
-
-        with open(sys.argv[1]) as file:  # try to open config file
+        if len(sys.argv) == 1:
+            print("Using default config at configs/topp_config.yaml")
+        file_name = sys.argv[1] if len(sys.argv) > 1 else "configs/topp_config.yaml"
+        with open(file_name) as file:  # try to open config file
             topp_config = yaml.load(file, Loader=yaml.FullLoader)
             file.close()
     except getopt.error as err:

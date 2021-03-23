@@ -1,13 +1,13 @@
-display_rate: 0.75
+display_rate: 0.7
 allow_cuda: false
 topp:
-  games_g: 300
-  display_games: 2
+  games_g: 400
+  display_games: 4
   display_games_pairs:
     - []
-  #directory: "anets\\local\\hex\\5x5_small_dense\\"
-  directory: "anets\\best\\hex\\5x5\\"
-  player_type: "greedy"
+  #directory: "anets\\local\\hex\\6x6\\"
+  directory: "anets\\best\\hex\\6x6\\"
+  player_type: "probabilistic"
 
 sim_world:
   world: "hex"
