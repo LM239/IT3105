@@ -1,9 +1,7 @@
-import math
 from BasicClientActorAbs import BasicClientActorAbs
 from players import GreedyPlayer, ProbabilisticPlayer, Player
-from world import SimWorld
 from conv_anet import ConvNet
-from hex_world import HexWorld
+from worlds.hex_world import HexWorld
 import os
 import yaml
 import getopt
@@ -163,7 +161,7 @@ if __name__ == '__main__':
             if current_argument in ("-h", "--help"):
                 print("Usage: python {} <path-to-config>".format(sys.argv[0]))  # print help
                 exit(0)
-        file_name = sys.argv[1] if len(sys.argv) > 1 else "../configs/oht.yaml"
+        file_name = sys.argv[1] if len(sys.argv) > 1 else "configs/oht.yaml"
         with open(file_name) as file:  # try to open config file
             oht_config = yaml.load(file, Loader=yaml.FullLoader)
             file.close()
@@ -205,7 +203,7 @@ if __name__ == '__main__':
         print("Disable cuda")
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
-    anet = ConvNet(model_file='../anets/best/hex/6x6/better.h5')
+    anet = ConvNet(model_file='anets/best/hex/6x6/better.h5')
     player = ProbabilisticPlayer(anet, world_manager, "me") if oht_config["oht"]["player_type"] == "probabilistic" else GreedyPlayer(anet, world_manager, "me")
     bsa = BasicClientActor(player, verbose=False)
     bsa.connect_to_server()

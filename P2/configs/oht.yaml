@@ -1,8 +1,8 @@
 allow_cuda: false
 oht:
-  anet_file: "anets\\best\\hex\\5x5\\"
+  anet_file: "anets\\best\\hex\\6x6\\even_better.h5"
   player_type: "probabilistic"
 
 sim_world:
   world: "hex"
-  size: 5
+  size: 6

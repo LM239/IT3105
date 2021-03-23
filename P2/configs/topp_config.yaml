@@ -4,7 +4,7 @@ topp:
   games_g: 300
   display_games: 2
   display_games_pairs:
-    - ['eirik.h5',  'also_good.h5']
+    - []
   #directory: "anets\\local\\hex\\5x5_small_dense\\"
   directory: "anets\\best\\hex\\5x5\\"
   player_type: "greedy"
