@@ -204,7 +204,8 @@ class HexWorld(AdvancedSimWorld):
             plt.draw()  # finish figure
             plt.pause(self.display_rate)  # delay before continuing to next state in states
             plt.clf()  # clear canvas
-        #plt.close()  # close window
+        plt.pause(self.display_rate*2)
+        plt.close()  # close window
 
     def vector(self, state: List[Tuple[int, int]]) -> List[int]:
         return [val for tuple in state for val in tuple]  # flatten board state and return as list / vector

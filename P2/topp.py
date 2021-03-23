@@ -12,7 +12,7 @@ import os
 import glob
 
 
-def compete(player1: Player, player2: Player, num_games: int, state_manager: SimWorld, display_game=False):
+def compete(player1: Player, player2: Player, num_games: int, state_manager: SimWorld, display_game=0):
     player1_wins = 0
     player2_wins = 0
     for i in range(num_games):
@@ -30,7 +30,7 @@ def compete(player1: Player, player2: Player, num_games: int, state_manager: Sim
             states.append(state)
             move += 1
         winner = state_manager.winner(state, known_endstate=True)
-        if display_game:
+        if i < display_game:
             player_labels = (player1.name, player2.name) if i % 2 == 0 else (player2.name, player1.name)
             state_manager.visualize(states, player_labels=player_labels)
         if i % 2 == 0:
@@ -57,7 +57,7 @@ class Topp():
 
         self.player_type = GreedyPlayer if topp_cfg["player_type"] == "greedy" else ProbabilisticPlayer
         if "display_games_pairs" in topp_cfg:
-            self.display_games_pairs = topp_cfg["display_games_pairs"]
+            self.display_games_pairs = [tuple(sorted(p)) for p in topp_cfg["display_games_pairs"]]
 
         files = glob.glob(topp_cfg["directory"] + "*.h5")
         print(files)
@@ -73,7 +73,7 @@ class Topp():
         for i, player1 in enumerate(self.players.values()):
             for j, player2 in enumerate(list(self.players.values())[i + 1:]):
                 print(player1.name, "is competing with", player2.name)
-                player1_wins, player2_wins = compete(player1, player2, self.games_g, self.state_manager, (player1.name, player2.name) in self.display_games_pairs)
+                player1_wins, player2_wins = compete(player1, player2, self.games_g, self.state_manager, self.display_games if (player1.name, player2.name) in self.display_games_pairs else 0)
                 self.total_wins[player1.name] += player1_wins
                 self.total_wins[player2.name] += player2_wins
         rankings = sorted([(self.total_wins[key], key) for key in self.total_wins.keys()], reverse=True)

@@ -19,6 +19,7 @@ class TourActor:
         self.epsilon = actor_cfg["epsilon"]
         self.epsilon_min = actor_cfg["epsilon_min"]
         self.epsilon_decay = actor_cfg["epsilon_decay"]
+        self.display_games = actor_cfg["display_games"]
 
         self.save_episodes = []
         if actor_cfg["num_checkpoints"] > 0:
@@ -26,33 +27,35 @@ class TourActor:
             if actor_cfg["num_checkpoints"] > 1:
                 self.save_episodes.extend([*range(0, self.episodes, int(self.episodes / (actor_cfg["num_checkpoints"] - 1)))])
 
-    def generate_examples(self):
+    def generate_examples(self, episode):
         replay_features = []
         replay_targets = []
+        games = 0
         actual_board = self.state_manager.new_state()
+        states = [actual_board]
         extended_searches = 0
         visits, extended = self.mcts.run_root(actual_board)
-        while True:
+        while games < self.train_ex_size:
             extended_searches += extended
             root_distribution: dict = self.mcts.root_distribution()
             D = self.state_manager.complete_action_dist(root_distribution)
             augmented_boards, augmented_Ds = self.state_manager.augment_training_data(self.state_manager.to_array(actual_board), D)
             replay_features.extend(augmented_boards)
             replay_targets.extend(augmented_Ds)
-            print("Currently on {} of {} training examples and {} rollouts, {} extended searches   ".format(
-                len(replay_targets), self.train_ex_size, visits, extended_searches), end="\r")
-
-            if len(replay_targets) == self.train_ex_size:
-                break
+            print(f"Currently on {len(replay_targets)} training examples, {games} of {self.train_ex_size} games, and {visits} rollouts, {extended_searches} extended searches            ", end="\r")
 
             if random.random() < self.epsilon + self.epsilon_min:
                 action = list(root_distribution.keys())[random.randint(0, len(root_distribution.keys())-1)]
             else:
                 action = np.random.choice(list(root_distribution.keys()), p=list(root_distribution.values()))
             actual_board = self.state_manager.do_action(actual_board, action)
-
+            states.append(actual_board)
             if self.state_manager.in_end_state(actual_board):
+                if games + self.train_ex_size * episode in self.display_games:
+                    self.state_manager.visualize(states)
+                games += 1
                 actual_board = self.state_manager.new_state()
+                states = [actual_board]
                 visits, extended = self.mcts.run_root(actual_board, True)
                 continue
             visits, extended = self.mcts.run_subtree(actual_board)
@@ -62,7 +65,7 @@ class TourActor:
     def fit(self):
         for episode in range(self.episodes):
             print(episode)
-            train_features, train_targets = self.generate_examples()
+            train_features, train_targets = self.generate_examples(episode)
             if episode in self.save_episodes:
                 self.anet.save_params(self.save_dir, "checkpoint_" + str(episode))
 

@@ -1,13 +1,13 @@
-display_rate: 0.1
+display_rate: 0.75
 allow_cuda: false
 topp:
   games_g: 300
-  display_games: true
+  display_games: 2
   display_games_pairs:
-    - [0,  1]
+    - ['eirik.h5',  'also_good.h5']
   #directory: "anets\\local\\hex\\5x5_small_dense\\"
   directory: "anets\\best\\hex\\5x5\\"
-  player_type: "probabilistic"
+  player_type: "greedy"
 
 sim_world:
   world: "hex"
