@@ -11,4 +11,4 @@ topp:
 
 sim_world:
   world: "hex"
-  size: 5
+  size: 6
