@@ -151,7 +151,7 @@ class McRave(Mcts):
         mask = self.state_manager.action_vector_mask(state)
         vector = self.state_manager.to_array(state)
         net_out = self.anet.forward(vector)[0]
-        masked_out = np.multiply(net_out, mask)
+        masked_out = np.multiply(net_out, mask) ** 2
         masked_out = np.divide(masked_out, np.sum(masked_out))
         return np.random.choice(np.arange(len(masked_out)), p=masked_out)
         #         actions = self.state_manager.get_actions(state)

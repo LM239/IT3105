@@ -69,6 +69,7 @@ if __name__ == "__main__":
 
     remark = "Congratulations, you won!" if state_manager.winner(state, True)[challenge_cfg["play_as"] - 1] == 1 else "You lost, better luck next time!"
     print(remark)
-    state_manager.visualize()
+    labels = (player1.name, "Terminator") if (challenge_cfg["play_as"] == 1) else ("Terminator", player1.name)
+    state_manager.visualize([state], labels, True)
 
 

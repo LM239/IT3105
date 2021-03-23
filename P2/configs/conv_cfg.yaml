@@ -5,45 +5,45 @@ display:
 #SimWorld args:
 sim_world:
   world: "hex"
-  size: 5
+  size: 6
 
 actor:
-  episodes: 10
+  episodes: 20
   num_checkpoints: 6
-  train_ex_size: 512
-  competition_games: 600
-  file_structure: "anets/local/hex/5x5_small_dense/"
-  epsilon: 0.1125
+  train_ex_size: 320
+  competition_games: 400
+  file_structure: "anets/local/hex/6x6/"
+  epsilon: 0.15
   epsilon_decay: 0.96
-  epsilon_min: 0.125
+  epsilon_min: 0.1
 
 mcts:
-  search_duration: 3.0
-  bias: 0.38
-  c: 0.14
+  search_duration: 6.0
+  bias: 0.33
+  c: 0.12
   min_h_confidence: 4
   max_h_confidence: 15
   amaf_conf_scalar: 1
-  max_rollouts: 35000
-  search_games: 1000
+  max_rollouts: 50000
+  search_games: 500
 
 
 anet:
-  lr: 0.00015
+  lr: 0.000275
   optimizer: "adam"
   loss: "categorical_crossentropy"
-  model_file: "anets/local/hex/conv1/temp.h5"
+  model_file: "anets/local/hex/6x6/temp.h5"
   activation: "selu"
   cnn_filters: # depth, filter_size, dropout (on layer output!!), padding
     - [148, 3, 0.0, "valid"]
     - [148, 3, 0.0, "same"]
     - [148, 3, 0.0, "same"]
     - [148, 3, 0.0, "same"]
-    - [148, 3, 0.0, "same"]
-    - [12, 1, 0.0, "same"]
+    - [148, 3, 0.05, "same"]
+    - [12, 1, 0.01, "same"]
   dense_layers: # depth, dropout
     - [64, 0.0]
   #  - [512, 0.2]
   #  - [256, 0.2]
-  batch_size: 32
+  batch_size: 64
   allow_cuda: False
