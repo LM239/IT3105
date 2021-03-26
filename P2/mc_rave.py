@@ -1,5 +1,5 @@
 import time
-import random
+import sys
 import numpy as np
 from typing import List, Any
 from collections import defaultdict
@@ -29,6 +29,9 @@ class McRave(Mcts):
         self.anet: ActorNet = anet
 
     def run_root(self, state: Any, use_og_root=False):
+        if sys.getsizeof(self.amaf_Q) + sys.getsizeof(self.Q) > 2 * 10 ** 9:
+            self.Q = defaultdict(lambda: defaultdict(lambda: 0.5))
+            self.amaf_Q = defaultdict(lambda: defaultdict(lambda: 0.5))
         if use_og_root:
             self.root = self.og_root
         else:

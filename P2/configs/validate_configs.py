@@ -45,8 +45,14 @@ def validate_actor_config(config):
     if "competition_games" not in config:
         print("Missing required actor argument: 'competition games' \nExiting")
         exit(1)
-    if "file_structure" not in config:
-        print("Missing required anet argument: 'file_structure' \nExiting")
+    if "anet_dir" not in config:
+        print("Missing required anet argument: 'anet_dir' \nExiting")
+        exit(1)
+    if "save_data" not in config:
+        print("Missing required anet argument: 'save_data' \nExiting")
+        exit(1)
+    if "win_margin" not in config:
+        print("Missing required anet argument: 'win_margin' \nExiting")
         exit(1)
 
 def validate_mcts_config(config):

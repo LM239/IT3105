@@ -5,6 +5,9 @@ from interfaces.world import AdvancedSimWorld
 from interfaces.mcts import Mcts
 from interfaces.actornet import ActorNet
 import numpy as np
+import pickle
+import glob
+import os
 
 
 class TourActor:
@@ -12,7 +15,7 @@ class TourActor:
         self.anet = anet
         self.state_manager: AdvancedSimWorld = world
         self.mcts: Mcts = mcts
-        self.save_dir = actor_cfg["file_structure"]
+        self.anet_dir = actor_cfg["anet_dir"]
         self.competition_games = actor_cfg["competition_games"]
         self.train_games = actor_cfg["train_games"]
         self.episodes = actor_cfg["episodes"]
@@ -20,7 +23,9 @@ class TourActor:
         self.epsilon_min = actor_cfg["epsilon_min"]
         self.epsilon_decay = actor_cfg["epsilon_decay"]
         self.display_games = actor_cfg["display_games"]
-
+        self.save_data = actor_cfg["save_data"]
+        self.data_dir = actor_cfg["data_dir"] if self.save_data else None
+        self.win_margin = actor_cfg["win_margin"]
         self.save_episodes = []
         if actor_cfg["num_checkpoints"] > 0:
             self.save_episodes = [self.episodes]
@@ -39,10 +44,9 @@ class TourActor:
             extended_searches += extended
             root_distribution: dict = self.mcts.root_distribution()
             D = self.state_manager.complete_action_dist(root_distribution)
-            augmented_boards, augmented_Ds = self.state_manager.augment_training_data(self.state_manager.to_array(actual_board), D)
-            replay_features.extend(augmented_boards)
-            replay_targets.extend(augmented_Ds)
-            print(f"Currently on {len(replay_targets)} training examples, {games} of {self.train_games} games, and {visits} rollouts, {extended_searches} extended searches            ", end="\r")
+            replay_targets.append(D)
+
+            print(f"Currently on {len(replay_targets)} training examples, {games} of {self.train_games} games, and {visits} rollouts with {extended_searches} extended searches            ", end="\r")
 
             if random.random() < self.epsilon + self.epsilon_min:
                 action = list(root_distribution.keys())[random.randint(0, len(root_distribution.keys())-1)]
@@ -54,6 +58,7 @@ class TourActor:
                 if games + self.train_games * episode in self.display_games:
                     self.state_manager.visualize(states)
                 games += 1
+                replay_features.extend(states)
                 actual_board = self.state_manager.new_state()
                 states = [actual_board]
                 visits, extended = self.mcts.run_root(actual_board, True)
@@ -65,27 +70,68 @@ class TourActor:
     def fit(self):
         for episode in range(self.episodes):
             print(episode)
-            train_features, train_targets = self.generate_examples(episode)
+            states, action_visits = self.generate_examples(episode)
+            if self.save_data:
+                file_name = str(self.train_games) + "games_" + str(episode) + ".p"
+                os.makedirs(os.path.dirname(self.data_dir + file_name), exist_ok=True)
+                with open(self.data_dir + file_name, "wb") as file:
+                    pickle.dump((states, action_visits), file)
+
+
+            augmented_features = []
+            augmented_targets = []
+            for feature, target in zip(states, action_visits):
+                augmented_boards, augmented_Ds = self.state_manager.augment_training_data(self.state_manager.to_array(feature), target)
+                augmented_features.extend(augmented_boards)
+                augmented_targets.extend(augmented_Ds)
+
             if episode in self.save_episodes:
-                self.anet.save_params(self.save_dir, "checkpoint_" + str(episode))
+                self.anet.save_params(self.anet_dir, "checkpoint_" + str(episode))
 
-            self.anet.save_params(self.save_dir, "temp")
-            self.anet.train(train_features, train_targets)
+            self.anet.save_params(self.anet_dir, "temp")
+            self.anet.train(augmented_features, augmented_targets)
 
-            untrained_competitor = ProbabilisticPlayer(self.anet.__class__(model_file=(self.save_dir + "temp")), self.state_manager)
+            untrained_competitor = ProbabilisticPlayer(self.anet.__class__(model_file=(self.anet_dir + "temp")), self.state_manager)
+            trained_competitor = ProbabilisticPlayer(self.anet, self.state_manager)
+            print("Running competition with {} games".format(self.competition_games))
+            trained_wins, untrained_wins = compete(trained_competitor, untrained_competitor, self.competition_games, self.state_manager)
+
+            if trained_wins < self.competition_games // 2 + self.win_margin:
+                self.anet.load_params(self.anet_dir + "temp")
+            print("New model won {} of {} games ({}%)".format(trained_wins, self.competition_games, trained_wins * 100 / self.competition_games if self.competition_games > 0 else 0))
+
+            self.anet.save_params(self.anet_dir, "best")
+            self.epsilon *= self.epsilon_decay
+
+        if len(self.save_episodes) > 0:
+            self.anet.save_params(self.anet_dir, "checkpoint_" + str(self.episodes))
+
+    def fit_data(self):
+        files = glob.glob(self.data_dir + "*.p")
+        episode = 0
+        for file in files:
+            print("Loading data from", file)
+            states, action_visits = pickle.load(open(file, "rb"))
+            augmented_features = []
+            augmented_targets = []
+            for feature, target in zip(states, action_visits):
+                augmented_boards, augmented_Ds = self.state_manager.augment_training_data(self.state_manager.to_array(feature), target)
+                augmented_features.extend(augmented_boards)
+                augmented_targets.extend(augmented_Ds)
+            if episode in self.save_episodes:
+                self.anet.save_params(self.anet_dir, "checkpoint_" + str(episode))
+
+            self.anet.save_params(self.anet_dir, "temp")
+            self.anet.train(augmented_features, augmented_targets)
+
+            untrained_competitor = ProbabilisticPlayer(self.anet.__class__(model_file=(self.anet_dir + "temp")), self.state_manager)
             trained_competitor = ProbabilisticPlayer(self.anet, self.state_manager)
             print("Running competition with {} games".format(self.competition_games))
             trained_wins, untrained_wins = compete(trained_competitor, untrained_competitor, self.competition_games, self.state_manager)
 
             if trained_wins < untrained_wins:
-                self.anet.load_params(self.save_dir + "temp")
+                self.anet.load_params(self.anet_dir + "temp")
             print("New model won {} of {} games ({}%)".format(trained_wins, self.competition_games, trained_wins * 100 / self.competition_games if self.competition_games > 0 else 0))
 
-            self.anet.save_params(self.save_dir, "best")
-            self.epsilon *= self.epsilon_decay
-
-        if len(self.save_episodes) > 0:
-            self.anet.save_params(self.save_dir, "checkpoint_" + str(self.episodes))
-
-    def create_training_data(self):
-        pass
+            self.anet.save_params(self.anet_dir, "best")
+            episode += 1
