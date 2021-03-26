@@ -20,9 +20,9 @@ actor:
 
 
 mcts:
-  search_duration: 27.0
+  search_duration: 40.0
   bias: 0.0542
-  c: 0.0885
+  c: 0.08875
   h_confidence: 4
   max_rollouts: 40000
   search_games: 800
@@ -31,8 +31,8 @@ mcts:
 anet:
   lr: 0.00005
   optimizer: "adam"
-  loss: "kl_divegence"
-  model_file: "anets/best/hex/best/kld2.h5"
+  loss: "kl_divergence"
+  model_file: "anets/best/hex/best/kld3.h5"
   activation: "selu"
   cnn_filters: # depth, filter_size, dropout (on layer output!!), padding
     - [148, 3, 0.0, "valid"]

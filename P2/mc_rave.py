@@ -63,7 +63,7 @@ class McRave(Mcts):
             if time.time() - now > search_duration:
                 if rollouts >= num_searches:
                     break
-                now = time.time() + 2 * search_duration / 3
+                now = time.time() - 3 * search_duration / 4
             if rollouts >= self.max_rollouts:
                 break
         if not (extended or self.best_policy_action(self.root) == self.most_visited_child_action(self.root)):

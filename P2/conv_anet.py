@@ -26,9 +26,6 @@ class ConvNet(ActorNet):
             if "model_file" in anet_cfg:
                 self.model = load_model(anet_cfg["model_file"])
                 self.model.optimizer.lr.assign(anet_cfg["lr"])
-                if anet_cfg["loss"] == "kl_divergence":
-                    print("new loss")
-                    self.model.compile(optimizer=self.model.optimizer, loss="kl_divergence")
                 print("Loaded model from", anet_cfg["model_file"])
             else:
                 self.input_boards = Input(shape=(board_size, board_size, input_depth))  # s: batch_size x board_x x board_y
@@ -44,10 +41,7 @@ class ConvNet(ActorNet):
                 opt = type(tf.keras.optimizers.get(anet_cfg["optimizer"]))(learning_rate=anet_cfg["lr"])
 
                 self.model = Model(inputs=self.input_boards, outputs=self.pi)
-                if anet_cfg["loss"] == "general_ce":
-                    self.model.compile(optimizer=opt, loss=general_cross_entropy)
-                else:
-                    self.model.compile(optimizer=opt, loss=anet_cfg["loss"])
+                self.model.compile(optimizer=opt, loss=anet_cfg["loss"])
             self.batch_size = anet_cfg["batch_size"]
             print(self.model.summary())
         else:
