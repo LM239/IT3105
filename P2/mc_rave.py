@@ -32,6 +32,14 @@ class McRave(Mcts):
         if use_og_root:
             self.root = self.og_root
         else:
+            count = 0
+            sum_of_diff = 0
+            for key in self.Q.keys():
+                count += len(self.Q[key].keys())
+                for key2 in self.Q[key].keys():
+                    sum_of_diff += abs(self.amaf_Q[key][key2] - self.Q[key][key2])
+            if count > 0:
+                print("\nActual, average bias: ", sum_of_diff / count)
             self.root = self.new_node(state)
             self.og_root = self.root
         return self.simulate(self.root.state, self.search_duration, self.search_games)
@@ -52,11 +60,10 @@ class McRave(Mcts):
             rollout_actions, z = self.rollout_sim(nodes[-1].state)
             self.backup(nodes, actions + rollout_actions, z)
             rollouts += 1
-            if time.time() - now > self.search_duration:
-                if rollouts < num_searches:
-                    now = time.time()
-                else:
+            if time.time() - now > search_duration:
+                if rollouts >= num_searches:
                     break
+                now = time.time() + 2 * search_duration / 3
             if rollouts >= self.max_rollouts:
                 break
         if not (extended or self.best_policy_action(self.root) == self.most_visited_child_action(self.root)):
@@ -75,7 +82,7 @@ class McRave(Mcts):
                 return nodes, actions
             nodes.append(node)
             action = self.tree_policy(node, self.c)
-            if action is None: # We are in an end-state. Terminating
+            if action is None:  # We are in an end-state. Terminating
                 break
             node = node.children[node.child_actions.index(action)] if action in node.child_actions else None
             state = node.state if node is not None else self.state_manager.do_action(state, action)
@@ -87,7 +94,7 @@ class McRave(Mcts):
         return nodes, actions
 
     def new_node(self, state, end_state: bool = False):
-        node_actions = [] if end_state else self.state_manager.get_actions(state, known_not_endstate=not end_state)
+        node_actions = [] if end_state else self.state_manager.get_actions(state, known_not_endstate=True)
         confidence = 0 if end_state else self.min_confidence
         node = Node(state, node_actions, confidence)
         return node
@@ -107,41 +114,27 @@ class McRave(Mcts):
     def backup(self, nodes: List[Node], actions: List[int], z):
         if len(nodes) > len(actions):
             nodes.pop()
-            self.Q[nodes[-1]][actions[-1]] = z
-            self.amaf_Q[nodes[-1]][actions[-1]] = z
+            self.Q[str(nodes[-1].state)][actions[-1]] = z
+            self.amaf_Q[str(nodes[-1].state)][actions[-1]] = z
         for t, node in enumerate(nodes):
             node.N[actions[t]] += 1
             node.sum_N += 1
-            self.Q[node][actions[t]] += (z - self.Q[node][actions[t]]) / node.N[actions[t]]
+            self.Q[str(node.state)][actions[t]] += (z - self.Q[str(node.state)][actions[t]]) / node.N[actions[t]]
             for u in range(t + 2, len(actions), 2):
                 node.amaf_N[actions[u]] += 1
-                self.amaf_Q[node][actions[u]] += (z - self.amaf_Q[node][actions[u]]) / node.amaf_N[actions[u]]
+                self.amaf_Q[str(node.state)][actions[u]] += (z - self.amaf_Q[str(node.state)][actions[u]]) / node.amaf_N[actions[u]]
 
     def evaluate(self, node, action, c):
         beta = node.amaf_N[action] / (node.N[action] + node.amaf_N[action] + 4 * node.N[action] * node.amaf_N[action] * self.bias ** 2)
-        return (1 - beta) * self.Q[node][action] + beta * self.amaf_Q[node][action] + c * sqrt(log(node.sum_N) / node.N[action])
+        return (1 - beta) * self.Q[str(node.state)][action] + beta * self.amaf_Q[str(node.state)][action] + c * sqrt(log(node.sum_N) / node.N[action])
 
-    def tree_policy(self, node,  c):  # 'highly explorative'
-        best_a = []
+    def tree_policy(self, node,  c):
+        if len(node.legal_actions) == 0:
+            return None
         if self.state_manager.p1_to_move(node.state):
-            best = float("-inf")
-            for action in node.legal_actions:
-                score = self.evaluate(node, action, c)
-                if score >= best:
-                    if score > best:
-                        best_a = []
-                    best_a.append(action)
-                    best = score
+            return max(node.legal_actions, key=lambda a: self.evaluate(node, a, c))
         else:
-            best = float("inf")
-            for action in node.legal_actions:
-                score = self.evaluate(node, action, -c)
-                if score <= best:
-                    if score < best:
-                        best_a = []
-                    best_a.append(action)
-                    best = score
-        return best_a[random.randint(0, len(best_a) - 1)] if len(best_a) > 0 else None
+            return min(node.legal_actions, key=lambda a: self.evaluate(node, a, -c))
 
     def root_distribution(self):
         return {action: self.root.N[action] / self.root.sum_N for action in self.root.legal_actions}
@@ -153,32 +146,12 @@ class McRave(Mcts):
         masked_out = np.multiply(net_out, mask) ** 2
         masked_out = np.divide(masked_out, np.sum(masked_out))
         return np.random.choice(np.arange(len(masked_out)), p=masked_out)
-        #         actions = self.state_manager.get_actions(state)
-        #         return actions[random.randint(0, len(actions) - 1)]
 
     def best_policy_action(self, node):
-        best_a = None
         if self.state_manager.p1_to_move(node.state):
-            best = float("-inf")
-            for action in node.legal_actions:
-                score = self.Q[node][action]
-                if score > best:
-                    best_a = action
-                    best = score
+            return max(node.legal_actions, key=lambda a: self.Q[str(node.state)][a])
         else:
-            best = float("inf")
-            for action in node.legal_actions:
-                score = self.Q[node][action]
-                if score < best:
-                    best_a = action
-                    best = score
-        return best_a
+            return min(node.legal_actions, key=lambda a: self.Q[str(node.state)][a])
 
     def most_visited_child_action(self, node):
-        best_a = None
-        best_n = 0
-        for action in node.child_actions:
-            if node.N[action] > best_n:
-                best_a = action
-                best_n = node.N[action]
-        return best_a
+        return max(node.child_actions, key=lambda a: node.N[a])

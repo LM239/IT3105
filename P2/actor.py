@@ -80,11 +80,12 @@ class TourActor:
             if trained_wins < untrained_wins:
                 self.anet.load_params(self.save_dir + "temp")
             print("New model won {} of {} games ({}%)".format(trained_wins, self.competition_games, trained_wins * 100 / self.competition_games if self.competition_games > 0 else 0))
+
+            self.anet.save_params(self.save_dir, "best")
             self.epsilon *= self.epsilon_decay
 
         if len(self.save_episodes) > 0:
             self.anet.save_params(self.save_dir, "checkpoint_" + str(self.episodes))
-        self.anet.save_params(self.save_dir, "best")
 
     def create_training_data(self):
         pass

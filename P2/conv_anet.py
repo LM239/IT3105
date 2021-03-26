@@ -5,6 +5,7 @@ import tensorflow as tf
 from keras.layers import *
 import os
 
+
 class ConvNet(ActorNet):
     def __init__(self, anet_cfg=None, board_size: int = 0, output_dim: int = 0, input_depth: int = 0, model_file: str = None):
         self.model = None
@@ -25,6 +26,9 @@ class ConvNet(ActorNet):
             if "model_file" in anet_cfg:
                 self.model = load_model(anet_cfg["model_file"])
                 self.model.optimizer.lr.assign(anet_cfg["lr"])
+                if anet_cfg["loss"] == "kl_divergence":
+                    print("new loss")
+                    self.model.compile(optimizer=self.model.optimizer, loss="kl_divergence")
                 print("Loaded model from", anet_cfg["model_file"])
             else:
                 self.input_boards = Input(shape=(board_size, board_size, input_depth))  # s: batch_size x board_x x board_y
@@ -40,17 +44,20 @@ class ConvNet(ActorNet):
                 opt = type(tf.keras.optimizers.get(anet_cfg["optimizer"]))(learning_rate=anet_cfg["lr"])
 
                 self.model = Model(inputs=self.input_boards, outputs=self.pi)
-                self.model.compile(optimizer=opt, loss=anet_cfg["loss"])
+                if anet_cfg["loss"] == "general_ce":
+                    self.model.compile(optimizer=opt, loss=general_cross_entropy)
+                else:
+                    self.model.compile(optimizer=opt, loss=anet_cfg["loss"])
             self.batch_size = anet_cfg["batch_size"]
             print(self.model.summary())
         else:
             self.load_params(model_file)
 
-    def train(self, features, targets):
+    def train(self, features, targets, epochs=1):
         self.model.fit(
             tf.convert_to_tensor(features),  # training data
             tf.convert_to_tensor(targets),  # training targets
-            epochs=1,
+            epochs=epochs,
             batch_size=self.batch_size
         )
 
