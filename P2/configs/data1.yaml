@@ -10,32 +10,32 @@ sim_world:
 actor:
   episodes: 20
   num_checkpoints: 21
-  train_games: 70
-  competition_games: 0
-  anet_dir: "anets/local/hex/6x6/"
+  train_games: 60
+  competition_games: 400
+  anet_dir: "anets/local/hex/6x6/eps166/"
   save_data: True
-  data_dir: "data/eps_022/"
+  data_dir: "data/eps_166/"
   win_margin: 5
   epsilon: 0.0
   epsilon_decay: 0.97
-  epsilon_min: 0.22
+  epsilon_min: 0.166
   display_games: []
 
 
 mcts:
   search_duration: 40.0
   bias: 0.0542
-  c: 0.08875
+  c: 0.0885
   h_confidence: 4
   max_rollouts: 40000
-  search_games: 1
+  search_games: 900
 
 
 anet:
   lr: 0.00005
   optimizer: "adam"
   loss: "kl_divergence"
-  model_file: "anets/best/hex/6x6/kld3.h5"
+  model_file: "anets/best/hex/6x6/best.h5"
   activation: "selu"
   cnn_filters: # depth, filter_size, dropout (on layer output!!), padding
     - [148, 3, 0.0, "valid"]

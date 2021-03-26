@@ -8,27 +8,27 @@ sim_world:
   size: 6
 
 actor:
-  episodes: 16
-  num_checkpoints: 5
-  train_games: 10
+  episodes: 20
+  num_checkpoints: 21
+  train_games: 60
   competition_games: 400
-  anet_dir: "anets/local/hex/6x6test/"
-  save_data: False
-  data_dir: "data/eps_022/"
+  anet_dir: "anets/local/hex/6x6/eps25/"
+  save_data: True
+  data_dir: "data/eps_25/"
   win_margin: 5
   epsilon: 0.0
   epsilon_decay: 0.97
-  epsilon_min: 0.22
+  epsilon_min: 0.25
   display_games: []
 
 
 mcts:
   search_duration: 40.0
   bias: 0.0542
-  c: 0.08875
+  c: 0.0885
   h_confidence: 4
   max_rollouts: 40000
-  search_games: 800
+  search_games: 900
 
 
 anet:
@@ -50,7 +50,3 @@ anet:
   #  - [256, 0.2]
   batch_size: 64
   allow_cuda: False
-
-
-# 3: 0.09 kld loss
-# 4: 0.09
