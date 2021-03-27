@@ -58,7 +58,7 @@ class TourActor:
                 if games + self.train_games * episode in self.display_games:
                     self.state_manager.visualize(states)
                 games += 1
-                replay_features.extend(states)
+                replay_features.extend(states[:-1])
                 actual_board = self.state_manager.new_state()
                 states = [actual_board]
                 visits, extended = self.mcts.run_root(actual_board, True)
@@ -72,7 +72,7 @@ class TourActor:
             print(episode)
             states, action_visits = self.generate_examples(episode)
             if self.save_data:
-                file_name = str(self.train_games) + "games_" + str(episode) + ".p"
+                file_name = "eps_" + self.epsilon_min + "_" + str(self.train_games) + "games_" + str(episode) + ".p"
                 os.makedirs(os.path.dirname(self.data_dir + file_name), exist_ok=True)
                 with open(self.data_dir + file_name, "wb") as file:
                     pickle.dump((states, action_visits), file)
@@ -114,6 +114,13 @@ class TourActor:
             states, action_visits = pickle.load(open(file, "rb"))
             augmented_features = []
             augmented_targets = []
+            if (len(states) > len(action_visits)):
+                states = [state for state in states if not self.state_manager.in_end_state(state)]
+                print(len(states), len(action_visits))
+                with open(file, "wb") as file:
+                    pickle.dump((states, action_visits), file)
+                    exit(0)
+
             for feature, target in zip(states, action_visits):
                 augmented_boards, augmented_Ds = self.state_manager.augment_training_data(self.state_manager.to_array(feature), target)
                 augmented_features.extend(augmented_boards)

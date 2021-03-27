@@ -30,8 +30,14 @@ class McRave(Mcts):
 
     def run_root(self, state: Any, use_og_root=False):
         if sys.getsizeof(self.amaf_Q) + sys.getsizeof(self.Q) > 2 * 10 ** 9:
-            self.Q = defaultdict(lambda: defaultdict(lambda: 0.5))
-            self.amaf_Q = defaultdict(lambda: defaultdict(lambda: 0.5))
+            print("\nResetting dicts\n")
+            for key in self.amaf_Q.keys():
+                if key.count("(0, 0)") < 28:
+                    del self.amaf_Q[key]
+            for key in self.Q.keys():
+                if key.count("(0, 0)") < 28:
+                    del self.Q[key]
+            print("New, total dicts size: ", sys.getsizeof(self.amaf_Q) + sys.getsizeof(self.Q))
         if use_og_root:
             self.root = self.og_root
         else:
