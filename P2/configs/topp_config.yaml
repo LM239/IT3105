@@ -1,10 +1,10 @@
 display_rate: 0.7
 allow_cuda: false
 topp:
-  games_g: 4
+  games_g: 400
   display_games: 4
   display_games_pairs:
-    - [3epochs.h5, best2.h5]
+    - []
   #directory: "anets\\local\\hex\\6x6\\"
   directory: "anets\\best\\hex\\6x6\\"
   player_type: "probabilistic"

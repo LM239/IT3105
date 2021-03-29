@@ -9,7 +9,7 @@ from interfaces.Node import Node
 from interfaces.mcts import Mcts
 from interfaces.actornet import ActorNet
 from math import sqrt, log
-
+import gc
 class McRave(Mcts):
 
     def __init__(self, mcts_cfg, state_manager, anet, node_search=default_search):
@@ -29,7 +29,7 @@ class McRave(Mcts):
         self.anet: ActorNet = anet
 
     def run_root(self, state: Any, use_og_root=False):
-        if sys.getsizeof(self.amaf_Q) + sys.getsizeof(self.Q) > 2 * 10 ** 9:
+        if sys.getsizeof(self.amaf_Q) + sys.getsizeof(self.Q) > 1.5 * 10 ** 9:
             print("\nResetting dicts\n")
             for key in self.amaf_Q.keys():
                 if key.count("(0, 0)") < 28:
@@ -49,6 +49,10 @@ class McRave(Mcts):
                     sum_of_diff += abs(self.amaf_Q[key][key2] - self.Q[key][key2])
             if count > 0:
                 print("\nActual, average bias: ", sum_of_diff / count)
+                self.bias = sum_of_diff / count + 0.001
+            del self.og_root
+            del self.root
+            print("\ngc freed {} objects".format(gc.collect()))
             self.root = self.new_node(state)
             self.og_root = self.root
         return self.simulate(self.root.state, self.search_duration, self.search_games)
