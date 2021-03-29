@@ -49,7 +49,10 @@ class TourActor:
             print(f"Currently on {len(replay_targets)} training examples, {games} of {self.train_games} games, and {visits} rollouts with {extended_searches} extended searches            ", end="\r")
 
             if random.random() < self.epsilon + self.epsilon_min:
-                action = list(root_distribution.keys())[random.randint(0, len(root_distribution.keys())-1)]
+                p = np.array(list(root_distribution.values()))
+                p = np.sqrt(p)
+                p = p / np.sum(p)
+                action = np.random.choice(list(root_distribution.keys()), p=p)
             else:
                 action = np.random.choice(list(root_distribution.keys()), p=list(root_distribution.values()))
             actual_board = self.state_manager.do_action(actual_board, action)
