@@ -60,7 +60,7 @@ class McRave(Mcts):
             pickle.dump(self.Q, file)
 
     def run_root(self, state: Any, use_og_root=False):
-        if sys.getsizeof(self.amaf_Q) + sys.getsizeof(self.Q) > 1.75 * 10 ** 8:
+        if len(self.amaf_Q.keys()) + len(self.Q.keys()) > 5.5 * 10**6:
             print("\nPruning dicts")
             amaf_keys = []
             for key in self.amaf_Q.keys():
