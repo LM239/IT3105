@@ -75,11 +75,11 @@ class TourActor:
             print(episode)
             states, action_visits = self.generate_examples(episode)
             if self.save_data:
-                file_name = "eps_" + str(self.epsilon_min) + "_" + str(self.train_games) + "games_" + str(episode) + ".p"
+                file_name = "eps_" + str(self.epsilon_min).replace(".", "") + "_" + str(self.train_games) + "games_" + str(episode) + ".p"
                 os.makedirs(os.path.dirname(self.data_dir + file_name), exist_ok=True)
                 with open(self.data_dir + file_name, "wb") as file:
                     pickle.dump((states, action_visits), file)
-
+                self.mcts.save_Qs(self.data_dir)
 
             augmented_features = []
             augmented_targets = []

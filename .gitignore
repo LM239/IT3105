@@ -8,6 +8,7 @@
 .idea/**/IT3708.iml
 
 P2/anets/local/**/*.h5
+P2/**/q_dicts/*.p
 
 # Generated files
 .idea/**/contentModel.xml

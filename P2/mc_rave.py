@@ -10,12 +10,32 @@ from interfaces.mcts import Mcts
 from interfaces.actornet import ActorNet
 from math import sqrt, log
 import gc
+import pickle
+import os
+
+
+def dd():
+    return defaultdict(dd2)
+
+
+def dd2():
+    return 0.5
+
+
 class McRave(Mcts):
 
     def __init__(self, mcts_cfg, state_manager, anet, node_search=default_search):
         self.bias: float = mcts_cfg["bias"]
-        self.Q = defaultdict(lambda: defaultdict(lambda: 0.5))
-        self.amaf_Q = defaultdict(lambda: defaultdict(lambda: 0.5))
+        self.Q = defaultdict(dd)
+        self.amaf_Q = defaultdict(dd)
+
+        try:
+            self.amaf_Q = pickle.load(open("data/newrand_eps175/q_dicts/amaf_q.p", "rb"))
+            self.Q = pickle.load(open("data/newrand_eps175/q_dicts/q.p", "rb"))
+            print("Loaded amaf_q and Q dict with {} keys, and {} keys, respectively ({} bytes (not accurate))".format(len(self.amaf_Q), len(self.Q), sys.getsizeof(self.amaf_Q) + sys.getsizeof(self.Q)))
+        except FileNotFoundError:
+            print("Could not load q_dicts")
+            pass
 
         self.search_games = mcts_cfg["search_games"]
         self.min_confidence = mcts_cfg["h_confidence"]
@@ -28,16 +48,35 @@ class McRave(Mcts):
         self.c = mcts_cfg["c"]
         self.anet: ActorNet = anet
 
+
+    dict1 = defaultdict(dd)
+
+    def save_Qs(self, dir):
+        os.makedirs(os.path.dirname(dir + "q_dicts/amaf_q.p"), exist_ok=True)
+        with open(dir + "q_dicts/amaf_q.p", "wb") as file:
+            pickle.dump(self.amaf_Q, file)
+        os.makedirs(os.path.dirname(dir + "q_dicts/q.p"), exist_ok=True)
+        with open(dir + "q_dicts/q.p", "wb") as file:
+            pickle.dump(self.Q, file)
+
     def run_root(self, state: Any, use_og_root=False):
-        if sys.getsizeof(self.amaf_Q) + sys.getsizeof(self.Q) > 1.5 * 10 ** 9:
-            print("\nResetting dicts\n")
+        if sys.getsizeof(self.amaf_Q) + sys.getsizeof(self.Q) > 1.75 * 10 ** 8:
+            print("\nPruning dicts")
+            amaf_keys = []
             for key in self.amaf_Q.keys():
                 if key.count("(0, 0)") < 28:
-                    del self.amaf_Q[key]
+                    amaf_keys.append(key)
+                    del self.Q[key]
+            for key in amaf_keys:
+                del self.amaf_Q[key]
+            del amaf_keys
+            q_keys = []
             for key in self.Q.keys():
                 if key.count("(0, 0)") < 28:
-                    del self.Q[key]
-            print("New, total dicts size: ", sys.getsizeof(self.amaf_Q) + sys.getsizeof(self.Q))
+                    q_keys.append(key)
+            for key in q_keys:
+                del self.Q[key]
+            print("New amaf_q and Q dicts have {} keys, and {} keys, respectively ({} bytes (not accurate))".format(len(self.amaf_Q), len(self.Q), sys.getsizeof(self.amaf_Q) + sys.getsizeof(self.Q)))
         if use_og_root:
             self.root = self.og_root
         else:
@@ -50,9 +89,7 @@ class McRave(Mcts):
             if count > 0:
                 print("\nActual, average bias: ", sum_of_diff / count)
                 self.bias = sum_of_diff / count + 0.001
-            del self.og_root
-            del self.root
-            print("\ngc freed {} objects".format(gc.collect()))
+            print("\ngc freed {} objects".format(self.delete_tree()))
             self.root = self.new_node(state)
             self.og_root = self.root
         return self.simulate(self.root.state, self.search_duration, self.search_games)
@@ -168,3 +205,18 @@ class McRave(Mcts):
 
     def most_visited_child_action(self, node):
         return max(node.child_actions, key=lambda a: node.N[a])
+
+    def delete_tree(self):
+        stack: List[Node] = [self.root] if self.root is not None else []
+        found = defaultdict(lambda: False)
+        while len(stack) > 0:
+            v = stack.pop(0)
+            if not found[v]:
+                found[v] = True
+                stack.extend(v.children)
+                del v
+        del stack
+        del found
+        del self.root
+
+        return gc.collect()

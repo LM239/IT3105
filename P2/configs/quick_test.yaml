@@ -1,0 +1,50 @@
+---
+display:
+  display_rate: 0.55 # in seconds
+
+#SimWorld args:
+sim_world:
+  world: "hex"
+  size: 6
+
+actor:
+  episodes: 3
+  num_checkpoints: 0
+  train_games: 3
+  competition_games: 0
+  anet_dir: "anets/local/test_garbage/"
+  save_data: False
+  win_margin: 50
+  epsilon: 0.0
+  epsilon_decay: 0.97
+  epsilon_min: 0.175
+  display_games: []
+
+
+mcts:
+  search_duration: 1.0
+  bias: 0.05
+  c: 0.0885
+  h_confidence: 4
+  max_rollouts: 40000
+  search_games: 1
+
+anet:
+  lr: 0.00005
+  optimizer: "adam"
+  loss: "kl_divergence"
+  model_file: "anets/local/hex/6x6/eps125/best.h5"
+  activation: "selu"
+  cnn_filters: # depth, filter_size, dropout (on layer output!!), padding
+    - [148, 3, 0.0, "valid"]
+    - [148, 3, 0.0, "same"]
+    - [148, 3, 0.0, "same"]
+    - [148, 3, 0.0, "same"]
+    - [148, 3, 0.05, "same"]
+    - [12, 1, 0.01, "same"]
+  dense_layers: # depth, dropout
+    - [64, 0.0]
+  #  - [512, 0.2]
+  #  - [256, 0.2]
+  batch_size: 64
+  allow_cuda: False
