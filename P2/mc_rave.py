@@ -60,22 +60,20 @@ class McRave(Mcts):
             pickle.dump(self.Q, file)
 
     def run_root(self, state: Any, use_og_root=False):
-        if len(self.amaf_Q.keys()) + len(self.Q.keys()) > 5.5 * 10**6:
+        if len(self.amaf_Q.keys()) + len(self.Q.keys()) > 4.5 * 10**6:
             print("\nPruning dicts")
-            amaf_keys = []
+            new_amaf_dict = defaultdict(dd)
             for key in self.amaf_Q.keys():
-                if key.count("(0, 0)") < 28:
-                    amaf_keys.append(key)
-                    del self.Q[key]
-            for key in amaf_keys:
-                del self.amaf_Q[key]
-            del amaf_keys
-            q_keys = []
+                if key.count("(0, 0)") >= 28:
+                    new_amaf_dict[key] = self.amaf_Q[key]
+            del self.amaf_Q
+            self.amaf_Q = new_amaf_dict
+            new_q_dict = defaultdict(dd)
             for key in self.Q.keys():
-                if key.count("(0, 0)") < 28:
-                    q_keys.append(key)
-            for key in q_keys:
-                del self.Q[key]
+                if key.count("(0, 0)") >= 28:
+                    new_q_dict[key] = self.Q[key]
+            del self.Q
+            self.Q = new_q_dict
             print("New amaf_q and Q dicts have {} keys, and {} keys, respectively ({} bytes (not accurate))".format(len(self.amaf_Q), len(self.Q), sys.getsizeof(self.amaf_Q) + sys.getsizeof(self.Q)))
         if use_og_root:
             self.root = self.og_root
