@@ -25,14 +25,21 @@ def dd2():
 class McRave(Mcts):
 
     def __init__(self, mcts_cfg, state_manager, anet, node_search=default_search):
-        self.bias: float = mcts_cfg["bias"]
+        self.biases = [[mcts_cfg["bias"], 1]]
         self.Q = defaultdict(dd)
         self.amaf_Q = defaultdict(dd)
 
         try:
-            self.amaf_Q = pickle.load(open("data/newrand_eps175/q_dicts/amaf_q.p", "rb"))
-            self.Q = pickle.load(open("data/newrand_eps175/q_dicts/q.p", "rb"))
+            self.amaf_Q = pickle.load(open("data/newrand_eps_2/q_dicts/amaf_q.p", "rb"))
+            self.Q = pickle.load(open("data/newrand_eps_2/q_dicts/q.p", "rb"))
             print("Loaded amaf_q and Q dict with {} keys, and {} keys, respectively ({} bytes (not accurate))".format(len(self.amaf_Q), len(self.Q), sys.getsizeof(self.amaf_Q) + sys.getsizeof(self.Q)))
+            for state in self.Q.keys():
+                level = 36 - state.count("(0, 0)")
+                if level >= len(self.biases):
+                    self.biases.extend([[mcts_cfg["bias"], 1] for i in range(level - len(self.biases) + 1)])
+                for action in self.Q[state].keys():
+                    self.update_bias(state, action, level)
+            print("using biases ", self.biases)
         except FileNotFoundError:
             print("Could not load q_dicts")
             pass
@@ -48,9 +55,6 @@ class McRave(Mcts):
         self.c = mcts_cfg["c"]
         self.anet: ActorNet = anet
 
-
-    dict1 = defaultdict(dd)
-
     def save_Qs(self, dir):
         os.makedirs(os.path.dirname(dir + "q_dicts/amaf_q.p"), exist_ok=True)
         with open(dir + "q_dicts/amaf_q.p", "wb") as file:
@@ -59,8 +63,19 @@ class McRave(Mcts):
         with open(dir + "q_dicts/q.p", "wb") as file:
             pickle.dump(self.Q, file)
 
+    def update_bias(self, state: str, action: int, level: int):
+        new_bias = abs(self.Q[state][action] - self.amaf_Q[state][action])
+        if level == len(self.biases):
+            self.biases.append([new_bias, 1])
+        else:
+            prev_bias, count = self.biases[level]
+            if count < 2 ** 16:
+                count += 1
+            prev_bias += (new_bias - prev_bias) / count
+            self.biases[level] = [prev_bias, count]
+
     def run_root(self, state: Any, use_og_root=False):
-        if len(self.amaf_Q.keys()) + len(self.Q.keys()) > 4.5 * 10**6:
+        if len(self.amaf_Q.keys()) + len(self.Q.keys()) > 6.0 * 10**6:
             print("\nPruning dicts")
             new_amaf_dict = defaultdict(dd)
             for key in self.amaf_Q.keys():
@@ -78,17 +93,8 @@ class McRave(Mcts):
         if use_og_root:
             self.root = self.og_root
         else:
-            count = 0
-            sum_of_diff = 0
-            for key in self.Q.keys():
-                count += len(self.Q[key].keys())
-                for key2 in self.Q[key].keys():
-                    sum_of_diff += abs(self.amaf_Q[key][key2] - self.Q[key][key2])
-            if count > 0:
-                print("\nActual, average bias: ", sum_of_diff / count)
-                self.bias = sum_of_diff / count + 0.001
             print("\ngc freed {} objects".format(self.delete_tree()))
-            self.root = self.new_node(state)
+            self.root = self.new_node(state, 0)
             self.og_root = self.root
         return self.simulate(self.root.state, self.search_duration, self.search_games)
 
@@ -97,7 +103,7 @@ class McRave(Mcts):
         if action in self.root.child_actions:
             self.root = self.root.children[self.root.child_actions.index(action)]
         else:
-            self.root = self.new_node(state)
+            self.root = self.new_node(state, self.root.level + 1)
         return self.simulate(self.root.state, self.search_duration, self.search_games)
 
     def simulate(self, state, search_duration, num_searches, extended=False):
@@ -124,7 +130,7 @@ class McRave(Mcts):
         nodes: List[Node] = []
         while True:  # Stops if game is over
             if node is None:
-                node = self.new_node(state, self.state_manager.in_end_state(state))
+                node = self.new_node(state, nodes[-1].level + 1, self.state_manager.in_end_state(state))
                 self.insert_node(nodes[-1], node, actions[-1])
                 nodes.append(node)
                 return nodes, actions
@@ -141,10 +147,10 @@ class McRave(Mcts):
                     self.insert_node(nodes[-1], node, self.state_manager.find_action(nodes[-1].state, state))
         return nodes, actions
 
-    def new_node(self, state, end_state: bool = False):
+    def new_node(self, state, level, end_state: bool = False):
         node_actions = [] if end_state else self.state_manager.get_actions(state, known_not_endstate=True)
         confidence = 0 if end_state else self.min_confidence
-        node = Node(state, node_actions, confidence)
+        node = Node(state, node_actions, confidence, level)
         return node
 
     def insert_node(self, parent_node: Node, child_node: Node, child_action: int):
@@ -171,9 +177,10 @@ class McRave(Mcts):
             for u in range(t + 2, len(actions), 2):
                 node.amaf_N[actions[u]] += 1
                 self.amaf_Q[str(node.state)][actions[u]] += (z - self.amaf_Q[str(node.state)][actions[u]]) / node.amaf_N[actions[u]]
+            self.update_bias(str(node.state), actions[t], node.level)
 
     def evaluate(self, node, action, c):
-        beta = node.amaf_N[action] / (node.N[action] + node.amaf_N[action] + 4 * node.N[action] * node.amaf_N[action] * self.bias ** 2)
+        beta = node.amaf_N[action] / (node.N[action] + node.amaf_N[action] + 4 * node.N[action] * node.amaf_N[action] * self.biases[node.level][0] ** 2)
         return (1 - beta) * self.Q[str(node.state)][action] + beta * self.amaf_Q[str(node.state)][action] + c * sqrt(log(node.sum_N) / node.N[action])
 
     def tree_policy(self, node,  c):

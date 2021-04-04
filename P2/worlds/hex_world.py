@@ -222,10 +222,10 @@ class HexWorld(AdvancedSimWorld):
     def to_array(self, state):
         shape = (self.size + 2, self.size + 2)
         player1_array = np.zeros(shape=shape, dtype=float32)
-        player1_array[0] = np.ones(shape=(self.size + 2))
+        player1_array[0] = np.ones(shape=(self.size + 2), dtype=float32)
         player1_array[0][0] = 0
         player1_array[0][self.size + 1] = 0
-        player1_array[self.size + 1] = np.ones(shape=(self.size + 2))
+        player1_array[self.size + 1] = np.ones(shape=(self.size + 2), dtype=float32)
         player1_array[self.size + 1][0] = 0
         player1_array[self.size + 1][self.size + 1] = 0
         player2_array = np.transpose(np.copy(player1_array))
@@ -355,9 +355,9 @@ class HexWorld(AdvancedSimWorld):
                                 in_move_kill_bridge[path2_y + 1][path2_x + 1] = 1
                             # else: # not in move owns end, origin, and path1 -> nothing to do
                             #    pass
-        empty_array = np.ones(shape=(self.size + 2)) - player1_array - player2_array
-        empty_array[0] = np.zeros(shape=(self.size + 2))
-        empty_array[self.size + 1] = np.zeros(shape=(self.size + 2))
+        empty_array = np.ones(shape=(self.size + 2), dtype=float32) - player1_array - player2_array
+        empty_array[0] = np.zeros(shape=(self.size + 2), dtype=float32)
+        empty_array[self.size + 1] = np.zeros(shape=(self.size + 2), dtype=float32)
         arrays = np.array([
             empty_array,
             player1_array,

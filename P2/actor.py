@@ -139,7 +139,7 @@ class TourActor:
             print("Running competition with {} games".format(self.competition_games))
             trained_wins, untrained_wins = compete(trained_competitor, untrained_competitor, self.competition_games, self.state_manager)
 
-            if trained_wins < untrained_wins:
+            if trained_wins < self.competition_games // 2 + self.win_margin:
                 self.anet.load_params(self.anet_dir + "temp")
             print("New model won {} of {} games ({}%)".format(trained_wins, self.competition_games, trained_wins * 100 / self.competition_games if self.competition_games > 0 else 0))
 

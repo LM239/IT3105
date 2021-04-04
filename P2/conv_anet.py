@@ -49,14 +49,14 @@ class ConvNet(ActorNet):
 
     def train(self, features, targets, epochs=1):
         self.model.fit(
-            tf.convert_to_tensor(features),  # training data
-            tf.convert_to_tensor(targets),  # training targets
+            tf.convert_to_tensor(features, dtype=tf.float32),  # training data
+            tf.convert_to_tensor(targets, dtype=tf.float32),  # training targets
             epochs=epochs,
             batch_size=self.batch_size
         )
 
     def forward(self, input):
-        input = tf.convert_to_tensor([input])
+        input = tf.convert_to_tensor([input], dtype=tf.float32)
         return self.model(input, training=False)
 
     def save_params(self, path, file_name=None):
