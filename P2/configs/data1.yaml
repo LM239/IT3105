@@ -25,10 +25,10 @@ actor:
 mcts:
   search_duration: 70.0
   bias: 0.1
-  c: 0.085
+  c: 0.0825
   h_confidence: 4
   max_rollouts: 40000
-  search_games: 2000
+  search_games: 4000
 
 anet:
   lr: 0.00005

@@ -55,6 +55,7 @@ class ConvNet(ActorNet):
             batch_size=self.batch_size
         )
 
+    @tf.function
     def forward(self, input):
         input = tf.convert_to_tensor([input], dtype=tf.float32)
         return self.model(input, training=False)
