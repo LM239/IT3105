@@ -1,0 +1,49 @@
+---
+display:
+  display_rate: 0.55 # in seconds
+
+#SimWorld args:
+sim_world:
+  world: "hex"
+  size: 3
+
+actor:
+  episodes: 5
+  num_checkpoints: 2
+  train_games: 1
+  competition_games: 0
+  anet_dir: "anets/local/hex/3x3/"
+  save_data: False
+  data_dir: "data/newrand_2000g_eps22/"
+  win_margin: 0
+  epsilon: 0.0
+  epsilon_decay: 0.97
+  epsilon_min: 0.22
+  display_games: []
+
+
+mcts:
+  search_duration: 0.5
+  bias: 0.1
+  c: 0.0825
+  h_confidence: 4
+  max_rollouts: 40000
+  search_games: 50
+
+anet:
+  lr: 0.00005
+  optimizer: "adagrad"
+  loss: "kl_divergence"
+  #model_file: "anets/best/hex/6x6/newest_eps2.h5"
+  activation: "tanh"
+  cnn_filters: # depth, filter_size, dropout (on layer output!!), padding
+    - [148, 3, 0.0, "valid"]
+    - [148, 3, 0.0, "same"]
+    - [148, 3, 0.05, "same"]
+    - [12, 1, 0.01, "same"]
+  dense_layers: # depth, dropout
+    - [64, 0.0]
+  #  - [512, 0.2]
+  #  - [256, 0.2]
+  batch_size: 16
+  allow_cuda: False

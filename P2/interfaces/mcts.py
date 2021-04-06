@@ -1,5 +1,6 @@
 from typing import Any
 
+# Interface for mcts search
 class Mcts:
 
     def root_distribution(self):
