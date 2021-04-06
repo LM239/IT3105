@@ -49,7 +49,10 @@ class TourActor:
             print(f"Currently on {len(replay_targets)} training examples, {games} of {self.train_games} games, and {visits} rollouts with {extended_searches} extended searches            ", end="\r")
 
             if random.random() < self.epsilon + self.epsilon_min:
-                action = list(root_distribution.keys())[random.randint(0, len(root_distribution.keys())-1)]
+                p = np.array(list(root_distribution.values()))
+                p = np.sqrt(p)
+                p = p / np.sum(p)
+                action = np.random.choice(list(root_distribution.keys()), p=p)
             else:
                 action = np.random.choice(list(root_distribution.keys()), p=list(root_distribution.values()))
             actual_board = self.state_manager.do_action(actual_board, action)
@@ -58,7 +61,7 @@ class TourActor:
                 if games + self.train_games * episode in self.display_games:
                     self.state_manager.visualize(states)
                 games += 1
-                replay_features.extend(states)
+                replay_features.extend(states[:-1])
                 actual_board = self.state_manager.new_state()
                 states = [actual_board]
                 visits, extended = self.mcts.run_root(actual_board, True)
@@ -72,11 +75,11 @@ class TourActor:
             print(episode)
             states, action_visits = self.generate_examples(episode)
             if self.save_data:
-                file_name = str(self.train_games) + "games_" + str(episode) + ".p"
+                file_name = "eps_" + str(self.epsilon_min).replace(".", "") + "_" + str(self.train_games) + "games_" + str(episode) + ".p"
                 os.makedirs(os.path.dirname(self.data_dir + file_name), exist_ok=True)
                 with open(self.data_dir + file_name, "wb") as file:
                     pickle.dump((states, action_visits), file)
-
+                self.mcts.save_Qs(self.data_dir)
 
             augmented_features = []
             augmented_targets = []
@@ -114,6 +117,13 @@ class TourActor:
             states, action_visits = pickle.load(open(file, "rb"))
             augmented_features = []
             augmented_targets = []
+            if (len(states) > len(action_visits)):
+                states = [state for state in states if not self.state_manager.in_end_state(state)]
+                print(len(states), len(action_visits))
+                with open(file, "wb") as file:
+                    pickle.dump((states, action_visits), file)
+                    exit(0)
+
             for feature, target in zip(states, action_visits):
                 augmented_boards, augmented_Ds = self.state_manager.augment_training_data(self.state_manager.to_array(feature), target)
                 augmented_features.extend(augmented_boards)
@@ -129,7 +139,7 @@ class TourActor:
             print("Running competition with {} games".format(self.competition_games))
             trained_wins, untrained_wins = compete(trained_competitor, untrained_competitor, self.competition_games, self.state_manager)
 
-            if trained_wins < untrained_wins:
+            if trained_wins < self.competition_games // 2 + self.win_margin:
                 self.anet.load_params(self.anet_dir + "temp")
             print("New model won {} of {} games ({}%)".format(trained_wins, self.competition_games, trained_wins * 100 / self.competition_games if self.competition_games > 0 else 0))
 

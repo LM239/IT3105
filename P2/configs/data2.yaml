@@ -9,33 +9,33 @@ sim_world:
 
 actor:
   episodes: 20
-  num_checkpoints: 21
-  train_games: 60
+  num_checkpoints: 11
+  train_games: 100
   competition_games: 400
-  anet_dir: "anets/local/hex/6x6/eps25/"
+  anet_dir: "anets/local/hex/6x6/newrand_2000g_eps235/"
   save_data: True
-  data_dir: "data/eirik/eps_25/"
+  data_dir: "data/newrand_2000g_eps235/"
   win_margin: 5
   epsilon: 0.0
   epsilon_decay: 0.97
-  epsilon_min: 0.25
+  epsilon_min: 0.235
   display_games: []
 
 
 mcts:
-  search_duration: 45.0
-  bias: 0.0542
-  c: 0.0885
+  search_duration: 70.0
+  bias: 0.1
+  c: 0.0825
   h_confidence: 4
   max_rollouts: 40000
-  search_games: 900
+  search_games: 4000
 
 
 anet:
   lr: 0.00005
   optimizer: "adam"
   loss: "kl_divergence"
-  model_file: "anets/best/hex/6x6/best.h5"
+  model_file: "anets/best/hex/6x6/newest_eps2.h5"
   activation: "selu"
   cnn_filters: # depth, filter_size, dropout (on layer output!!), padding
     - [148, 3, 0.0, "valid"]
