@@ -40,7 +40,7 @@ class TourActor:
         states = [actual_board]
         extended_searches = 0
         visits, extended = self.mcts.run_root(actual_board)
-        while games < self.train_games:
+        while games < self.train_games:  # run train_games games to generate training examples
             extended_searches += extended
             root_distribution: dict = self.mcts.root_distribution()
             D = self.state_manager.complete_action_dist(root_distribution)
@@ -48,12 +48,12 @@ class TourActor:
 
             print(f"Currently on {len(replay_targets)} training examples ({len(states)} from this game), {games} of {self.train_games} games, and {visits} rollouts with {extended_searches} extended searches             ", end="\r")
 
-            if random.random() < self.epsilon + self.epsilon_min:
+            if random.random() < self.epsilon + self.epsilon_min:  # choose actino from more even dist
                 p = np.array(list(root_distribution.values()))
                 p = np.sqrt(p)
                 p = p / np.sum(p)
                 action = np.random.choice(list(root_distribution.keys()), p=p)
-            else:
+            else: # choose action from actual mcts dist
                 action = np.random.choice(list(root_distribution.keys()), p=list(root_distribution.values()))
             actual_board = self.state_manager.do_action(actual_board, action)
             states.append(actual_board)
@@ -68,13 +68,13 @@ class TourActor:
                 continue
             visits, extended = self.mcts.run_subtree(actual_board)
         print("\n")
-        return replay_features, replay_targets
+        return replay_features, replay_targets  # return training examples
 
     def fit(self):
         for episode in range(self.episodes):
             print(episode)
             states, action_visits = self.generate_examples(episode)
-            if self.save_data:
+            if self.save_data:  # save computationally expensive data for potential use later
                 file_name = "eps_" + str(self.epsilon_min).replace(".", "") + "_" + str(self.train_games) + "games_" + str(episode) + ".p"
                 os.makedirs(os.path.dirname(self.data_dir + file_name), exist_ok=True)
                 with open(self.data_dir + file_name, "wb") as file:
@@ -83,7 +83,7 @@ class TourActor:
 
             augmented_features = []
             augmented_targets = []
-            for feature, target in zip(states, action_visits):
+            for feature, target in zip(states, action_visits):  # run data augmentation with state_manager, and get sm's representation for anet
                 augmented_boards, augmented_Ds = self.state_manager.augment_training_data(self.state_manager.to_array(feature), target)
                 augmented_features.extend(augmented_boards)
                 augmented_targets.extend(augmented_Ds)
@@ -91,15 +91,17 @@ class TourActor:
             if episode in self.save_episodes:
                 self.anet.save_params(self.anet_dir, "checkpoint_" + str(episode))
 
-            self.anet.save_params(self.anet_dir, "temp")
+            self.anet.save_params(self.anet_dir, "temp")  # save anet in temp to revert iff training worsens network
             self.anet.train(augmented_features, augmented_targets)
 
             untrained_competitor = ProbabilisticPlayer(self.anet.__class__(model_file=(self.anet_dir + "temp")), self.state_manager)
             trained_competitor = ProbabilisticPlayer(self.anet, self.state_manager)
             print("Running competition with {} games".format(self.competition_games))
+
+            #  test new and old net
             trained_wins, untrained_wins = compete(trained_competitor, untrained_competitor, self.competition_games, self.state_manager)
 
-            if trained_wins < self.competition_games // 2 + self.win_margin:
+            if trained_wins < self.competition_games // 2 + self.win_margin:  # if win_margin insufficient return to temp (i.e. skip training)
                 self.anet.load_params(self.anet_dir + "temp")
             print("New model won {} of {} games ({}%)".format(trained_wins, self.competition_games, trained_wins * 100 / self.competition_games if self.competition_games > 0 else 0))
 
@@ -113,18 +115,18 @@ class TourActor:
         files = glob.glob(self.data_dir + "*.p")
         episode = 0
         for file in files:
-            print("Loading data from", file)
+            print("Loading data from", file)  # load training examples
             states, action_visits = pickle.load(open(file, "rb"))
             augmented_features = []
             augmented_targets = []
-            if (len(states) > len(action_visits)):
+            if (len(states) > len(action_visits)):  # check for bug in early files
                 states = [state for state in states if not self.state_manager.in_end_state(state)]
                 print(len(states), len(action_visits))
                 with open(file, "wb") as file:
                     pickle.dump((states, action_visits), file)
                     exit(0)
 
-            for feature, target in zip(states, action_visits):
+            for feature, target in zip(states, action_visits):  # run data augmentation with state_manager, and get sm's representation for anet
                 augmented_boards, augmented_Ds = self.state_manager.augment_training_data(self.state_manager.to_array(feature), target)
                 augmented_features.extend(augmented_boards)
                 augmented_targets.extend(augmented_Ds)
@@ -136,10 +138,10 @@ class TourActor:
 
             untrained_competitor = ProbabilisticPlayer(self.anet.__class__(model_file=(self.anet_dir + "temp")), self.state_manager)
             trained_competitor = ProbabilisticPlayer(self.anet, self.state_manager)
-            print("Running competition with {} games".format(self.competition_games))
+            print("Running competition with {} games".format(self.competition_games))  # run competition to check for actual improvement after learning
             trained_wins, untrained_wins = compete(trained_competitor, untrained_competitor, self.competition_games, self.state_manager)
 
-            if trained_wins < self.competition_games // 2 + self.win_margin:
+            if trained_wins < self.competition_games // 2 + self.win_margin:  # if win_margin insufficient return to temp (i.e. skip training)
                 self.anet.load_params(self.anet_dir + "temp")
             print("New model won {} of {} games ({}%)".format(trained_wins, self.competition_games, trained_wins * 100 / self.competition_games if self.competition_games > 0 else 0))
 

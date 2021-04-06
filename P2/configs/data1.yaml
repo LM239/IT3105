@@ -25,7 +25,6 @@ actor:
 mcts:
   q_dir: "data/newrand_2000g_eps215/q_dicts/"
   search_duration: 70.0
-  bias: 0.1
   c: 0.087
   h_confidence: 4
   max_rollouts: 40000

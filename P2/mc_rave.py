@@ -30,7 +30,7 @@ class McRave(Mcts):
         self.amaf_Q = defaultdict(dd)
         self.state_manager: SimWorld = state_manager
 
-        if "q_dir" in mcts_cfg: # load previous Q dicts as heuristic
+        if "q_dir" in mcts_cfg:  # load previous Q dicts as heuristic
             try:
                 self.amaf_Q = pickle.load(open(mcts_cfg["q_dir"] + "amaf_q.p", "rb"))
                 self.Q = pickle.load(open(mcts_cfg["q_dir"] + "q.p", "rb"))
@@ -60,19 +60,19 @@ class McRave(Mcts):
             pickle.dump(self.Q, file)
 
     def update_bias(self, state: str, action: int, level: int):
-        # get bias for each available depth in Q and amaf_Q
         new_bias = abs(self.Q[state][action] - self.amaf_Q[state][action])
         if level == len(self.biases):
             self.biases.append([new_bias, 1])
         else:
             prev_bias, count = self.biases[level]
-            if count < 2 ** 16:
+            if count < 2 ** 16:  # max count
                 count += 1
-            prev_bias += (new_bias - prev_bias) / count
+            prev_bias += (new_bias - prev_bias) / count  # change average
             self.biases[level] = [prev_bias, count]
 
-    def reset_bias(self):
+    def reset_bias(self):  # reset bias
         self.biases = [[bias, min(count, 100)] for bias, count in self.biases]
+        # get bias for each available depth in Q and amaf_Q
         for state in self.Q.keys():
             level = self.state_manager.min_depth(state)
             if level >= len(self.biases):
@@ -82,29 +82,34 @@ class McRave(Mcts):
 
     def run_root(self, state: Any, use_og_root=False):
         if len(self.amaf_Q.keys()) + len(self.Q.keys()) > 6.0 * 10**6:
-            print("\nPruning dicts")
-            new_amaf_dict = defaultdict(dd)
-            for key in self.amaf_Q.keys():
-                if self.state_manager.min_depth(key) >= 29:
-                    new_amaf_dict[key] = self.amaf_Q[key]
-            del self.amaf_Q
-            self.amaf_Q = new_amaf_dict
-            new_q_dict = defaultdict(dd)
-            for key in self.Q.keys():
-                if self.state_manager.min_depth(key) >= 29:
-                    new_q_dict[key] = self.Q[key]
-            del self.Q
-            self.Q = new_q_dict
-            print("New amaf_q and Q dicts have {} keys, and {} keys, respectively ({} bytes (not accurate))".format(len(self.amaf_Q), len(self.Q), sys.getsizeof(self.amaf_Q) + sys.getsizeof(self.Q)))
+            self.reset_bias()
+            self.prune_dicts()
         if use_og_root:
-            self.root = self.og_root
+            self.root = self.og_root  # retain root
         else:
             del self.root
             del self.og_root
-            print("\ngc freed {} objects".format(gc.collect()))
+            print("\ngc freed {} objects".format(gc.collect()))  # free some memory
             self.root = self.new_node(state, 0)
             self.og_root = self.root
-        return self.simulate(self.root.state, self.search_duration, self.search_games)
+        return self.simulate(self.root.state, self.search_duration, self.search_games)  # simulate from root state
+
+    def prune_dicts(self):
+        print("\nPruning dicts")
+        new_amaf_dict = defaultdict(dd)  # create new smaller dicts
+        for key in self.amaf_Q.keys():
+            if self.state_manager.min_depth(key) >= 29:
+                new_amaf_dict[key] = self.amaf_Q[key]
+        del self.amaf_Q
+        self.amaf_Q = new_amaf_dict
+        new_q_dict = defaultdict(dd)
+        for key in self.Q.keys():
+            if self.state_manager.min_depth(key) >= 29:
+                new_q_dict[key] = self.Q[key]
+        del self.Q
+        self.Q = new_q_dict
+        print("New amaf_q and Q dicts have {} keys, and {} keys, respectively ({} bytes (not accurate))".format(
+            len(self.amaf_Q), len(self.Q), sys.getsizeof(self.amaf_Q) + sys.getsizeof(self.Q)))
 
     def run_subtree(self, state: Any):
         # run from new subtree (one of current root's children)
