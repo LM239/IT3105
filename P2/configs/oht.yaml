@@ -1,6 +1,6 @@
 allow_cuda: false
 oht:
-  anet_file: "anets\\best\\hex\\6x6\\fit_d2.h5"
+  anet_file: "anets\\best\\hex\\6x6\\only_fd_2.h5"
   player_type: "greedy"
 
 sim_world:

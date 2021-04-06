@@ -11,11 +11,11 @@ actor:
   episodes: 10
   num_checkpoints: 0
   train_games: 1
-  competition_games: 400
+  competition_games: 300
   anet_dir: "anets/local/hex/6x6/fit_d/"
   save_data: True
-  data_dir: "data/newrand_2000g_eps195/"
-  win_margin: 5
+  data_dir: "data/newrand_2000g_eps215/"
+  win_margin: 3
   epsilon: 0.0
   epsilon_decay: 0.97
   epsilon_min: 0.166
@@ -31,10 +31,10 @@ mcts:
   search_games: 1
 
 anet:
-  lr: 0.000075
+  lr: 0.00016
   optimizer: "adam"
   loss: "kl_divergence"
-  model_file: "anets/best/hex/6x6/fit_d1.h5"
+  model_file: "anets/local/hex/6x6/fit_d/best.h5"
   activation: "selu"
   cnn_filters: # depth, filter_size, dropout (on layer output!!), padding
     - [148, 3, 0.0, "valid"]
@@ -42,9 +42,9 @@ anet:
     - [148, 3, 0.0, "same"]
     - [148, 3, 0.0, "same"]
     - [148, 3, 0.05, "same"]
-    - [12, 1, 0.01, "same"]
+    - [32, 1, 0.01, "same"]
   dense_layers: # depth, dropout
-    - [64, 0.0]
+    - [96, 0.0]
   #  - [512, 0.2]
   #  - [256, 0.2]
   batch_size: 64

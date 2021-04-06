@@ -126,7 +126,7 @@ class TourActor:
                     pickle.dump((states, action_visits), file)
                     exit(0)
 
-            for feature, target in zip(states, action_visits):  # run data augmentation with state_manager, and get sm's representation for anet
+            for feature, target in zip(states, action_visits): # run data augmentation with state_manager, and get sm's representation for anet
                 augmented_boards, augmented_Ds = self.state_manager.augment_training_data(self.state_manager.to_array(feature), target)
                 augmented_features.extend(augmented_boards)
                 augmented_targets.extend(augmented_Ds)

@@ -3,7 +3,6 @@ import networkx as nx
 from matplotlib import pyplot as plt
 from matplotlib import patches
 from numpy import float32
-
 from interfaces.world import AdvancedSimWorld
 from collections import defaultdict
 import random
@@ -95,7 +94,6 @@ class HexWorld(AdvancedSimWorld):
 
     def from1D(self, index):
         return divmod(index, self.size)
-
 
     def in_end_state(self, state):
         # dfs to check for path between the edges of the board

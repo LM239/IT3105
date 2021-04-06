@@ -1,8 +1,9 @@
 from configs.validate_configs import validate_anet_config
 from interfaces.actornet import ActorNet
-from keras.models import *
 import tensorflow as tf
+from keras.models import *
 from keras.layers import *
+from keras import optimizers
 import os
 
 
@@ -39,7 +40,7 @@ class ConvNet(ActorNet):
                     prev_layer = Dropout(dropout)(Activation(anet_cfg["activation"])(BatchNormalization(axis=1)(Dense(layer_size)(prev_layer))))
                 self.pi = Dense(output_dim, activation='softmax', name='pi')(prev_layer)  # batch_size x self.action_size
 
-                opt = type(tf.keras.optimizers.get(anet_cfg["optimizer"]))(learning_rate=anet_cfg["lr"])
+                opt = type(optimizers.get(anet_cfg["optimizer"]))(learning_rate=anet_cfg["lr"])
 
                 self.model = Model(inputs=self.input_boards, outputs=self.pi)
                 self.model.compile(optimizer=opt, loss=anet_cfg["loss"])

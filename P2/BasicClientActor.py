@@ -28,7 +28,7 @@ class BasicClientActor(BasicClientActorAbs):
 
         # This is an example player who picks random moves. REMOVE THIS WHEN YOU ADD YOUR OWN CODE !!
         state_active = len([1 for i in state[1:] if i != 0])
-        me = (1,0) if state_active % 2 == 0 else (0,1)
+        me = (1, 0) if state_active % 2 == 0 else (0, 1)
         op = tuple(reversed(me))
         state = [me if cell == self.series_id else (op if cell > 0 else (0, 0)) for cell in state[1:]] + [me]
         action = player.play(state)
