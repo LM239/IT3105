@@ -1,7 +1,7 @@
 allow_cuda: false
 oht:
-  anet_file: "anets\\best\\hex\\6x6\\even_better.h5"
-  player_type: "probabilistic"
+  anet_file: "anets\\best\\hex\\6x6\\fit_d2.h5"
+  player_type: "greedy"
 
 sim_world:
   world: "hex"

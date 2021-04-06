@@ -32,6 +32,8 @@ class SimWorld:
     def visualize(self, states, player_labels=("player1, player2"), use_board_labels=False):
         pass
 
+    def min_depth(self, key):
+        pass
 
 class AdvancedSimWorld(SimWorld):
 

@@ -46,7 +46,7 @@ class TourActor:
             D = self.state_manager.complete_action_dist(root_distribution)
             replay_targets.append(D)
 
-            print(f"Currently on {len(replay_targets)} training examples, {games} of {self.train_games} games, and {visits} rollouts with {extended_searches} extended searches            ", end="\r")
+            print(f"Currently on {len(replay_targets)} training examples ({len(states)} from this game), {games} of {self.train_games} games, and {visits} rollouts with {extended_searches} extended searches             ", end="\r")
 
             if random.random() < self.epsilon + self.epsilon_min:
                 p = np.array(list(root_distribution.values()))

@@ -25,24 +25,26 @@ def dd2():
 class McRave(Mcts):
 
     def __init__(self, mcts_cfg, state_manager, anet, node_search=default_search):
-        self.biases = [[mcts_cfg["bias"], 1]]
+        self.biases = [[0, 0]]
         self.Q = defaultdict(dd)
         self.amaf_Q = defaultdict(dd)
+        self.state_manager: SimWorld = state_manager
 
-        try:
-            self.amaf_Q = pickle.load(open("data/newrand_eps_2/q_dicts/amaf_q.p", "rb"))
-            self.Q = pickle.load(open("data/newrand_eps_2/q_dicts/q.p", "rb"))
-            print("Loaded amaf_q and Q dict with {} keys, and {} keys, respectively ({} bytes (not accurate))".format(len(self.amaf_Q), len(self.Q), sys.getsizeof(self.amaf_Q) + sys.getsizeof(self.Q)))
-            for state in self.Q.keys():
-                level = 36 - state.count("(0, 0)")
-                if level >= len(self.biases):
-                    self.biases.extend([[mcts_cfg["bias"], 1] for i in range(level - len(self.biases) + 1)])
-                for action in self.Q[state].keys():
-                    self.update_bias(state, action, level)
-            print("using biases ", self.biases)
-        except FileNotFoundError:
-            print("Could not load q_dicts")
-            pass
+        if "q_dir" in mcts_cfg:
+            try:
+                self.amaf_Q = pickle.load(open(mcts_cfg["q_dir"] + "amaf_q.p", "rb"))
+                self.Q = pickle.load(open(mcts_cfg["q_dir"] + "q.p", "rb"))
+                print("Loaded amaf_q and Q dict with {} keys, and {} keys, respectively ({} bytes (not accurate))".format(len(self.amaf_Q), len(self.Q), sys.getsizeof(self.amaf_Q) + sys.getsizeof(self.Q)))
+                for state in self.Q.keys():
+                    level = self.state_manager.min_depth(state)
+                    if level >= len(self.biases):
+                        self.biases.extend([[0, 0] for i in range(level - len(self.biases) + 1)])
+                    for action in self.Q[state].keys():
+                        self.update_bias(state, action, level)
+                print("using biases ", self.biases)
+            except FileNotFoundError:
+                print("Could not load q_dicts")
+                pass
 
         self.search_games = mcts_cfg["search_games"]
         self.min_confidence = mcts_cfg["h_confidence"]
@@ -50,7 +52,6 @@ class McRave(Mcts):
         self.max_rollouts = mcts_cfg["max_rollouts"]
         self.root: Node | None = None
         self.og_root: Node | None = None
-        self.state_manager: SimWorld = state_manager
         self.node_search = node_search
         self.c = mcts_cfg["c"]
         self.anet: ActorNet = anet
@@ -79,13 +80,13 @@ class McRave(Mcts):
             print("\nPruning dicts")
             new_amaf_dict = defaultdict(dd)
             for key in self.amaf_Q.keys():
-                if key.count("(0, 0)") >= 28:
+                if self.state_manager.min_depth(key) >= 29:
                     new_amaf_dict[key] = self.amaf_Q[key]
             del self.amaf_Q
             self.amaf_Q = new_amaf_dict
             new_q_dict = defaultdict(dd)
             for key in self.Q.keys():
-                if key.count("(0, 0)") >= 28:
+                if self.state_manager.min_depth(key) >= 29:
                     new_q_dict[key] = self.Q[key]
             del self.Q
             self.Q = new_q_dict
@@ -93,7 +94,9 @@ class McRave(Mcts):
         if use_og_root:
             self.root = self.og_root
         else:
-            print("\ngc freed {} objects".format(self.delete_tree()))
+            del self.root
+            del self.og_root
+            print("\ngc freed {} objects".format(gc.collect()))
             self.root = self.new_node(state, 0)
             self.og_root = self.root
         return self.simulate(self.root.state, self.search_duration, self.search_games)
@@ -211,17 +214,3 @@ class McRave(Mcts):
     def most_visited_child_action(self, node):
         return max(node.child_actions, key=lambda a: node.N[a])
 
-    def delete_tree(self):
-        stack: List[Node] = [self.root] if self.root is not None else []
-        found = defaultdict(lambda: False)
-        while len(stack) > 0:
-            v = stack.pop(0)
-            if not found[v]:
-                found[v] = True
-                stack.extend(v.children)
-                del v
-        del stack
-        del found
-        del self.root
-
-        return gc.collect()
