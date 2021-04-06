@@ -23,6 +23,7 @@ class ConvNet(ActorNet):
             else:
                 os.environ['CUDA_CACHE_MAXSIZE'] = "2147483648"
                 os.environ["TF_CPP_VMODULE"] = "asm_compiler=2"
+                os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices'
             if "model_file" in anet_cfg:
                 self.model = load_model(anet_cfg["model_file"])
                 self.model.optimizer.lr.assign(anet_cfg["lr"])

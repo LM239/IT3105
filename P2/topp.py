@@ -19,8 +19,8 @@ def compete(player1: Player, player2: Player, num_games: int, state_manager: Sim
         states = []
         state = state_manager.new_state()
         states.append(state)
-        move = i % 2
-        while not state_manager.in_end_state(state):
+        move = i % 2  # find beginning player
+        while not state_manager.in_end_state(state):  # play one game
             if move % 2 == 0:
                 action = player1.play(state)
                 state = state_manager.do_action(state, action)
@@ -29,11 +29,11 @@ def compete(player1: Player, player2: Player, num_games: int, state_manager: Sim
                 state = state_manager.do_action(state, action)
             states.append(state)
             move += 1
-        winner = state_manager.winner(state, known_endstate=True)
-        if i < display_game:
+        winner = state_manager.winner(state, known_endstate=True)  # get winner
+        if i < display_game:  # display display_game first games (default 0)
             player_labels = (player1.name, player2.name) if i % 2 == 0 else (player2.name, player1.name)
             state_manager.visualize(states, player_labels=player_labels)
-        if i % 2 == 0:
+        if i % 2 == 0:  # assign win
             if winner[0] == 1:
                 player1_wins += 1
             else:
@@ -43,8 +43,7 @@ def compete(player1: Player, player2: Player, num_games: int, state_manager: Sim
                 player2_wins += 1
             else:
                 player1_wins += 1
-    return player1_wins, player2_wins
-
+    return player1_wins, player2_wins  # return results
 
 
 class Topp():
@@ -55,11 +54,11 @@ class Topp():
         self.state_manager = state_manager
         self.display_games = topp_cfg["display_games"]
 
-        self.player_type = GreedyPlayer if topp_cfg["player_type"] == "greedy" else ProbabilisticPlayer
-        if "display_games_pairs" in topp_cfg:
+        self.player_type = GreedyPlayer if topp_cfg["player_type"] == "greedy" else ProbabilisticPlayer # players can be greedy or probabilistic
+        if "display_games_pairs" in topp_cfg:  # file_names from display_game_pairs will be displayed (display_games games)
             self.display_games_pairs = [tuple(sorted(p)) for p in topp_cfg["display_games_pairs"]]
 
-        files = glob.glob(topp_cfg["directory"] + "*.h5")
+        files = glob.glob(topp_cfg["directory"] + "*.h5")  # find all checkpoints
         print(files)
         self.players = None
         if topp_cfg["player_type"] == "greedy":
@@ -71,13 +70,13 @@ class Topp():
 
     def run_tour(self):
         for i, player1 in enumerate(self.players.values()):
-            for j, player2 in enumerate(list(self.players.values())[i + 1:]):
+            for j, player2 in enumerate(list(self.players.values())[i + 1:]): # ensure all players play against all other players exactly once
                 print(player1.name, "is competing with", player2.name)
                 player1_wins, player2_wins = compete(player1, player2, self.games_g, self.state_manager, self.display_games if (player1.name, player2.name) in self.display_games_pairs else 0)
                 self.total_wins[player1.name] += player1_wins
                 self.total_wins[player2.name] += player2_wins
         rankings = sorted([(self.total_wins[key], key) for key in self.total_wins.keys()], reverse=True)
-        for i, rank in enumerate(rankings):
+        for i, rank in enumerate(rankings): # print rankings
             losses = (len(self.players) - 1) * self.games_g - rank[0]
             print(str(i+1) + ".", "Checkpoint", rank[1], "with", rank[0], "wins and", losses, "losses")
 

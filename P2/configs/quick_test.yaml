@@ -22,7 +22,7 @@ actor:
 
 
 mcts:
-  search_duration: 1.0
+  search_duration: 70.0
   bias: 0.05
   c: 0.0885
   h_confidence: 4
@@ -33,7 +33,7 @@ anet:
   lr: 0.00005
   optimizer: "adam"
   loss: "kl_divergence"
-  model_file: "anets/local/hex/6x6/eps125/best.h5"
+  model_file: "anets/best/hex/6x6/fit_d2.h5"
   activation: "selu"
   cnn_filters: # depth, filter_size, dropout (on layer output!!), padding
     - [148, 3, 0.0, "valid"]
