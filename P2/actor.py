@@ -53,7 +53,7 @@ class TourActor:
                 p = np.sqrt(p)
                 p = p / np.sum(p)
                 action = np.random.choice(list(root_distribution.keys()), p=p)
-            else: # choose action from actual mcts dist
+            else:  # choose action from actual mcts dist
                 action = np.random.choice(list(root_distribution.keys()), p=list(root_distribution.values()))
             actual_board = self.state_manager.do_action(actual_board, action)
             states.append(actual_board)
