@@ -35,12 +35,7 @@ class McRave(Mcts):
                 self.amaf_Q = pickle.load(open(mcts_cfg["q_dir"] + "amaf_q.p", "rb"))
                 self.Q = pickle.load(open(mcts_cfg["q_dir"] + "q.p", "rb"))
                 print("Loaded amaf_q and Q dict with {} keys, and {} keys, respectively ({} bytes (not accurate))".format(len(self.amaf_Q), len(self.Q), sys.getsizeof(self.amaf_Q) + sys.getsizeof(self.Q)))
-                for state in self.Q.keys():
-                    level = self.state_manager.min_depth(state)
-                    if level >= len(self.biases):
-                        self.biases.extend([[0, 0] for i in range(level - len(self.biases) + 1)])
-                    for action in self.Q[state].keys():
-                        self.update_bias(state, action, level)
+                self.reset_bias()
                 print("using biases ", self.biases)
             except FileNotFoundError:
                 print("Could not load q_dicts")
@@ -75,6 +70,15 @@ class McRave(Mcts):
                 count += 1
             prev_bias += (new_bias - prev_bias) / count
             self.biases[level] = [prev_bias, count]
+
+    def reset_bias(self):
+        self.biases = [[bias, min(count, 100)] for bias, count in self.biases]
+        for state in self.Q.keys():
+            level = self.state_manager.min_depth(state)
+            if level >= len(self.biases):
+                self.biases.extend([[0, 0] for i in range(level - len(self.biases) + 1)])
+            for action in self.Q[state].keys():
+                self.update_bias(state, action, level)
 
     def run_root(self, state: Any, use_og_root=False):
         if len(self.amaf_Q.keys()) + len(self.Q.keys()) > 6.0 * 10**6:

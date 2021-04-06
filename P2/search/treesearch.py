@@ -1,6 +1,7 @@
 from interfaces.Node import Node
 from collections import defaultdict
 
+# Default bfs tree search, makes no assumptions about the game and should work for all games
 def default_search(root: Node, target):
     stack = [root]
     visited = defaultdict(lambda: False)
@@ -14,7 +15,7 @@ def default_search(root: Node, target):
                 stack.append(child)
     return None
 
-
+# Hex specific bfs search, uses game specific knowledge to speed up the search
 def hex_search(root: Node, target):
     root_moves = 0
     target_moves = 0

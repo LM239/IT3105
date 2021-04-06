@@ -1,7 +1,7 @@
 from collections import defaultdict
 from typing import Any, List
 
-
+# Interface for the nodes in the mcts search tree
 class Node:
     def __init__(self, state: Any, actions: List[int], confidence: int, level: int):
         self.state: Any = state
