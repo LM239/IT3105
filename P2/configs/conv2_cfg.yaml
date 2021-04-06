@@ -16,11 +16,11 @@ actor:
   epsilon: 0.80
   epsilon_decay: 0.85
   epsilon_min: 0.1
-  display_games: [0, 200]
+  display_games: []
 
 mcts:
   search_duration: 3.0
-  bias: 0.25
+  bias: 0.06
   c: 0.2
   min_h_confidence: 3
   max_h_confidence: 15
@@ -33,7 +33,7 @@ anet:
   lr: 0.001
   optimizer: "adam"
   loss: "categorical_crossentropy"
-  #model_file: "anets/local/hex/6x6conv1/temp.h5"
+  model_file: "anets/local/hex/6x6conv1/temp.h5"
   activation: "selu"
   cnn_filters: # depth, filter_size, dropout (on layer output!!), padding
     - [148, 3, 0.0, "valid"]

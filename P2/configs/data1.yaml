@@ -14,7 +14,7 @@ actor:
   competition_games: 400
   anet_dir: "anets/local/hex/6x6/eps166/"
   save_data: True
-  data_dir: "data/eps_166/"
+  data_dir: "data/eirik/eps_166/"
   win_margin: 5
   epsilon: 0.0
   epsilon_decay: 0.97
@@ -23,7 +23,7 @@ actor:
 
 
 mcts:
-  search_duration: 40.0
+  search_duration: 45.0
   bias: 0.0542
   c: 0.0885
   h_confidence: 4
