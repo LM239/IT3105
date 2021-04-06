@@ -72,15 +72,19 @@ class HexWorld(AdvancedSimWorld):
         return -1 <= x < self.size + 1 and -1 <= y < self.size + 1
 
     def new_state(self):
+        # Creates a new state where all cells are empty and it is player 1 to move
         return [(0, 0) for i in range(self.size ** 2)] + [(1, 0)]
 
     def get_actions(self, state, known_not_endstate=False):
+        # Returns the index of all empty cells if we are not in an endstate, returns empty if we are in an endstate
         return [i for i, t in enumerate(state[:-1]) if t[0] == t[1]] if known_not_endstate or not self.in_end_state(state) else []
 
     def do_action(self, state, action):
+        # Marks the indicated cell with the current player and flips whose turn it is
         return state[0:action] + [state[-1]] + state[action + 1:-1] + [tuple(reversed(state[-1]))]
 
     def find_action(self, parent_state, child_state):
+        # Finds the first cell which differ in the states, returns the index
         for action, (square1, square2) in enumerate(zip(parent_state[:-1], child_state[:-1])):
             if square1 != square2:
                 return action
@@ -92,7 +96,9 @@ class HexWorld(AdvancedSimWorld):
     def from1D(self, index):
         return divmod(index, self.size)
 
+
     def in_end_state(self, state):
+        # dfs to check for path between the edges of the board
         visits = defaultdict(lambda: False)
         if state[-1][0] == 1:
             stack = [x for x in range(0, self.size ** 2, self.size) if state[x][1] == 1]
@@ -146,12 +152,15 @@ class HexWorld(AdvancedSimWorld):
         return []
 
     def winner(self, state, known_endstate=False):
+        # If game is in end state, returns the player that put the game into the end state
         return tuple(reversed(state[-1])) if known_endstate or self.in_end_state(state) else None
 
     def p1_reward(self, state, known_endstate=False):
+        # Returns 1 if player 1 is winner, 0 otherwise
         return state[-1][1] if known_endstate or self.in_end_state(state) else None
 
     def p1_to_move(self, state):
+        # Checks whether it is player 1 to move
         return state[-1][0] == 1
 
     def visualize(self, states, player_labels=("Player 1", "Player 2"), use_board_labels=False):  # visualize states (list of states)
@@ -378,6 +387,7 @@ class HexWorld(AdvancedSimWorld):
 
 
     def augment_training_data(self, state_array, action_dist):
+        # Flips the states, as this would be the same
         states = [state_array, np.flip(state_array, axis=[0, 1])]
         dists = [action_dist, action_dist[::-1]]
         return states, dists

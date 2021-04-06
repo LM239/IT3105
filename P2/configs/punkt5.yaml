@@ -1,0 +1,51 @@
+---
+display:
+  display_rate: 0.55 # in seconds
+
+#SimWorld args:
+sim_world:
+  world: "hex"
+  size: 4
+
+actor:
+  episodes: 200
+  num_checkpoints: 5
+  train_games: 1
+  competition_games: 0
+  anet_dir: "anets/local/hex/4x4/punkt5"
+  save_data: True
+  data_dir: "data/newrand_2000g_eps215/"
+  win_margin: 0
+  epsilon: 0.0
+  epsilon_decay: 0.97
+  epsilon_min: 0.215
+  display_games: []
+
+
+mcts:
+  q_dir: "data/newrand_2000g_eps215/q_dicts/"
+  search_duration: 8
+  c: 0.087
+  h_confidence: 4
+  max_rollouts: 40000
+  search_games: 500
+
+anet:
+  lr: 0.0005
+  optimizer: "adam"
+  loss: "kl_divergence"
+  #model_file: "anets/best/hex/6x6/fit_d2.h5"
+  activation: "selu"
+  cnn_filters: # depth, filter_size, dropout (on layer output!!), padding
+    - [148, 3, 0.0, "valid"]
+    - [148, 3, 0.0, "same"]
+    - [148, 3, 0.0, "same"]
+    - [148, 3, 0.0, "same"]
+    - [148, 3, 0.05, "same"]
+    - [12, 1, 0.01, "same"]
+  dense_layers: # depth, dropout
+    - [64, 0.0]
+  #  - [512, 0.2]
+  #  - [256, 0.2]
+  batch_size: 64
+  allow_cuda: False
