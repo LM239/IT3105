@@ -382,19 +382,8 @@ class HexWorld(AdvancedSimWorld):
         dists = [action_dist, action_dist[::-1]]
         return states, dists
 
-    def array_to_state(self, array):
-        count = 0
-        state = [None] * self.size ** 2
-        print(array)
-        for y in range(self.size):
-            for x in range(self.size):
-                val = [0, 0]
-                if array[y][x][0] != 0:
-                    count += 1
-                    val[0 if int(array[y][x][0]) == 1 else 1] = 1
-                state[self.from2D(y, x)] = tuple(val)
-        state.append((1, 0) if count % 2 == 0 else (0, 1))
-        return state
+    def min_depth(self, key):
+        return self.size ** 2 - key.count("(0, 0)")
 
 if __name__ == "__main__":
     cfg = {

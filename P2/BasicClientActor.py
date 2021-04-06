@@ -191,7 +191,12 @@ if __name__ == '__main__':
 
     world_config = oht_config["sim_world"]
 
+    bca_cfg = oht_config["oht"]
     world_manager = None
+
+    if "anet_file" not in bca_cfg:
+        print("Missing required config value 'player_type' \nExiting")
+        exit(1)
 
     if world_config["world"] == "hex":  # create sim_world for the actor critic
         world_manager = HexWorld(world_config, 0)
@@ -203,7 +208,8 @@ if __name__ == '__main__':
         print("Disable cuda")
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
-    anet = ConvNet(model_file='anets/best/hex/6x6/better.h5')
+
+    anet = ConvNet(model_file=bca_cfg["anet_file"])
     player = ProbabilisticPlayer(anet, world_manager, "me") if oht_config["oht"]["player_type"] == "probabilistic" else GreedyPlayer(anet, world_manager, "me")
     bsa = BasicClientActor(player, verbose=False)
     bsa.connect_to_server()

@@ -59,9 +59,6 @@ def validate_mcts_config(config):
     if "search_duration" not in config:
         print("Missing required actor_config argument: 'search_duration' \nExiting")
         exit(1)
-    if "bias" not in config:
-        print("Missing required actor_config argument: 'bias' \nExiting")
-        exit(1)
 
 
 def validate_anet_config(config):
