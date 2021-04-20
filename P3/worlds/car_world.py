@@ -42,13 +42,14 @@ class CarWorld:
         scatter_x = np.arange(len(self.episodes))
         plt.scatter(scatter_x, scatter_y)
 
-        anim_ep = self.episodes[-1]
+        plt.show()
 
+        anim_ep = self.episodes[-1]
         fig, ax = plt.subplots()
 
-        x_axis = np.arange(-1.2, 0.6, 0.001)
-        mountain = np.cos(3 * (x_axis + math.pi / 2))
-        m_plot = plt.plot(x_axis, mountain)
+        x_range = np.arange(-1.2, 0.6, 0.001)
+        mountain = np.cos(3 * (x_range + math.pi / 2))
+        m_plot = plt.plot(x_range, mountain)
 
         ax = plt.axis([-1.2, 0.6, -1.5, 1.5])
 
@@ -60,7 +61,7 @@ class CarWorld:
             return car,
 
         # create animation using the animate() function
-        anim = animation.FuncAnimation(fig, animate, frames=anim_ep, interval=10, blit=True, repeat=True)
+        anim = animation.FuncAnimation(fig, animate, frames=anim_ep, interval=20, blit=True, repeat=True)
 
         plt.show()
 
