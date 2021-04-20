@@ -1,6 +1,8 @@
 import math
 import random
 from matplotlib import pyplot as plt
+import matplotlib.animation as animation
+import numpy as np
 
 class CarWorld:
     def __init__(self):
@@ -16,8 +18,8 @@ class CarWorld:
     def coarse_code(self):
         pass
 
-    def get_height(self):
-        return math.cos(3 * (self.x + math.pi / 2))
+    def get_height(self, x):
+        return math.cos(3 * (x + math.pi / 2))
 
     def do_action(self, a):
         self.episode.append(self.x)
@@ -36,11 +38,33 @@ class CarWorld:
         self.episode = []
 
     def plot_results(self):
-        scatter_y = [len(episode) for episode in self.episodes]
-        scatter_x = [*range(len(self.episodes))]
+        scatter_y = np.array([len(episode) for episode in self.episodes])
+        scatter_x = np.arange(len(self.episodes))
         plt.scatter(scatter_x, scatter_y)
 
-        
+        anim_ep = self.episodes[-1]
+
+        fig, ax = plt.subplots()
+
+        x_axis = np.arange(-1.2, 0.6, 0.001)
+        mountain = np.cos(3 * (x_axis + math.pi / 2))
+        m_plot = plt.plot(x_axis, mountain)
+
+        ax = plt.axis([-1.2, 0.6, -1.5, 1.5])
+
+        car, = plt.plot([anim_ep[0]], [self.get_height(anim_ep[0])], 'ro')
+
+        def animate(i):
+            y = math.cos(3 * (i + math.pi / 2))
+            car.set_data(i, y)
+            return car,
+
+        # create animation using the animate() function
+        anim = animation.FuncAnimation(fig, animate, frames=anim_ep, interval=10, blit=True, repeat=True)
+
+        plt.show()
+
+
 
 
 
