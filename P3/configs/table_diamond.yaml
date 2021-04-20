@@ -1,0 +1,28 @@
+---
+episodes: 2000
+display_episodes:
+    - 100
+display_greedy: True
+#SimWorld args:
+sim_world:
+  world: "peg_solitaire"
+  type: "diamond"
+  size: 6
+  #Display:
+  display_rate: 0.17 # in seconds
+
+
+#Critic args:
+critic:
+  type: "table"
+  lr: 0.55
+  eligibility_decay: 0.75
+  discount_factor: 0.9
+
+#Actor args:
+actor:
+  lr: 0.9
+  eligibility_decay: 0.75
+  discount_factor: 0.9
+  greedy_epsilon: 0.9
+  epsilon_decay: 0.99 # set to 1 for no decay
